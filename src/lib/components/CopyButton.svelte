@@ -56,8 +56,8 @@
 		font-weight: 600;
 		color: var(--brand-foreground);
 		cursor: pointer;
-		background: var(--surface-raised);
-		border: 0;
+		background: transparent;
+		border: 1px solid var(--hairline);
 		border-radius: 999px;
 		transition:
 			background var(--dur-fast) var(--ease),
@@ -66,7 +66,7 @@
 	}
 
 	.copy:hover {
-		background: var(--surface-edge);
+		background: var(--surface-raised);
 	}
 
 	/* Text on a brand fill is always the page shade — never white, which is 2.23:1 on primary. */

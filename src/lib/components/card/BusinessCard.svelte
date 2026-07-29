@@ -16,11 +16,9 @@
 		inkCss: `var(${varName(v.ink)})`,
 		quietCss: `var(${varName(v.quiet)})`
 	}));
-
-	const ratio = `${card.widthMm} / ${card.heightMm}`;
 </script>
 
-<div class="sheet" style="--ratio: {ratio};">
+<div class="sheet" style="--ratio: {card.widthMm} / {card.heightMm};">
 	{#each rows as row (row.id)}
 		<div class="row">
 			<div class="spec">
@@ -30,15 +28,15 @@
 
 			<!-- Back: the mark, centred, nothing else. -->
 			<div class="face back" style="background: {row.groundCss}; color: {row.inkCss};">
-				<Mark {variant} size="22%" ink="currentColor" key="back-{row.id}" />
+				<Mark {variant} size="26%" ink="currentColor" key="back-{row.id}" />
 			</div>
 
-			<!-- Front: small mark, name, role, details. -->
+			<!-- Front: mark top-left, name and role, details along the bottom. -->
 			<div
 				class="face front"
 				style="background: {row.groundCss}; color: {row.inkCss}; --quiet: {row.quietCss};"
 			>
-				<Mark {variant} size="9%" ink="currentColor" key="front-{row.id}" />
+				<Mark {variant} size="11%" ink="currentColor" key="front-{row.id}" />
 				<div class="who">
 					<p class="name">{card.name}</p>
 					<p class="role">{card.role}</p>
@@ -91,10 +89,8 @@
 	.face {
 		container-type: inline-size;
 		aspect-ratio: var(--ratio);
-		padding: 7cqi;
-		overflow: hidden;
 		border-radius: var(--radius-md);
-		box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.55);
+		box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.6);
 	}
 
 	.back {
@@ -102,41 +98,44 @@
 		place-items: center;
 	}
 
+	/*
+		A card is mostly margin. 9% of the width on every side leaves the type sitting in from the trim
+		rather than crowding it, and `cqi` keeps that true at any rendered size.
+	*/
 	.front {
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-		gap: 3cqi;
+		display: flex;
+		flex-direction: column;
+		gap: 5cqi;
+		padding: 9cqi;
 	}
 
 	.who {
-		align-self: end;
+		margin-top: auto;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 9cqi;
+		font-size: 11cqi;
 		font-weight: 700;
 		line-height: 1;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.025em;
 	}
 
 	.role {
-		margin: 1.5cqi 0 0;
-		padding-bottom: 2.5cqi;
-		font-size: 3.4cqi;
+		margin: 2cqi 0 0;
+		font-size: 4cqi;
 		color: var(--quiet);
-		/* A hairline of the ink, not a global border colour — it belongs to the card. */
-		border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
 	}
 
 	.lines {
 		display: grid;
-		gap: 1cqi;
+		gap: 1.4cqi;
 		padding: 0;
 		margin: 0;
-		font-size: 3.4cqi;
-		list-style: none;
+		font-size: 4cqi;
+		line-height: 1.3;
 		color: var(--quiet);
+		list-style: none;
 	}
 
 	.placeholder {
@@ -156,10 +155,10 @@
 		}
 
 		.spec {
-			grid-column: 1 / -1;
 			flex-direction: row;
 			gap: var(--space-3);
 			align-items: baseline;
+			grid-column: 1 / -1;
 		}
 	}
 </style>

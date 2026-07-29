@@ -66,6 +66,7 @@
 
 	.dark {
 		background: var(--brand-background);
+		border: 1px solid var(--hairline);
 	}
 
 	.light {
@@ -103,8 +104,8 @@
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--on-brand);
-		background: var(--brand-warning);
+		color: var(--fg-muted);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-pill);
 	}
 

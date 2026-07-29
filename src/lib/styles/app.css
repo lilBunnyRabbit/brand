@@ -24,6 +24,13 @@
 	--surface-well: var(--brand-bg_darker);
 	--surface-edge: var(--brand-bg_lightest);
 
+	/*
+		The hairline. A fraction of `foreground` rather than a solid shade: the page is a gradient, so
+		any fixed shade would match the ramp somewhere and vanish, and clash somewhere else. An alpha of
+		the text colour stays consistently faint over the whole descent.
+	*/
+	--hairline: color-mix(in srgb, var(--brand-foreground) 14%, transparent);
+
 	/* Text on any brand fill is always the page shade. Never white — white on primary is 2.23:1. */
 	--on-brand: var(--brand-background);
 

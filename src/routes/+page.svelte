@@ -71,7 +71,7 @@
 		<h1>{meta.tagline}</h1>
 		<p class="lede">{meta.description}</p>
 		{#if anyWip}
-			<p class="notice">The mark is still being drawn. Everything here is current but not final.</p>
+			<p class="notice">Still being drawn — current, not final.</p>
 		{/if}
 	</div>
 
@@ -205,18 +205,7 @@
 <!-- ─── The idea ───────────────────────────────────────────────────────── -->
 
 {#if hero}
-	<Section
-		id="idea"
-		title="The idea"
-		lede="It is a rabbit nose, not a rabbit head. Always design from the nose first — the ears are a hint, not the hero."
-	>
-		<div class="idea">
-			<div class="idea-art">
-				<Mark variant={hero} size="min(40vw, 9rem)" key="idea" />
-			</div>
-			<p class="idea-copy">{logoStory.idea}</p>
-		</div>
-
+	<Section id="idea" title="The idea" lede="It is a rabbit nose, not a rabbit head.">
 		<ol class="steps">
 			{#each logoStory.steps as step (step.n)}
 				<li>
@@ -226,18 +215,7 @@
 				</li>
 			{/each}
 		</ol>
-
-		<div class="misreads">
-			<h3>What it must not read as</h3>
-			<ul>
-				{#each logoStory.misreads as m (m.reads_as)}
-					<li>
-						<span class="mis-name">{m.reads_as}</span>
-						<span class="mis-fix">{m.fix}</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
+		<p class="idea-rule">{logoStory.rule}</p>
 	</Section>
 {/if}
 
@@ -449,7 +427,7 @@
 		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
 		gap: clamp(var(--space-6), 5vw, var(--space-8));
 		align-items: center;
-		padding-block: clamp(var(--space-8), 10vw, 7rem);
+		padding-block: clamp(var(--space-6), 7vw, 5rem);
 	}
 
 	.eyebrow {
@@ -486,13 +464,9 @@
 	}
 
 	.notice {
-		max-width: 46ch;
-		padding: var(--space-3) var(--space-4);
-		margin: var(--space-5) 0 0;
+		margin: var(--space-4) 0 0;
 		font-size: var(--text-sm);
-		color: var(--on-brand);
-		background: var(--brand-warning);
-		border-radius: var(--radius-md);
+		color: var(--fg-muted);
 	}
 
 	.hero-mark {
@@ -578,8 +552,9 @@
 		gap: clamp(var(--space-5), 4vw, var(--space-8));
 		align-items: center;
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-bottom: var(--space-8);
+		margin-bottom: clamp(var(--space-6), 5vw, var(--space-8));
 		background: var(--surface-well);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -619,14 +594,21 @@
 		color: var(--brand-error) !important;
 	}
 
+	/*
+		Gaps, not a solid stack. tertiary, secondary, primary and accent are all the same lightness, so
+		butted together their edges vanish — the page shade between them is what makes this readable at
+		all. It is the rule this very section is explaining.
+	*/
 	.chain {
 		display: grid;
-		gap: 0;
+		gap: var(--space-2);
 		padding: 0;
 		margin: 0;
-		overflow: hidden;
 		list-style: none;
-		border-radius: var(--radius-md);
+	}
+
+	.chain li {
+		border-radius: var(--radius-sm);
 	}
 
 	.chain li {
@@ -658,6 +640,7 @@
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
 		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
 		background: var(--brand-bg_lighter);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -689,35 +672,20 @@
 	}
 
 	/* ── the idea ── */
-	.idea {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: clamp(var(--space-5), 4vw, var(--space-8));
-		align-items: center;
-		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		background: var(--surface-well);
-		border-radius: var(--radius-lg);
-	}
-
-	.idea-art {
-		color: var(--brand-primary);
-	}
-
-	.idea-copy {
-		max-width: 58ch;
-		margin: 0;
-		font-size: var(--text-lg);
-		line-height: 1.55;
-	}
 
 	.steps {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
 		gap: var(--space-3);
 		padding: 0;
-		margin: var(--space-5) 0 0;
+		margin: 0;
 		list-style: none;
-		counter-reset: step;
+	}
+
+	.idea-rule {
+		margin: var(--space-5) 0 0;
+		font-size: var(--text-lg);
+		color: var(--brand-primary);
 	}
 
 	.steps li {
@@ -726,6 +694,7 @@
 		gap: 0.2rem;
 		padding: var(--space-4);
 		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-md);
 	}
 
@@ -741,44 +710,6 @@
 	}
 
 	.step-body {
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
-	.misreads {
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-	}
-
-	.misreads h3 {
-		margin: 0 0 var(--space-4);
-		font-size: var(--text-lg);
-		font-weight: 700;
-	}
-
-	.misreads ul {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-		gap: var(--space-3);
-		padding: 0;
-		margin: 0;
-		list-style: none;
-	}
-
-	.misreads li {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		padding: var(--space-4);
-		background: var(--surface-raised);
-		border-radius: var(--radius-md);
-	}
-
-	.mis-name {
-		font-weight: 700;
-		color: var(--brand-accent);
-	}
-
-	.mis-fix {
 		font-size: var(--text-sm);
 		color: var(--fg-muted);
 	}
@@ -799,6 +730,7 @@
 		padding: var(--space-5);
 		margin: 0;
 		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -861,6 +793,7 @@
 		padding: var(--space-5);
 		margin-top: var(--space-5);
 		background: var(--surface-well);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -893,6 +826,7 @@
 		padding: var(--space-4);
 		margin: 0;
 		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -928,6 +862,7 @@
 		display: flex;
 		padding: var(--space-5);
 		background: var(--surface-well);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -978,6 +913,7 @@
 		gap: var(--space-3);
 		padding: var(--space-4);
 		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-md);
 	}
 
@@ -1051,6 +987,7 @@
 
 	.code {
 		background: var(--surface-well);
+		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 

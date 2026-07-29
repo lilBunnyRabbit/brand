@@ -92,6 +92,7 @@
 		top: 0;
 		z-index: 10;
 		background: color-mix(in srgb, var(--brand-background) 82%, transparent);
+		border-bottom: 1px solid var(--hairline);
 		backdrop-filter: blur(12px) saturate(150%);
 	}
 

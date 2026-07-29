@@ -62,6 +62,7 @@
 
 <style>
 	article {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
@@ -69,11 +70,12 @@
 	}
 
 	.face {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: var(--space-3);
-		align-items: start;
-		min-height: 9rem;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		align-items: flex-start;
+		justify-content: space-between;
+		min-height: 8.5rem;
 		padding: var(--space-4);
 		font: inherit;
 		color: inherit;
@@ -92,8 +94,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.1rem;
-		align-self: end;
-		grid-column: 1 / -1;
 	}
 
 	.name {
@@ -110,9 +110,9 @@
 	}
 
 	.said {
-		grid-column: 2;
-		grid-row: 1;
-		justify-self: end;
+		position: absolute;
+		top: var(--space-4);
+		right: var(--space-4);
 		font-size: var(--text-xs);
 		font-weight: 700;
 		letter-spacing: 0.08em;
