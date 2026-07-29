@@ -10,7 +10,7 @@
 
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
-	import { ladderSpan, swatches } from '$lib/brand/config/palette';
+	import { swatches } from '$lib/brand/config/palette';
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
 	import { lockupVision, lockupVisionSpread } from '$lib/brand/vision';
@@ -90,16 +90,18 @@
 >
 	<div class="contract" class:holds={contract.holds}>
 		<p>
-			<strong>The contract.</strong> Every non-shade colour clears WCAG AA against every one of the
-			seven shades — {contract.count} pairs, worst case
-			<strong>{contract.worst.ratio.toFixed(2)}:1</strong>
-			({contract.worst.on} on {contract.worst.shade}).
 			{#if contract.holds}
-				So any shade can back any section, and changing a section background never needs a contrast
-				re-check.
+				Every colour here is readable on every one of the seven backgrounds, so pick whatever feels
+				right.
+				<span class="quiet"
+					>{contract.count} combinations checked — the closest is still comfortable at
+					{contract.worst.ratio.toFixed(2)}:1.</span
+				>
 			{:else}
-				<strong>The contract is currently broken.</strong> The seed or the states have moved and the ladder
-				needs re-solving.
+				<strong>Careful — that is no longer true.</strong>
+				{contract.worst.on} on {contract.worst.shade} is down to {contract.worst.ratio.toFixed(
+					2
+				)}:1. The starting colour has moved, so the shades need re-solving.
 			{/if}
 		</p>
 	</div>
@@ -340,8 +342,7 @@
 
 	<p class="sources">
 		Source SVGs live in the repo:
-		<a href={meta.assetsUrl}>{meta.assetsUrl.replace('https://github.com/', '')}</a>. The ladder
-		reaches ±{ladderSpan} in lightness either side of the seed.
+		<a href={meta.assetsUrl}>{meta.assetsUrl.replace('https://github.com/', '')}</a>.
 	</p>
 </Section>
 
