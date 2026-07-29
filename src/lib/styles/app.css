@@ -99,9 +99,29 @@
 	box-sizing: border-box;
 }
 
+/*
+	The ladder as one continuous surface.
+
+	Starts at the seed so the first screen is `background`, then descends through the dark half to
+	`bg_darkest` at the foot of the page. Fixed, so the ramp reads the same however long the page gets.
+
+	This does not break the three-shades-per-viewport rule: that rule exists because *stacking*
+	adjacent shades as discrete blocks reads as noise at ~1.1:1. A gradient has no edges to read, so
+	it lands as a single surface — and every point along it is a legal background, because the
+	contract holds for all seven.
+*/
 body {
 	margin: 0;
-	background: var(--surface-page);
+	background: linear-gradient(
+			180deg,
+			var(--brand-background) 0%,
+			var(--brand-background) 22%,
+			var(--brand-bg_dark) 52%,
+			var(--brand-bg_darker) 78%,
+			var(--brand-bg_darkest) 100%
+		)
+		no-repeat;
+	background-attachment: fixed;
 	color: var(--brand-foreground);
 	font-family: var(--font-sans);
 	font-size: var(--text-base);

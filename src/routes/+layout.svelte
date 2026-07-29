@@ -91,7 +91,7 @@
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		background: color-mix(in srgb, var(--surface-page) 86%, transparent);
+		background: color-mix(in srgb, var(--brand-background) 82%, transparent);
 		backdrop-filter: blur(12px) saturate(150%);
 	}
 
@@ -146,7 +146,6 @@
 
 	footer {
 		margin-top: clamp(var(--space-8), 8vw, 5rem);
-		background: var(--brand-bg_darker);
 	}
 
 	footer p {
