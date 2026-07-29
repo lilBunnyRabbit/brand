@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { copyText } from '$lib/clipboard.svelte';
+	import Mark from '$lib/components/logo/Mark.svelte';
 	import type { SwatchView } from '$lib/brand/tokens';
+	import type { LogoVariant } from '$lib/brand/types';
 
-	let { swatch }: { swatch: SwatchView } = $props();
+	let { swatch, variant }: { swatch: SwatchView; variant?: LogoVariant } = $props();
 
 	let copied = $state<string | null>(null);
 	let timer: ReturnType<typeof setTimeout>;
@@ -18,28 +20,29 @@
 	const rest = $derived(swatch.formats.slice(1));
 </script>
 
-<article>
-	<!--
-		Name and hex on the plate, and that is deliberately all — the derivation formula and the
-		contrast ratio were more interesting to write than to read.
+<!--
+	The whole card IS the colour. No border, no chrome around it — the swatch is the object, so it
+	fills its own box and the mark sits inside it to show the colour actually carrying something.
 
-		The label colour is a binary rule rather than a luminance heuristic: shades take `foreground`,
-		everything else takes `background`. Nothing else works — on the light swatches, `foreground`,
-		`cottontail` and white all land between 1.0 and 2.4:1.
-
-		The plate is a button because clicking a colour should give you its hex; the other formats are
-		their own smaller buttons underneath, so one target never means four things.
-	-->
+	The label colour is a binary rule: shades take `foreground`, everything else takes `background`.
+	Nothing else clears AA on both halves of the palette.
+-->
+<article style="background: {swatch.hex}; color: var({swatch.labelVar});">
 	<button
 		type="button"
-		class="plate"
-		class:is-copied={copied === hex.id}
-		style="background: {swatch.hex}; color: var({swatch.labelVar});"
+		class="face"
 		aria-label="Copy {swatch.name} hex {swatch.hex}"
 		onclick={() => copy(hex.id, hex.value, `${swatch.name} hex`)}
 	>
-		<span class="name">{swatch.name}</span>
-		<span class="hex">{swatch.hex}</span>
+		{#if variant}
+			<span class="art"
+				><Mark {variant} size="1.6rem" ink="currentColor" key="sw-{swatch.name}" /></span
+			>
+		{/if}
+		<span class="meta">
+			<span class="name">{swatch.name}</span>
+			<span class="hex">{swatch.hex}</span>
+		</span>
 		<span class="said" aria-hidden="true">{copied === hex.id ? 'Copied' : 'Copy'}</span>
 	</button>
 
@@ -51,7 +54,7 @@
 				aria-label="Copy {swatch.name} as {format.label}: {format.value}"
 				onclick={() => copy(format.id, format.value, `${swatch.name} ${format.label}`)}
 			>
-				{copied === format.id ? 'Copied' : format.label}
+				{copied === format.id ? '✓' : format.label}
 			</button>
 		{/each}
 	</div>
@@ -62,22 +65,35 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		border: 1px solid var(--fg-border);
 		border-radius: var(--radius-lg);
 	}
 
-	.plate {
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		align-items: flex-start;
-		justify-content: flex-end;
-		min-height: 8rem;
+	.face {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: var(--space-3);
+		align-items: start;
+		min-height: 9rem;
 		padding: var(--space-4);
 		font: inherit;
+		color: inherit;
 		text-align: left;
 		cursor: pointer;
+		background: none;
 		border: 0;
+	}
+
+	.art {
+		display: block;
+		opacity: 0.9;
+	}
+
+	.meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		align-self: end;
+		grid-column: 1 / -1;
 	}
 
 	.name {
@@ -90,31 +106,29 @@
 		font-family: var(--font-mono);
 		font-size: var(--text-sm);
 		text-transform: uppercase;
-		opacity: 0.8;
+		opacity: 0.75;
 	}
 
 	.said {
-		margin-top: var(--space-2);
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
 		font-size: var(--text-xs);
-		font-weight: 600;
+		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		opacity: 0;
 		transition: opacity var(--dur-fast) var(--ease);
 	}
 
-	.plate:hover .said,
-	.plate:focus-visible .said,
-	.plate.is-copied .said {
-		opacity: 0.85;
+	.face:hover .said,
+	.face:focus-visible .said {
+		opacity: 0.8;
 	}
 
 	.more {
 		display: flex;
-		gap: var(--space-1);
-		padding: var(--space-2);
-		background: var(--surface-raised);
-		border-top: 1px solid var(--fg-border);
+		gap: 1px;
 	}
 
 	.more button {
@@ -122,20 +136,16 @@
 		padding: var(--space-2) var(--space-1);
 		font: inherit;
 		font-size: var(--text-xs);
-		font-weight: 600;
-		color: var(--fg-muted);
+		font-weight: 700;
+		color: inherit;
 		cursor: pointer;
-		background: transparent;
+		/* A wash of the label colour rather than a border — same hue, no extra line. */
+		background: color-mix(in srgb, currentColor 12%, transparent);
 		border: 0;
-		border-radius: var(--radius-sm);
 	}
 
-	.more button:hover {
-		color: var(--brand-foreground);
-		background: var(--surface-edge);
-	}
-
+	.more button:hover,
 	.more button.is-copied {
-		color: var(--brand-success);
+		background: color-mix(in srgb, currentColor 26%, transparent);
 	}
 </style>

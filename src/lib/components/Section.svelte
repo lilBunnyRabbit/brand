@@ -32,7 +32,6 @@
 <style>
 	section {
 		padding-block: clamp(var(--space-8), 8vw, 6rem);
-		border-top: 1px solid var(--fg-border);
 		/* Anchors must not land under the sticky header. */
 		scroll-margin-top: 5rem;
 	}

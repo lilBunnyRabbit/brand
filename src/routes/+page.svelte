@@ -12,6 +12,7 @@
 	import { meta } from '$lib/brand/config/meta';
 	import { swatches } from '$lib/brand/config/palette';
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
+	import { logoStory } from '$lib/brand/config/logo-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
 	import { lockupVision, lockupVisionSpread } from '$lib/brand/vision';
 	import {
@@ -88,22 +89,61 @@
 	title="Colour"
 	lede="Seventeen colours, all grown from a single starting colour."
 >
-	<div class="contract" class:holds={contract.holds}>
-		<p>
-			{#if contract.holds}
-				Every colour here is readable on every one of the seven backgrounds, so pick whatever feels
-				right.
-				<span class="quiet"
-					>{contract.count} combinations checked — the closest is still comfortable at
-					{contract.worst.ratio.toFixed(2)}:1.</span
-				>
-			{:else}
-				<strong>Careful — that is no longer true.</strong>
-				{contract.worst.on} on {contract.worst.shade} is down to {contract.worst.ratio.toFixed(
-					2
-				)}:1. The starting colour has moved, so the shades need re-solving.
-			{/if}
-		</p>
+	<div class="seed">
+		<div class="seed-copy">
+			<p class="seed-eyebrow">One number in, seventeen out</p>
+			<h3>
+				Everything here comes out of
+				<code>oklch(0.255 0.0233 230.47)</code>
+			</h3>
+			<p>
+				Not a mood board. Every other colour is a formula against that one — invert its lightness
+				for text, multiply its chroma by three for primary, by six for the states, step its
+				lightness up and down for the seven backgrounds. Change the seed and all seventeen move
+				together, still in tune.
+			</p>
+			<p class="seed-proof" class:bad={!contract.holds}>
+				{#if contract.holds}
+					And they stay readable: {contract.count} colour-on-background combinations, the closest still
+					comfortable at {contract.worst.ratio.toFixed(2)}:1. Pick whatever feels right.
+				{:else}
+					{contract.worst.on} on {contract.worst.shade} is down to {contract.worst.ratio.toFixed(
+						2
+					)}:1 — the seed has moved and the shades need re-solving.
+				{/if}
+			</p>
+		</div>
+
+		<ol class="chain">
+			<li style="background: var(--brand-background); color: var(--brand-foreground);">
+				<span class="chain-name">background</span>
+				<span class="chain-formula">the seed</span>
+			</li>
+			<li style="background: var(--brand-foreground); color: var(--brand-background);">
+				<span class="chain-name">foreground</span>
+				<span class="chain-formula">1 − L, C ÷ 3, H + 180</span>
+			</li>
+			<li style="background: var(--brand-tertiary); color: var(--brand-background);">
+				<span class="chain-name">tertiary</span>
+				<span class="chain-formula">C × 1</span>
+			</li>
+			<li style="background: var(--brand-secondary); color: var(--brand-background);">
+				<span class="chain-name">secondary</span>
+				<span class="chain-formula">C × 2</span>
+			</li>
+			<li style="background: var(--brand-primary); color: var(--brand-background);">
+				<span class="chain-name">primary</span>
+				<span class="chain-formula">C × 3</span>
+			</li>
+			<li style="background: var(--brand-accent); color: var(--brand-background);">
+				<span class="chain-name">accent</span>
+				<span class="chain-formula">C × 4</span>
+			</li>
+			<li style="background: var(--brand-error); color: var(--brand-background);">
+				<span class="chain-name">states</span>
+				<span class="chain-formula">C × 6</span>
+			</li>
+		</ol>
 	</div>
 
 	{#each groupViews as group (group.id)}
@@ -114,11 +154,28 @@
 			</div>
 			<div class="swatches">
 				{#each group.swatches as swatch (swatch.name)}
-					<SwatchBlock {swatch} />
+					<SwatchBlock {swatch} variant={hero} />
 				{/each}
 			</div>
 		</div>
 	{/each}
+
+	<!-- The one colour with a single job, on the one ground it is allowed on. -->
+	<div class="cotton">
+		<div class="cotton-art">
+			<Lockup variant={hero} size="7rem" key="cotton" />
+		</div>
+		<div class="cotton-copy">
+			<p class="cotton-eyebrow">The special one</p>
+			<h3>cottontail</h3>
+			<p>
+				The brightest thing in the system, named after the flash of a rabbit's tail. It has exactly
+				one job — the mark on a primary badge — and it is never text. On primary it measures 1.94:1,
+				which is fine for a logo and nothing else.
+			</p>
+			<p class="cotton-hex"><code>#e0f9ab</code> · <code>oklch(0.945 0.10332 122.47)</code></p>
+		</div>
+	</div>
 
 	<div class="group">
 		<div class="group-head">
@@ -144,6 +201,45 @@
 		</p>
 	</div>
 </Section>
+
+<!-- ─── The idea ───────────────────────────────────────────────────────── -->
+
+{#if hero}
+	<Section
+		id="idea"
+		title="The idea"
+		lede="It is a rabbit nose, not a rabbit head. Always design from the nose first — the ears are a hint, not the hero."
+	>
+		<div class="idea">
+			<div class="idea-art">
+				<Mark variant={hero} size="min(40vw, 9rem)" key="idea" />
+			</div>
+			<p class="idea-copy">{logoStory.idea}</p>
+		</div>
+
+		<ol class="steps">
+			{#each logoStory.steps as step (step.n)}
+				<li>
+					<span class="step-n">{step.n}</span>
+					<span class="step-title">{step.title}</span>
+					<span class="step-body">{step.body}</span>
+				</li>
+			{/each}
+		</ol>
+
+		<div class="misreads">
+			<h3>What it must not read as</h3>
+			<ul>
+				{#each logoStory.misreads as m (m.reads_as)}
+					<li>
+						<span class="mis-name">{m.reads_as}</span>
+						<span class="mis-fix">{m.fix}</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</Section>
+{/if}
 
 <!-- ─── Logo ───────────────────────────────────────────────────────────── -->
 
@@ -394,7 +490,8 @@
 		padding: var(--space-3) var(--space-4);
 		margin: var(--space-5) 0 0;
 		font-size: var(--text-sm);
-		border: 1px solid var(--brand-warning);
+		color: var(--on-brand);
+		background: var(--brand-warning);
 		border-radius: var(--radius-md);
 	}
 
@@ -474,6 +571,218 @@
 		color: var(--brand-warning);
 	}
 
+	/* ── the seed / maths ── */
+	.seed {
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+		gap: clamp(var(--space-5), 4vw, var(--space-8));
+		align-items: center;
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-bottom: var(--space-8);
+		background: var(--surface-well);
+		border-radius: var(--radius-lg);
+	}
+
+	.seed-eyebrow {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--brand-secondary);
+	}
+
+	.seed h3 {
+		margin: 0;
+		font-size: var(--text-xl);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+	}
+
+	.seed h3 code {
+		color: var(--brand-primary);
+	}
+
+	.seed-copy p {
+		max-width: 52ch;
+		margin: var(--space-3) 0 0;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.seed-proof {
+		color: var(--brand-primary) !important;
+	}
+
+	.seed-proof.bad {
+		color: var(--brand-error) !important;
+	}
+
+	.chain {
+		display: grid;
+		gap: 0;
+		padding: 0;
+		margin: 0;
+		overflow: hidden;
+		list-style: none;
+		border-radius: var(--radius-md);
+	}
+
+	.chain li {
+		display: flex;
+		gap: var(--space-3);
+		align-items: baseline;
+		justify-content: space-between;
+		padding: var(--space-2) var(--space-4);
+		font-size: var(--text-sm);
+	}
+
+	.chain-name {
+		font-family: var(--font-mono);
+		font-weight: 700;
+	}
+
+	.chain-formula {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		opacity: 0.85;
+	}
+
+	/* ── cottontail feature ── */
+	.cotton {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: clamp(var(--space-5), 4vw, var(--space-6));
+		align-items: center;
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+		background: var(--brand-bg_lighter);
+		border-radius: var(--radius-lg);
+	}
+
+	.cotton-eyebrow {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--brand-accent);
+	}
+
+	.cotton h3 {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-xl);
+		font-weight: 700;
+	}
+
+	.cotton-copy p {
+		max-width: 56ch;
+		margin: var(--space-3) 0 0;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.cotton-hex code {
+		font-family: var(--font-mono);
+	}
+
+	/* ── the idea ── */
+	.idea {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: clamp(var(--space-5), 4vw, var(--space-8));
+		align-items: center;
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		background: var(--surface-well);
+		border-radius: var(--radius-lg);
+	}
+
+	.idea-art {
+		color: var(--brand-primary);
+	}
+
+	.idea-copy {
+		max-width: 58ch;
+		margin: 0;
+		font-size: var(--text-lg);
+		line-height: 1.55;
+	}
+
+	.steps {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+		gap: var(--space-3);
+		padding: 0;
+		margin: var(--space-5) 0 0;
+		list-style: none;
+		counter-reset: step;
+	}
+
+	.steps li {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: var(--space-4);
+		background: var(--surface-raised);
+		border-radius: var(--radius-md);
+	}
+
+	.step-n {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		color: var(--brand-tertiary);
+	}
+
+	.step-title {
+		font-weight: 700;
+	}
+
+	.step-body {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.misreads {
+		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+	}
+
+	.misreads h3 {
+		margin: 0 0 var(--space-4);
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	.misreads ul {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: var(--space-3);
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.misreads li {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: var(--space-4);
+		background: var(--surface-raised);
+		border-radius: var(--radius-md);
+	}
+
+	.mis-name {
+		font-weight: 700;
+		color: var(--brand-accent);
+	}
+
+	.mis-fix {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
 	/* ── logo combos ── */
 	.combos {
 		display: grid;
@@ -489,7 +798,7 @@
 		align-items: flex-start;
 		padding: var(--space-5);
 		margin: 0;
-		border: 1px solid var(--fg-border);
+		background: var(--surface-raised);
 		border-radius: var(--radius-lg);
 	}
 
@@ -583,7 +892,7 @@
 		align-items: center;
 		padding: var(--space-4);
 		margin: 0;
-		border: 1px solid var(--fg-border);
+		background: var(--surface-raised);
 		border-radius: var(--radius-lg);
 	}
 
@@ -667,8 +976,9 @@
 		display: grid;
 		grid-template-columns: 1.5rem minmax(0, 1fr);
 		gap: var(--space-3);
-		padding-top: var(--space-4);
-		border-top: 1px solid var(--fg-border);
+		padding: var(--space-4);
+		background: var(--surface-raised);
+		border-radius: var(--radius-md);
 	}
 
 	/* Severity is carried by the glyph as well as by the colour. */
@@ -710,8 +1020,9 @@
 		padding: var(--space-2) var(--space-4);
 		font-size: var(--text-sm);
 		font-weight: 600;
+		color: var(--fg-muted);
 		cursor: pointer;
-		border: 1px solid var(--fg-border);
+		background: var(--surface-raised);
 		border-radius: var(--radius-pill);
 	}
 
@@ -723,7 +1034,8 @@
 	}
 
 	.fchip:hover {
-		border-color: var(--brand-foreground);
+		color: var(--brand-foreground);
+		background: var(--surface-edge);
 	}
 
 	.fchip:has(input:focus-visible) {
@@ -739,7 +1051,6 @@
 
 	.code {
 		background: var(--surface-well);
-		border: 1px solid var(--fg-border);
 		border-radius: var(--radius-lg);
 	}
 
@@ -779,7 +1090,7 @@
 		margin: 0;
 		color: var(--fg-muted);
 		text-align: center;
-		border: 1px dashed var(--fg-border);
+		background: var(--surface-raised);
 		border-radius: var(--radius-lg);
 	}
 

@@ -47,8 +47,8 @@
 		color: var(--brand-foreground);
 		text-decoration: none;
 		cursor: pointer;
-		background: transparent;
-		border: 1px solid var(--fg-border);
+		background: var(--surface-raised);
+		border: 0;
 		border-radius: 999px;
 		transition:
 			background var(--dur-fast) var(--ease),
@@ -56,7 +56,7 @@
 	}
 
 	.download:hover {
-		border-color: var(--brand-foreground);
+		background: var(--surface-edge);
 	}
 
 	/* Text on a brand fill is always the page shade — never white, which is 2.23:1 on primary. */

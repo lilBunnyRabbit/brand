@@ -1,39 +1,70 @@
-/**
- * Business card content. EDIT HERE.
- *
- * Placeholders are marked as such on the page rather than dressed up as real details, so nobody
- * sends the artwork to a printer thinking it is finished.
- */
+/** Business card. EDIT HERE. */
+import type { SwatchName } from './palette';
+
 export interface CardLine {
 	label: string;
 	value: string;
-	/** Shown struck through as a placeholder until it is real. */
 	placeholder?: boolean;
 }
 
+/** One printed colourway. Ink is the label rule: `background` on light grounds, `primary` on dark. */
+export interface CardVariant {
+	id: string;
+	/** Printer's shorthand, as it appears down the side of a spec sheet. */
+	code: string;
+	label: string;
+	/** A palette swatch, or a raw CSS colour for stock that is not in the palette (white). */
+	ground: SwatchName | string;
+	ink: SwatchName;
+	/** Secondary text colour on this ground. */
+	quiet: SwatchName;
+}
+
 export interface CardSpec {
-	/** Printed size. 85 × 55 mm is the ISO/European standard; the US equivalent is 89 × 51. */
 	widthMm: number;
 	heightMm: number;
-	/** Trim allowance to add on every edge when exporting for print. */
 	bleedMm: number;
+	name: string;
 	role: string;
 	lines: CardLine[];
-	/** Front and back grounds, by swatch name. Both must be shades. */
-	frontShade: string;
-	backShade: string;
+	variants: readonly CardVariant[];
 }
 
 export const card: CardSpec = {
 	widthMm: 85,
 	heightMm: 55,
 	bleedMm: 3,
+	name: 'Andraž',
 	role: 'Your job here',
 	lines: [
-		{ label: 'Email', value: 'hello@example.com', placeholder: true },
-		{ label: 'Web', value: 'example.com', placeholder: true },
-		{ label: 'GitHub', value: 'lilBunnyRabbit' }
+		{ label: 'email', value: 'hello@example.com', placeholder: true },
+		{ label: 'phone', value: '+1 415 555 0128', placeholder: true },
+		{ label: 'web', value: 'example.com', placeholder: true }
 	],
-	frontShade: 'bg_light',
-	backShade: 'bg_darkest'
+	variants: [
+		{
+			id: 'stock',
+			code: 'CW 1',
+			label: 'Stock',
+			ground: 'primary',
+			ink: 'background',
+			quiet: 'bg_dark'
+		},
+		{
+			id: 'brand',
+			code: 'CW 2',
+			label: 'Brand',
+			ground: '#ffffff',
+			ink: 'background',
+			quiet: 'bg_light'
+		},
+		{
+			id: 'reverse',
+			code: 'CW 3',
+			label: 'Reverse',
+			ground: 'bg_darkest',
+			ink: 'primary',
+			quiet: 'foreground'
+		}
+	]
 };

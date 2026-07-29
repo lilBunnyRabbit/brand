@@ -92,7 +92,6 @@
 		top: 0;
 		z-index: 10;
 		background: color-mix(in srgb, var(--surface-page) 86%, transparent);
-		border-bottom: 1px solid var(--fg-border);
 		backdrop-filter: blur(12px) saturate(150%);
 	}
 
@@ -147,7 +146,7 @@
 
 	footer {
 		margin-top: clamp(var(--space-8), 8vw, 5rem);
-		border-top: 1px solid var(--fg-border);
+		background: var(--brand-bg_darker);
 	}
 
 	footer p {
