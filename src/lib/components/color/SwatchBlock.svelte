@@ -7,51 +7,54 @@
 	let copied = $state<string | null>(null);
 	let timer: ReturnType<typeof setTimeout>;
 
-	async function copy(format: { id: string; label: string; value: string }) {
-		const ok = await copyText(format.value, `${swatch.name} ${format.label}`);
-		copied = ok ? format.id : null;
+	async function copy(id: string, value: string, what: string) {
+		const ok = await copyText(value, what);
+		copied = ok ? id : null;
 		clearTimeout(timer);
 		timer = setTimeout(() => (copied = null), 1600);
 	}
+
+	const hex = $derived(swatch.formats[0]);
+	const rest = $derived(swatch.formats.slice(1));
 </script>
 
 <article>
 	<!--
-		The label colour is a binary rule, not a luminance heuristic: shades take `foreground`,
+		Name and hex on the plate, and that is deliberately all — the derivation formula and the
+		contrast ratio were more interesting to write than to read.
+
+		The label colour is a binary rule rather than a luminance heuristic: shades take `foreground`,
 		everything else takes `background`. Nothing else works — on the light swatches, `foreground`,
-		`cottontail` and white all land between 1.0 and 2.4:1, and on `cottontail` only `background`
-		is legible. The measured ratio is printed so the rule is checkable rather than asserted.
+		`cottontail` and white all land between 1.0 and 2.4:1.
 
-		The plate is a div, not a button: it carries four copyable formats and one click target cannot
-		mean four things. Each format below is its own real button.
+		The plate is a button because clicking a colour should give you its hex; the other formats are
+		their own smaller buttons underneath, so one target never means four things.
 	-->
-	<div class="plate" style="background: {swatch.hex}; color: var({swatch.labelVar});">
+	<button
+		type="button"
+		class="plate"
+		class:is-copied={copied === hex.id}
+		style="background: {swatch.hex}; color: var({swatch.labelVar});"
+		aria-label="Copy {swatch.name} hex {swatch.hex}"
+		onclick={() => copy(hex.id, hex.value, `${swatch.name} hex`)}
+	>
 		<span class="name">{swatch.name}</span>
-		<span class="ratio">{swatch.labelRatio.toFixed(2)}:1</span>
-		{#if swatch.outOfGamut}
-			<span class="gamut">outside sRGB</span>
-		{/if}
-	</div>
+		<span class="hex">{swatch.hex}</span>
+		<span class="said" aria-hidden="true">{copied === hex.id ? 'Copied' : 'Copy'}</span>
+	</button>
 
-	<div class="values">
-		{#each swatch.formats as format (format.id)}
+	<div class="more">
+		{#each rest as format (format.id)}
 			<button
 				type="button"
-				class="value"
 				class:is-copied={copied === format.id}
 				aria-label="Copy {swatch.name} as {format.label}: {format.value}"
-				onclick={() => copy(format)}
+				onclick={() => copy(format.id, format.value, `${swatch.name} ${format.label}`)}
 			>
-				<span class="key">{format.label}</span>
-				<span class="val">{format.value}</span>
-				<span class="hint" aria-hidden="true">{copied === format.id ? 'Copied' : 'Copy'}</span>
+				{copied === format.id ? 'Copied' : format.label}
 			</button>
 		{/each}
 	</div>
-
-	{#if swatch.formula}
-		<p class="formula">{swatch.formula}</p>
-	{/if}
 </article>
 
 <style>
@@ -59,108 +62,80 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		background: var(--surface-raised);
 		border: 1px solid var(--fg-border);
 		border-radius: var(--radius-lg);
 	}
 
 	.plate {
 		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1) var(--space-3);
-		align-items: baseline;
-		min-height: 6.5rem;
+		flex-direction: column;
+		gap: 0.15rem;
+		align-items: flex-start;
+		justify-content: flex-end;
+		min-height: 8rem;
 		padding: var(--space-4);
-		align-content: flex-end;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		border: 0;
 	}
 
 	.name {
+		font-size: var(--text-base);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+
+	.hex {
 		font-family: var(--font-mono);
 		font-size: var(--text-sm);
-		font-weight: 700;
-	}
-
-	.ratio {
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		opacity: 0.75;
-	}
-
-	.gamut {
-		padding: 0.1rem 0.4rem;
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		border: 1px solid currentColor;
-		border-radius: var(--radius-pill);
+		opacity: 0.8;
 	}
 
-	.values {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.value {
-		display: grid;
-		grid-template-columns: 3.5rem minmax(0, 1fr) auto;
-		gap: var(--space-3);
-		align-items: center;
-		padding: var(--space-2) var(--space-4);
-		font: inherit;
-		color: inherit;
-		text-align: left;
-		cursor: pointer;
-		background: transparent;
-		border: 0;
-		border-top: 1px solid var(--fg-border);
-	}
-
-	.value:hover {
-		background: var(--surface-edge);
-	}
-
-	.key {
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--fg-muted);
-	}
-
-	.val {
-		overflow: hidden;
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.hint {
+	.said {
+		margin-top: var(--space-2);
 		font-size: var(--text-xs);
 		font-weight: 600;
-		color: var(--fg-muted);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 		opacity: 0;
 		transition: opacity var(--dur-fast) var(--ease);
 	}
 
-	.value:hover .hint,
-	.value:focus-visible .hint {
-		opacity: 1;
+	.plate:hover .said,
+	.plate:focus-visible .said,
+	.plate.is-copied .said {
+		opacity: 0.85;
 	}
 
-	.is-copied .hint {
-		color: var(--brand-success);
-		opacity: 1;
-	}
-
-	.formula {
-		padding: var(--space-2) var(--space-4);
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		line-height: 1.5;
-		color: var(--fg-muted);
+	.more {
+		display: flex;
+		gap: var(--space-1);
+		padding: var(--space-2);
+		background: var(--surface-raised);
 		border-top: 1px solid var(--fg-border);
+	}
+
+	.more button {
+		flex: 1;
+		padding: var(--space-2) var(--space-1);
+		font: inherit;
+		font-size: var(--text-xs);
+		font-weight: 600;
+		color: var(--fg-muted);
+		cursor: pointer;
+		background: transparent;
+		border: 0;
+		border-radius: var(--radius-sm);
+	}
+
+	.more button:hover {
+		color: var(--brand-foreground);
+		background: var(--surface-edge);
+	}
+
+	.more button.is-copied {
+		color: var(--brand-success);
 	}
 </style>

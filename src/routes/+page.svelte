@@ -3,16 +3,25 @@
 	import DownloadButton from '$lib/components/DownloadButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import BusinessCard from '$lib/components/card/BusinessCard.svelte';
+	import Mark from '$lib/components/logo/Mark.svelte';
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
-	import { ladderSpan } from '$lib/brand/config/palette';
+	import { ladderSpan, swatches } from '$lib/brand/config/palette';
+	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
 	import { lockupVision, lockupVisionSpread } from '$lib/brand/vision';
-	import { exportFormats, groupViews, measureContract, modifierRatio } from '$lib/brand/tokens';
+	import {
+		exportFormats,
+		groupViews,
+		measureContract,
+		modifierRatio,
+		varName
+	} from '$lib/brand/tokens';
+	import { contrastRatio } from '$lib/color';
 
 	const variants = logos.variants.filter((v) => !v.hidden);
 	const hero = variants[0];
@@ -22,10 +31,21 @@
 	// rather than continuing to claim a number that used to be true.
 	const contract = measureContract();
 
-	const swatchCount = groupViews.reduce((n, g) => n + g.swatches.length, 0);
-
 	// The sizes the brief says to check, because thin ear strokes at a 1.94:1 margin are the risk.
 	const sizes = [16, 24, 32, 48, 64];
+
+	// Ratios measured from the palette rather than written down, so they cannot drift.
+	const combos = logoCombos.map((combo) => ({
+		...combo,
+		groundVar: `var(${varName(combo.ground)})`,
+		inkVar: `var(${varName(combo.ink)})`,
+		ratio: contrastRatio(swatches[combo.ink], swatches[combo.ground])
+	}));
+
+	const inks = plainInks.map((entry) => ({
+		...entry,
+		inkVar: `var(${varName(entry.ink)})`
+	}));
 
 	const mutedOnPage = modifierRatio('foreground', 'background', 'muted');
 	const mutedOnLightest = modifierRatio('foreground', 'bg_lightest', 'muted');
@@ -49,10 +69,6 @@
 		<p class="eyebrow">Brand assets</p>
 		<h1>{meta.tagline}</h1>
 		<p class="lede">{meta.description}</p>
-		<p class="claim">
-			{swatchCount} colours, all generated from one seed —
-			<code>oklch(0.255 0.0233 230.47)</code>. Nothing was hand-picked.
-		</p>
 		{#if anyWip}
 			<p class="notice">The mark is still being drawn. Everything here is current but not final.</p>
 		{/if}
@@ -60,7 +76,7 @@
 
 	{#if hero}
 		<div class="hero-mark">
-			<Lockup variant={hero} size="min(60vw, 17rem)" key="hero" />
+			<Mark variant={hero} size="min(52vw, 14rem)" key="hero" />
 		</div>
 	{/if}
 </div>
@@ -70,7 +86,7 @@
 <Section
 	id="colours"
 	title="Colour"
-	lede="Seven surface shades, one foreground, four brand colours, one identity colour and four states. Every one derives from the seed by formula."
+	lede="Seventeen colours, all grown from a single starting colour."
 >
 	<div class="contract" class:holds={contract.holds}>
 		<p>
@@ -106,8 +122,8 @@
 		<div class="group-head">
 			<h3>Modifiers</h3>
 			<p>
-				Interaction and de-emphasis are opacity on an existing colour, never a new colour.
-				Composited in gamma sRGB, which is what a browser paints.
+				Need something quieter, or a hover state? Turn one of these down rather than reaching for a
+				new colour.
 			</p>
 		</div>
 		<ul class="mods">
@@ -132,7 +148,7 @@
 <Section
 	id="logo"
 	title="Logo"
-	lede="Cottontail ears on a primary disc. The two differ in lightness rather than hue, which is why the mark survives greyscale and colour blindness almost unchanged."
+	lede="Most of the time it is just the mark, in one colour, on whatever it is sitting on."
 >
 	{#if variants.length === 0}
 		<p class="empty">
@@ -147,16 +163,55 @@
 		{#if hero}
 			<div class="group">
 				<div class="group-head">
-					<h3>Minimum size</h3>
-					<p>
-						The ear strokes are thin and the lockup runs at 1.94:1, a narrow margin. If they mush at
-						favicon size the fix is a heavier stroke, not a different colour.
-					</p>
+					<h3>Which colour</h3>
+					<p>Three combinations. The first is the one you want almost every time.</p>
+				</div>
+
+				<div class="combos">
+					{#each combos as combo (combo.id)}
+						<figure style="background: {combo.kind === 'plain' ? combo.groundVar : 'transparent'};">
+							{#if combo.kind === 'plain'}
+								<Mark variant={hero} size="4rem" ink={combo.inkVar} key="combo-{combo.id}" />
+							{:else}
+								<Lockup
+									variant={hero}
+									size="5rem"
+									disc={combo.groundVar}
+									ink={combo.inkVar}
+									key="combo-{combo.id}"
+								/>
+							{/if}
+							<figcaption>
+								<span class="combo-label">{combo.label}</span>
+								<span class="combo-ratio">
+									{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
+								</span>
+								<span class="combo-note">{combo.note}</span>
+							</figcaption>
+						</figure>
+					{/each}
+				</div>
+
+				<ul class="inks">
+					{#each inks as entry (entry.id)}
+						<li>
+							<span class="dot" style="background: {entry.inkVar};"></span>
+							<code>{entry.ink}</code>
+							<span>{entry.note}</span>
+						</li>
+					{/each}
+				</ul>
+			</div>
+
+			<div class="group">
+				<div class="group-head">
+					<h3>Small sizes</h3>
+					<p>It is a thin mark. Worth a look before it ends up in a favicon.</p>
 				</div>
 				<div class="ladder">
 					{#each sizes as size (size)}
 						<div class="rung">
-							<Lockup variant={hero} size="{size}px" key="size-{size}" />
+							<Mark variant={hero} size="{size}px" key="size-{size}" />
 							<span>{size}px</span>
 						</div>
 					{/each}
@@ -165,11 +220,11 @@
 
 			<div class="group">
 				<div class="group-head">
-					<h3>Under simulation</h3>
+					<h3>It holds up</h3>
 					<p>
-						Measured with culori's Machado matrices. The spread across every condition is {lockupVisionSpread.toFixed(
+						In greyscale and all three kinds of colour blindness, the badge shifts by at most {lockupVisionSpread.toFixed(
 							2
-						)} — the mark barely moves, because the separation is carried by lightness.
+						)} — because the two colours differ in brightness, not hue.
 					</p>
 				</div>
 				<div class="vision">
@@ -177,7 +232,7 @@
 						<figure>
 							<Lockup
 								variant={hero}
-								size="4.5rem"
+								size="4rem"
 								disc={v.discHex}
 								ink={v.inkHex}
 								key="vision-{v.id}"
@@ -197,11 +252,7 @@
 <!-- ─── Business card ──────────────────────────────────────────────────── -->
 
 {#if hero}
-	<Section
-		id="card"
-		title="Business card"
-		lede="Front carries a small mark and the wordmark; back is the lockup alone, centred. Both faces are shades — never a brand fill, since the disc is already primary."
-	>
+	<Section id="card" title="Business card" lede="Front and back. Nothing fancy.">
 		<BusinessCard variant={hero} />
 	</Section>
 {/if}
@@ -211,7 +262,7 @@
 <Section
 	id="rules"
 	title="Don't"
-	lede="Most of these exist because equal lightness makes two colours invisible against each other. The measured ratio is given for each."
+	lede="A short list, and most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
 >
 	<div class="dont-demo">
 		<div class="demo">
@@ -247,7 +298,7 @@
 
 <!-- ─── Assets ─────────────────────────────────────────────────────────── -->
 
-<Section id="assets" title="Assets" lede="The palette in the format you need it in.">
+<Section id="assets" title="Assets" lede="Grab the palette however you need it.">
 	{#snippet actions()}
 		<DownloadButton
 			filename={active.filename}
@@ -319,8 +370,8 @@
 		font-weight: 800;
 		line-height: 0.92;
 		letter-spacing: -0.04em;
-		/* Display-scale text on any shade is cottontail's second job. */
-		color: var(--brand-cottontail);
+		/* primary, not cottontail: cottontail is ink on a primary ground and never text. */
+		color: var(--brand-primary);
 	}
 
 	.lede {
@@ -420,6 +471,75 @@
 		margin: var(--space-4) 0 0;
 		font-size: var(--text-sm);
 		color: var(--brand-warning);
+	}
+
+	/* ── logo combos ── */
+	.combos {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: var(--space-4);
+		margin-top: var(--space-5);
+	}
+
+	.combos figure {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		align-items: flex-start;
+		padding: var(--space-5);
+		margin: 0;
+		border: 1px solid var(--fg-border);
+		border-radius: var(--radius-lg);
+	}
+
+	.combos figcaption {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.combo-label {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.combo-ratio {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	.combo-note {
+		max-width: 34ch;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.inks {
+		display: grid;
+		gap: var(--space-2);
+		padding: 0;
+		margin: var(--space-5) 0 0;
+		font-size: var(--text-sm);
+		list-style: none;
+	}
+
+	.inks li {
+		display: flex;
+		gap: var(--space-3);
+		align-items: baseline;
+		color: var(--fg-muted);
+	}
+
+	.dot {
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 50%;
+	}
+
+	.quiet {
+		color: var(--fg-muted);
 	}
 
 	/* ── size ladder ── */
@@ -606,7 +726,7 @@
 	}
 
 	.fchip:has(input:focus-visible) {
-		outline: 2px solid var(--brand-info);
+		outline: 2px solid var(--brand-primary);
 		outline-offset: 2px;
 	}
 

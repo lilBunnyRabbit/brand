@@ -2,7 +2,7 @@
 	import '$lib/styles/app.css';
 
 	import Announcer from '$lib/components/Announcer.svelte';
-	import Lockup from '$lib/components/logo/Lockup.svelte';
+	import Mark from '$lib/components/logo/Mark.svelte';
 	import { brandStyleSheet } from '$lib/brand/tokens';
 	import { home, sections } from '$lib/brand/nav';
 	import { logos } from '$lib/brand/discover';
@@ -41,7 +41,8 @@
 	<div class="inner">
 		<a class="brand" href={home()}>
 			{#if mark}
-				<Lockup variant={mark} size="1.75rem" key="header" />
+				<!-- Chrome: the bare mark in `foreground`, sitting next to the wordmark. -->
+				<Mark variant={mark} size="1.4rem" ink="var(--brand-foreground)" key="header" />
 			{/if}
 			<span class="wordmark">{meta.name}</span>
 		</a>

@@ -19,61 +19,61 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'no-light-mode',
 		rule: 'No light mode.',
-		why: 'Designed but not built. Nothing here should be inverted to fake one, and there is no toggle.',
+		why: 'Designed, but not built yet. Please do not invent one by inverting things.',
 		severity: 'never'
 	},
 	{
 		id: 'nothing-on-white',
 		rule: 'Nothing brand-coloured on white.',
-		why: 'primary is 2.23:1 on white and cottontail is 1.15:1 — the mark’s edge simply disappears.',
+		why: 'They vanish. On white, primary is 2.23:1 and cottontail is 1.15:1. Use background instead.',
 		severity: 'never'
 	},
 	{
 		id: 'no-adjacent-brand',
 		rule: 'No two brand colours adjacent or layered.',
-		why: 'foreground, the four brand colours and all four states sit at lightness 0.745, so any pair is roughly 1:1. Separate them with a gap of the page shade or a border.',
+		why: 'They are all the same brightness, so side by side they blur into one shape. A gap or a border fixes it.',
 		severity: 'never'
 	},
 	{
 		id: 'no-brand-gradients',
 		rule: 'No gradients between brand colours.',
-		why: 'Equal lightness means no luminance travel, so the gradient reads as mud. Between two shades is fine.',
+		why: 'Same brightness means the gradient has nowhere to travel, and it comes out muddy. Between two shades is lovely.',
 		severity: 'never'
 	},
 	{
 		id: 'no-white-on-brand',
 		rule: 'No white text on a brand fill.',
-		why: 'White on primary is 2.23:1. Text on any brand fill is background #17252c — 6.55 to 7.06, all AA.',
+		why: 'White on primary is 2.23:1. Use background #17252c and you get 6.55 to 7.06 instead.',
 		severity: 'never'
 	},
 	{
 		id: 'no-new-colours',
 		rule: 'Do not add colours.',
-		why: 'Anything apparently missing is an opacity modifier on an existing colour, or a shade.',
+		why: 'Whatever seems to be missing is either a shade or an existing colour turned down.',
 		severity: 'never'
 	},
 	{
 		id: 'no-retinting',
 		rule: 'Do not re-tint the greys.',
-		why: 'The shades carry hue 230 and the brand carries 122. They are meant to differ.',
+		why: 'The backgrounds are blue and the brand is green on purpose. Leave them be.',
 		severity: 'never'
 	},
 	{
 		id: 'three-shades',
 		rule: 'No more than three shades per viewport.',
-		why: 'Adjacent shades are about 1.1:1 apart, so stacking them reads as noise rather than structure.',
+		why: 'Neighbours are only about 1.1:1 apart, so a fourth one stops reading as structure.',
 		severity: 'care'
 	},
 	{
 		id: 'muted-text',
 		rule: 'Muted text is for captions, not content.',
-		why: 'foreground at 65% is 3.76:1 on the page shade — AA-large only — and drops to about 2.96 on the lightest shade.',
+		why: 'At 65% it is 3.76:1 on the page and 2.96 on the lightest shade. Fine for a caption, not for anything important.',
 		severity: 'care'
 	},
 	{
 		id: 'logo-exempt',
 		rule: 'Do not “fix” the logo’s contrast.',
-		why: 'cottontail on primary is 1.94:1 and that is deliberate. WCAG exempts logotypes (SC 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
+		why: 'The bright badge is 1.94:1 on purpose — logos are exempt (WCAG 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
 		severity: 'never'
 	}
 ];

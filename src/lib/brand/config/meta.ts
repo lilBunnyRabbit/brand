@@ -21,10 +21,10 @@ export interface BrandMeta {
 
 export const meta: BrandMeta = {
 	name: 'lilBunnyRabbit',
-	tagline: 'The mark and the palette.',
+	tagline: 'Take what you need.',
 	description:
-		'Brand assets for lilBunnyRabbit — logo variants and the colour palette, with everything ' +
-		'available to copy or download.',
+		'The mark, the colours, and a handful of rules. Everything on this page can be copied or ' +
+		'downloaded — help yourself.',
 	links: [
 		{ label: 'GitHub', href: 'https://github.com/lilBunnyRabbit' },
 		{ label: 'Repo', href: 'https://github.com/lilBunnyRabbit/brand' }

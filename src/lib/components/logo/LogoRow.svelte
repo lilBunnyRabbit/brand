@@ -8,21 +8,17 @@
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
 	import DownloadButton from '$lib/components/DownloadButton.svelte';
-	import Lockup from '$lib/components/logo/Lockup.svelte';
+	import Mark from '$lib/components/logo/Mark.svelte';
 	import type { LogoVariant } from '$lib/brand/types';
 
 	let { variant }: { variant: LogoVariant } = $props();
 
 	/*
-		The mark on several shades, to show the lockup holding.
+		The main logo is the plain mark on a shade — no disc, one colour. `primary` on any of the seven
+		shades, since primary is part of the AA contract; `background` on a light ground.
 
 		Three shades, not seven: adjacent shades are about 1.1:1 apart, so more than three in a
-		viewport reads as noise rather than as a demonstration. These three span the ladder's reach —
-		lightest, the seed, darkest — which is the interesting comparison.
-
-		No white ground here, deliberately. The primary disc is 2.23:1 on white and its edge
-		disappears; a light-ground variant has to swap the disc to `background`, which is what the
-		fourth tile shows.
+		viewport reads as noise rather than as a demonstration. These three span the ladder's reach.
 	*/
 	const grounds = [
 		{ id: 'lightest', label: 'bg_lightest', bg: 'var(--brand-bg_lightest)' },
@@ -35,14 +31,14 @@
 	<div class="grounds">
 		{#each grounds as ground (ground.id)}
 			<figure style="background: {ground.bg};">
-				<Lockup {variant} size="5.5rem" key={ground.id} />
+				<Mark {variant} size="4.5rem" key={ground.id} />
 				<figcaption>{ground.label}</figcaption>
 			</figure>
 		{/each}
 
-		<!-- The light-ground variant: disc swapped to `background`, 15.70:1 against the ears. -->
+		<!-- Light ground: the ink becomes `background`, 15.70:1. `primary` here would be 2.23. -->
 		<figure style="background: #ffffff;">
-			<Lockup {variant} size="5.5rem" disc="var(--brand-background)" key="onlight" />
+			<Mark {variant} size="4.5rem" ink="var(--brand-background)" key="onlight" />
 			<figcaption class="on-light">light ground</figcaption>
 		</figure>
 	</div>
@@ -73,12 +69,12 @@
 				</dd>
 			</div>
 			<div>
-				<dt>Ears</dt>
-				<dd>cottontail, via <code>currentColor</code></dd>
+				<dt>On any shade</dt>
+				<dd>primary — 7.06:1 on the page</dd>
 			</div>
 			<div>
-				<dt>Disc</dt>
-				<dd>primary on dark, background on light</dd>
+				<dt>On a light ground</dt>
+				<dd>background — 15.70:1</dd>
 			</div>
 		</dl>
 
@@ -126,7 +122,7 @@
 		color: var(--fg-muted);
 	}
 
-	/* The one place on the page with a light ground, so the caption cannot use --fg-muted. */
+	/* The one light ground on the page, so the caption cannot use --fg-muted. */
 	.on-light {
 		color: var(--brand-background);
 	}

@@ -1,7 +1,7 @@
 /**
  * Generate `static/favicon.svg` from a mark in `src/lib/brand/logos/`.
  *
- *   bun run favicon [source-file] [ink-swatch]
+ *   bun run favicon [source-file] [ink-swatch] [disc-swatch|none]
  *
  * Derived rather than hand-edited so it can never drift from the mark. Three deliberate
  * differences from the inlined form:
@@ -31,20 +31,24 @@ import { swatches, type SwatchName } from '../src/lib/brand/config/palette';
 const root = join(import.meta.dir, '..');
 const source = process.argv[2] ?? 'lilbunnyrabbit.mark.v6.wip.svg';
 
-/**
- * `primary` by default: at L=0.745 it is mid-lightness, so it stays visible against both light and
- * dark browser chrome. A dark ink would vanish in a dark tab strip and vice versa.
- */
+/** `primary`: the main logo colour, and mid-lightness so it reads on most browser chrome. */
 const inkName = (process.argv[3] ?? 'primary') as SwatchName;
 const ink = swatches[inkName];
 if (!ink) {
 	throw new Error(`Unknown swatch "${inkName}". One of: ${Object.keys(swatches).join(', ')}`);
 }
 
-const discName = (process.argv[4] ?? 'primary') as SwatchName;
-const disc = swatches[discName];
-if (!disc) {
-	throw new Error(`Unknown swatch "${discName}". One of: ${Object.keys(swatches).join(', ')}`);
+/**
+ * No disc by default: the logo is the bare mark almost everywhere, and the favicon is no exception.
+ *
+ * The trade-off is worth stating once. Transparent, the mark inherits nothing, so it is `primary` on
+ * whatever the browser puts behind it — 7.06:1 on a dark tab strip, but only 2.23:1 on a light one.
+ * Pass a disc swatch (e.g. `primary`) to get a self-contained badge that ignores the chrome.
+ */
+const discArg = process.argv[4] ?? 'none';
+const disc = discArg === 'none' ? null : swatches[discArg as SwatchName];
+if (discArg !== 'none' && !disc) {
+	throw new Error(`Unknown swatch "${discArg}". One of: none, ${Object.keys(swatches).join(', ')}`);
 }
 
 const from = join(root, 'src', 'lib', 'brand', 'logos', source);
@@ -63,9 +67,7 @@ mark = freezeAnimation(mark);
 mark = toCurrentColor(mark).svg;
 mark = setRootColor(mark, ink.hex);
 
-// Compose the lockup: the ears on a disc. Without the disc the favicon is cottontail on
-// transparent, which is 1.15:1 against a light tab strip — i.e. invisible.
-let out = composeLockup(mark, sourceAudit.viewBox, disc.hex);
+let out = disc ? composeLockup(mark, sourceAudit.viewBox, disc.hex) : mark;
 
 const audit = auditSvg(out);
 if (isAnimated(out)) throw new Error(`${source} is still animated after freezing`);
@@ -75,11 +77,12 @@ if (audit.danglingRefs.length) {
 if (audit.currentColorCount === 0 && audit.paintColors.length === 0) {
 	throw new Error(`${source} has no paint at all — nothing would render`);
 }
-if (!out.includes('<circle')) throw new Error('lost the disc while composing');
+if (disc && !out.includes('<circle')) throw new Error('lost the disc while composing');
 
 writeFileSync(to, out.endsWith('\n') ? out : `${out}\n`);
 console.log(
-	`favicon.svg <- ${source} (frozen, ${discName} disc ${disc.hex}, ${inkName} ears ${ink.hex}, ${audit.bytes} B)`
+	`favicon.svg <- ${source} (frozen, ${inkName} ${ink.hex}` +
+		`${disc ? `, on a ${discArg} disc ${disc.hex}` : ', no disc'}, ${audit.bytes} B)`
 );
 
 /**

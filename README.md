@@ -75,13 +75,31 @@ paints. Muted text is AA-large at best — captions only, and not on the lightes
 
 ## The logo
 
-`cottontail` ears on a `primary` disc, **1.94:1**, which is deliberate. WCAG exempts logotypes
-(SC 1.4.3, 1.4.11), so there is no stroke, no shadow and no lighter green. It works because the two
-colours differ in _lightness_ rather than hue: under greyscale and all three dichromacies the ratio
-moves by at most 0.01. The page renders those simulations and prints the measured values.
+Most of the time it is **just the mark, in one colour**, straight onto whatever it sits on. No disc,
+no ground of its own.
 
-On a light ground the disc becomes `background` instead — `primary` is 2.23:1 on white and the
-disc's edge disappears.
+| ink          | where                                                                                |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `primary`    | anywhere it should read as the brand — 7.06:1 on the page shade, and AA on all seven |
+| `foreground` | navigation and other chrome, beside the wordmark                                     |
+| `background` | on a light or white ground, where primary would vanish (2.23:1)                      |
+
+Three sanctioned combinations, in order of how often you want them:
+
+| combination              | form                                                   | ratio           |
+| ------------------------ | ------------------------------------------------------ | --------------- |
+| `background` + `primary` | the bare mark on a shade — **the default**             | 7.06            |
+| `primary` + `background` | flipped, as a filled badge that carries its own ground | 7.06            |
+| `primary` + `cottontail` | the bright badge                                       | 1.94, logo only |
+
+**`cottontail` is never text.** Its only job is the mark on a primary ground. On a primary fill it is
+1.94:1, which is a logotype allowance (WCAG exempts logotypes, SC 1.4.3 and 1.4.11) and nothing more
+— so no stroke, no shadow, no lighter green, and no headlines. That combination survives greyscale
+and all three dichromacies almost unchanged, because the two colours differ in _brightness_ rather
+than hue; the page renders those simulations with measured values.
+
+The site's own chrome sticks to the triplet — `background`, `primary`, `cottontail` — plus
+`foreground` for text. The other colours appear only as documented swatches and in the Don't demo.
 
 ## How to change things
 

@@ -28,7 +28,7 @@ export const card: CardSpec = {
 	widthMm: 85,
 	heightMm: 55,
 	bleedMm: 3,
-	role: 'Placeholder role',
+	role: 'Your job here',
 	lines: [
 		{ label: 'Email', value: 'hello@example.com', placeholder: true },
 		{ label: 'Web', value: 'example.com', placeholder: true },

@@ -6,38 +6,35 @@
 		variant,
 		/** Disc diameter. */
 		size = '8rem',
-		/** The disc colour. `primary` on any dark ground; `background` on a light one. */
 		disc = 'var(--brand-primary)',
-		/** The ear colour. */
 		ink = 'var(--brand-cottontail)',
-		/** Drop the disc and render the mark alone, inked in `ink`. */
-		bare = false,
 		key = 'lockup'
 	}: {
 		variant: LogoVariant;
 		size?: string;
 		disc?: string;
 		ink?: string;
-		bare?: boolean;
 		key?: string;
 	} = $props();
 
 	/*
-		The lockup is cottontail ears on a primary disc — 1.94:1, which is deliberate and correct.
-		WCAG exempts logotypes (SC 1.4.3, 1.4.11), and the pair holds up under greyscale and all three
-		dichromacies because the two colours differ in LIGHTNESS rather than hue. A two-hue mark would
-		look richer and vanish in half those conditions. Nothing here adds a stroke or a shadow to
-		"fix" the ratio.
+		THE EXTRA CASE, not the default.
+
+		Two-tone: cottontail ears on a primary disc, 1.94:1. The main logo is the single-colour mark
+		on a shade (`Mark.svelte`, 7.06:1) — this is the version for places that want a filled badge,
+		and it comes with a caveat.
+
+		1.94 is deliberate and correct: WCAG exempts logotypes (SC 1.4.3, 1.4.11), so there is no
+		stroke, no shadow and no lighter green. It holds up because the two colours differ in
+		LIGHTNESS rather than hue, so it barely moves under greyscale or any dichromacy — which a
+		two-hue mark would not. It is a logotype allowance and never a text allowance: no small text in
+		cottontail on a primary fill.
 	*/
 	const uid = $props.id();
 	const art = $derived(instantiateSvg(variant.frozen, `${uid}-${key}`));
 </script>
 
-<div
-	class="lockup"
-	class:bare
-	style="--disc: {disc}; --ink: {ink}; --size: {size}; --aspect: {variant.viewBox?.aspect ?? 1};"
->
+<div class="lockup" style="--disc: {disc}; --size: {size}; color: {ink};">
 	<span class="ears">{@html art}</span>
 </div>
 
@@ -49,22 +46,11 @@
 		height: var(--size);
 		background: var(--disc);
 		border-radius: 50%;
-		/* The ears read currentColor, so one declaration inks them. */
-		color: var(--ink);
-	}
-
-	.bare {
-		background: none;
-		border-radius: 0;
 	}
 
 	.ears {
 		display: block;
 		width: 58%;
-	}
-
-	.bare .ears {
-		width: 100%;
 	}
 
 	.ears :global(svg) {

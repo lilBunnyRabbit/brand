@@ -117,13 +117,12 @@ a {
 /*
 	One global focus ring.
 
-	`info` rather than a brand colour: it is the only high-chroma colour in the system with a hue far
-	from both the shades (230) and primary (122), so the ring never risks reading as part of whatever
-	it is outlining. The inner ring is the page shade, which keeps it visible when the outlined thing
-	sits on a brand fill — the outer ring alone would be brand-on-brand, roughly 1:1.
+	`primary`. Not cottontail, even though it is brighter: cottontail is only ever used as ink on a
+	primary ground, and a ring floating on a shade would break that. The inner ring is the page shade,
+	which keeps the outline visible when the focused thing is itself a primary fill.
 */
 :focus-visible {
-	outline: 2px solid var(--brand-info);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 2px;
 	box-shadow: 0 0 0 2px var(--surface-page);
 }

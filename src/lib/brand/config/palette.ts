@@ -11,7 +11,7 @@
  *   7 surface shades    the elevation ladder
  *   1 foreground        all body copy
  *   4 brand             hue is identity, chroma is rank
- *   1 identity          cottontail — the brightest thing in the system
+ *   1 identity          cottontail — the badge ink, only ever on primary
  *   4 states            fixed cultural hues
  *
  * THE CONTRACT: every one of the 10 non-shade colours clears WCAG AA (4.5:1) against every one of
@@ -107,8 +107,10 @@ const shade = (name: string, l: number, formula: string) =>
 /* ── 6b. Identity ───────────────────────────────────────────────────────── */
 
 /**
- * cottontail — the brightest colour in the system, the light half of the logo lockup, and display
- * text on any shade.
+ * cottontail — the brightest colour in the system, and the ink of the two-tone badge.
+ *
+ * Used ONLY as the mark on a primary ground. Never as text, anywhere: on a primary fill it is
+ * 1.94:1, which is a logotype allowance and nothing more.
  *
  * Lightness is two ladder spans above the text colour: it has to clear L 0.94 or the ears stop
  * reading on the disc. Chroma is 60% of the sRGB boundary at that lightness and hue — expressed as
@@ -214,41 +216,36 @@ export const groups: readonly PaletteGroup[] = [
 		id: 'surfaces',
 		label: 'Surfaces',
 		description:
-			'The elevation ladder, and the only legal section backgrounds. One hue; chroma rises with ' +
-			'lightness, so lighter shades look elevated and darker ones recede — a card one step up, a ' +
-			'well one step down. Never more than three in a viewport: adjacent shades are about 1.1:1 ' +
-			'apart and stack into noise.',
+			'Seven shades of the same deep blue-grey. Pick any of them for a background — three at a ' +
+			'time is plenty.',
 		swatches: shadeNames
 	},
 	{
 		id: 'content',
 		label: 'Content',
-		description: 'All body copy, all UI text.',
+		description: 'For everything you read.',
 		swatches: ['foreground']
 	},
 	{
 		id: 'brand',
 		label: 'Brand',
 		description:
-			'All four sit at the same lightness and differ only in hue and chroma, so chroma alone ' +
-			'encodes rank: tertiary is quietest, accent loudest. That also means no two of them may ' +
-			'touch — any pair is roughly 1:1.',
+			'Four colours at the same brightness, so none of them shouts. Give them a little space and ' +
+			'they get along.',
 		swatches: ['tertiary', 'secondary', 'primary', 'accent']
 	},
 	{
 		id: 'identity',
 		label: 'Identity',
 		description:
-			'The brightest colour in the system, and the light half of the logo lockup. Same hue family ' +
-			'as primary, lifted two ladder spans. Also display-scale text on any shade.',
+			"The brightest thing here, named after the flash of a rabbit's tail. It has exactly one job: " +
+			'the mark on a primary badge. Never text.',
 		swatches: ['cottontail']
 	},
 	{
 		id: 'states',
 		label: 'States',
-		description:
-			'Fixed cultural hues at the top of the chroma ladder. On a brand page these are ' +
-			'documentation — shown, not used as decoration.',
+		description: 'The familiar four. Here for reference, not decoration.',
 		swatches: ['success', 'warning', 'error', 'info']
 	}
 ];

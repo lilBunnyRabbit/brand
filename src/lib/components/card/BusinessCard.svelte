@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Lockup from '$lib/components/logo/Lockup.svelte';
+	import Mark from '$lib/components/logo/Mark.svelte';
 	import { card } from '$lib/brand/config/card';
 	import { meta } from '$lib/brand/config/meta';
 	import { varName } from '$lib/brand/tokens';
@@ -8,12 +8,13 @@
 	let { variant }: { variant: LogoVariant } = $props();
 
 	/*
-		Shade budget. The section sits on `background`, the front is `bg_light` and the back is
-		`bg_darkest` — three shades, which is exactly the ceiling. Adjacent shades are about 1.1:1
-		apart, so a fourth here would read as noise rather than as structure.
+		Plain mark on both faces — no disc. The disc combos are for badges that need to carry their own
+		ground; a card already has one.
 
-		Both faces are shades, never a brand fill: a full-bleed primary card would put the wordmark
-		in `background` and leave no room for the lockup, whose disc is also primary.
+		Shade budget: the section sits on `background`, the front is `bg_light` and the back is
+		`bg_darkest`. Three shades, which is the ceiling — neighbours are close enough that a fourth
+		would read as noise rather than structure. Neither face is a brand fill, so the mark can stay
+		primary on both.
 	*/
 	const front = `var(${varName(card.frontShade)})`;
 	const back = `var(${varName(card.backShade)})`;
@@ -23,9 +24,7 @@
 <div class="faces" style="--front: {front}; --back: {back}; --ratio: {ratio};">
 	<figure>
 		<div class="face front">
-			<!-- Small mark, top-left. Kept well clear of the wordmark: the disc is primary and
-			     cottontail text beside it would be two brand colours touching. -->
-			<Lockup {variant} size="2.25rem" key="card-front" />
+			<Mark {variant} size="1.85rem" key="card-front" />
 
 			<div class="identity">
 				<p class="name">{meta.name}</p>
@@ -46,16 +45,16 @@
 
 	<figure>
 		<div class="face back">
-			<Lockup {variant} size="min(46%, 5.5rem)" key="card-back" />
+			<Mark {variant} size="min(42%, 5rem)" key="card-back" />
 		</div>
 		<figcaption>Back · {card.backShade}</figcaption>
 	</figure>
 </div>
 
 <p class="spec">
-	{card.widthMm} × {card.heightMm} mm, the ISO standard. Add {card.bleedMm} mm bleed on every edge for
-	print. Assumes dark stock — on white the disc has to become <code>background</code>, since primary
-	is 2.23:1 on white.
+	{card.widthMm} × {card.heightMm} mm, the usual size. Add {card.bleedMm} mm bleed on every edge for print.
+	Printed on dark stock — on a light card the mark becomes <code>background</code> instead, since primary
+	all but disappears on white.
 </p>
 
 <style>
@@ -108,8 +107,6 @@
 		font-weight: 700;
 		line-height: 1.05;
 		letter-spacing: -0.03em;
-		/* Display-scale text, which is cottontail's second job. */
-		color: var(--brand-cottontail);
 	}
 
 	.role {
@@ -144,7 +141,7 @@
 	/* Marked, not disguised — so nobody prints a draft. */
 	.placeholder {
 		text-decoration: line-through;
-		text-decoration-color: var(--brand-accent);
+		text-decoration-color: var(--brand-primary);
 		text-decoration-thickness: 1px;
 	}
 
