@@ -139,4 +139,14 @@
 			gap: var(--space-5);
 		}
 	}
+
+	@media (max-width: 480px) {
+		figure {
+			padding: var(--space-5) var(--space-2) var(--space-3);
+		}
+
+		figcaption {
+			font-size: 0.58rem;
+		}
+	}
 </style>

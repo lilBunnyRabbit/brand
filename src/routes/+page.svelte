@@ -523,14 +523,14 @@
 
 	.swatches {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
 		gap: var(--space-4);
 		margin-top: var(--space-5);
 	}
 
 	.mods {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 		gap: var(--space-2) var(--space-5);
 		padding: 0;
 		margin: var(--space-5) 0 0;
@@ -577,6 +577,8 @@
 
 	.seed h3 code {
 		color: var(--brand-primary);
+		/* The oklch() literal is longer than a phone is wide. */
+		overflow-wrap: anywhere;
 	}
 
 	.seed-copy p {
@@ -613,10 +615,11 @@
 
 	.chain li {
 		display: flex;
-		gap: var(--space-3);
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-3);
 		align-items: baseline;
 		justify-content: space-between;
-		padding: var(--space-2) var(--space-4);
+		padding: var(--space-2) var(--space-3);
 		font-size: var(--text-sm);
 	}
 
@@ -813,7 +816,7 @@
 	/* ── vision ── */
 	.vision {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
 		gap: var(--space-4);
 		margin-top: var(--space-5);
 	}
@@ -860,7 +863,7 @@
 	.bad,
 	.good {
 		display: flex;
-		padding: var(--space-5);
+		padding: clamp(var(--space-3), 4vw, var(--space-5));
 		background: var(--surface-well);
 		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
@@ -876,9 +879,11 @@
 	}
 
 	.chip {
-		padding: var(--space-2) var(--space-4);
+		flex: 1;
+		padding: var(--space-2) var(--space-3);
 		font-family: var(--font-mono);
 		font-size: var(--text-xs);
+		text-align: center;
 		/* Text on a brand fill is always the page shade. Never white. */
 		color: var(--on-brand);
 	}
@@ -1044,6 +1049,32 @@
 		.hero-mark {
 			order: -1;
 			justify-items: start;
+		}
+
+		/* Both of these were two-column at every width, including 360px. */
+		.seed,
+		.cotton {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.cotton-art {
+			justify-self: start;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.ladder {
+			gap: var(--space-4);
+			padding: var(--space-4);
+		}
+
+		.rules li {
+			grid-template-columns: 1.25rem minmax(0, 1fr);
+			padding: var(--space-3);
+		}
+
+		summary {
+			flex-wrap: wrap;
 		}
 	}
 </style>

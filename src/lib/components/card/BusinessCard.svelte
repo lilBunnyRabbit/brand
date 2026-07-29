@@ -149,7 +149,7 @@
 		color: var(--fg-muted);
 	}
 
-	@media (max-width: 760px) {
+	@media (max-width: 860px) {
 		.row {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		}
@@ -159,6 +159,17 @@
 			gap: var(--space-3);
 			align-items: baseline;
 			grid-column: 1 / -1;
+		}
+	}
+
+	/*
+		Below this, two cards share the width and each face is under 160px — at 4cqi the contact lines
+		render around 6px. One card per row instead, so the front is legible at the size it is shown.
+	*/
+	@media (max-width: 620px) {
+		.row {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-3);
 		}
 	}
 </style>

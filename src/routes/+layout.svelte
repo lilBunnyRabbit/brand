@@ -125,6 +125,38 @@
 		gap: var(--space-1);
 	}
 
+	/*
+		Six section links do not fit beside the wordmark on a phone. They scroll horizontally in their
+		own strip rather than wrapping — wrapping pushed the header to ~104px and put every anchor
+		underneath it.
+	*/
+	@media (max-width: 720px) {
+		.inner {
+			flex-wrap: nowrap;
+			gap: var(--space-3);
+		}
+
+		nav {
+			overflow-x: auto;
+			scrollbar-width: none;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		nav::-webkit-scrollbar {
+			display: none;
+		}
+
+		nav a {
+			padding-inline: var(--space-2);
+			white-space: nowrap;
+		}
+
+		footer .inner {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+
 	nav a {
 		padding: var(--space-2) var(--space-3);
 		font-size: var(--text-sm);
