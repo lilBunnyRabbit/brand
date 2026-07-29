@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+	Synthetic fixture, not a brand asset.
+
+	It reproduces the structural shape that `freezeAnimation` and `namespaceIds` exist to handle,
+	so that coverage survives independently of whatever is currently in brand/logos/:
+
+	  - root width/height in a relative unit, plus a root `style` locking `color`
+	  - masks whose ids are generic enough to collide with any other file's
+	  - stroke-draw animation via stroke-dasharray + <animate> on stroke-dashoffset
+	  - one mask authored fully HIDDEN (dashoffset != 0), which is the case where dropping
+	    <animate> without rewriting the offset silently loses part of the mark
+	  - visible paint via fill="currentColor"
+-->
+<svg
+   viewBox="0 0 24 24"
+   fill="none"
+   width="30%"
+   height="30%"
+   xmlns="http://www.w3.org/2000/svg"
+   style="color: #ff0000; background-color: #000000;">
+   <defs>
+      <mask id="top-mask">
+         <path
+            fill="none"
+            stroke="white"
+            stroke-width="2.5"
+            stroke-dasharray="20 20"
+            stroke-dashoffset="0"
+            d="M 4,4 L 20,4">
+            <animate
+               attributeName="stroke-dashoffset"
+               values="0;-20;-40;-40"
+               keyTimes="0;0.3333;0.6666;1"
+               dur="1500ms"
+               repeatCount="indefinite" />
+         </path>
+      </mask>
+
+      <mask id="bottom-mask">
+         <path
+            fill="none"
+            stroke="white"
+            stroke-width="2.5"
+            stroke-dasharray="20 20"
+            stroke-dashoffset="20"
+            d="M 4,20 L 20,20">
+            <animate
+               attributeName="stroke-dashoffset"
+               values="20;0;0;-20"
+               keyTimes="0;0.3333;0.6666;1"
+               dur="1500ms"
+               repeatCount="indefinite" />
+         </path>
+      </mask>
+   </defs>
+
+   <path id="top" mask="url(#top-mask)" fill="currentColor" d="M 4,2 h 16 v 4 h -16 z" />
+   <path id="bottom" mask="url(#bottom-mask)" fill="currentColor" d="M 4,18 h 16 v 4 h -16 z" />
+</svg>

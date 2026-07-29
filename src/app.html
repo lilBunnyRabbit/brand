@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<!--
+			No apple-touch-icon yet: it has to be a PNG, and rasterising the mark arrives with
+			PngExport in Phase 7. Linking one before it exists makes the prerenderer fail on a
+			404 — which is the correct behaviour, so it stays out until the file is real.
+		-->
+		<!--
+			Title, description, theme-color, OG and Twitter tags are all emitted from the brand
+			config via <Meta /> and +layout.svelte, so none of them are duplicated here.
+			Nothing brand-derived is hardcoded in this file.
+		-->
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

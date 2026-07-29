@@ -1,0 +1,14 @@
+# Package Managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+
+# Miscellaneous
+/static/
+
+# Brand assets — the SVGs are exported artefacts. Reformatting them would produce
+# noisy diffs against the next export from the design tool.
+/src/lib/brand/logos/
+/src/lib/brand/fonts/
