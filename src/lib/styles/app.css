@@ -1,69 +1,95 @@
 @import 'tailwindcss';
 
 /*
-	Page surface vs brand palette.
+	DARK ONLY.
 
-	The palette being documented is dark-first — `background` is #17252c. The PAGE, though, is
-	light: a brand guide is a document, and this one follows the reference it was modelled on. Those
-	two facts are not in conflict as long as the roles stay separate:
+	There is no light mode and no toggle. `color-scheme: dark` is declared, not negotiated, and no
+	`prefers-color-scheme` block exists anywhere in this file — a light mode is designed but not
+	built, so there is nothing to fall back to.
 
-	  --brand-*   the palette itself, emitted from config/palette.ts by tokens.ts. Content.
-	  --page-*    the document's own surface. Chrome.
+	The page surface IS the palette. Unlike the earlier light draft, there is no separate `--page-*`
+	vocabulary to keep in step: `--surface-*` below points straight at shades, and every one of them
+	is a legal section background because the contract holds for all seven. That is the point of the
+	ladder — a section can change shade without anything needing re-checking.
 
-	So the page reads as paper, and the palette appears on it as subject matter — including its own
-	dark background, shown as a swatch and used as the "on dark" logo tile. The brand colours still
-	drive every interactive accent, which is exactly what the reference does with its one accent
-	colour on white.
-
-	Deliberately NOT doing the "chrome renders from the documented tokens" trick here. On a light
-	page it would mean picking page text out of a dark palette, and `primary` at L=0.745 on white is
-	roughly 2:1 — nowhere near readable. Interactive elements use the dark end of the palette, where
-	the contrast is real.
+	The 17 colours themselves are emitted from `brand/tokens.ts` into <svelte:head> at prerender.
 */
 
 :root {
-	color-scheme: light;
+	color-scheme: dark;
 
-	--page-bg: #ffffff;
-	--page-surface: #f6f7f8;
-	/* The palette's darkest surface, borrowed as ink: same hue family, genuinely readable. */
-	--page-fg: #0d1b21;
-	--page-fg-muted: #4a5a61;
-	--page-fg-subtle: #77868c;
-	--page-border: #e3e6e8;
+	/* Section backgrounds. Three per viewport is the ceiling — adjacent shades are ~1.1:1. */
+	--surface-page: var(--brand-background);
+	--surface-raised: var(--brand-bg_light);
+	--surface-well: var(--brand-bg_darker);
+	--surface-edge: var(--brand-bg_lightest);
 
-	--font-body:
-		ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-	--font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+	/* Text on any brand fill is always the page shade. Never white — white on primary is 2.23:1. */
+	--on-brand: var(--brand-background);
+
+	/*
+		text(15, 1.25) from the scheme's token block: 15px base, 1.25 ratio.
+		Display sizes are fluid; the body ladder is not, so measure stays stable.
+	*/
+	--text-xs: 0.64rem;
+	--text-sm: 0.8rem;
+	--text-base: 1rem;
+	--text-lg: 1.25rem;
+	--text-xl: 1.5625rem;
+	--text-2xl: 1.953rem;
+	--text-display: clamp(2.5rem, 7vw, 4.75rem);
+	--text-hero: clamp(3rem, 9vw, 6.5rem);
+
+	/* space(4) and radius(8) from the same block. */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-8: 3rem;
+	--radius-sm: 0.25rem;
+	--radius-md: 0.5rem;
+	--radius-lg: 1rem;
+	--radius-pill: 999px;
+
+	--font-sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
 
 	--ease: cubic-bezier(0.32, 0.72, 0, 1);
 	--dur-fast: 150ms;
 	--dur: 260ms;
 
-	--measure: 1180px;
+	--measure: 1140px;
+
+	font-size: 15px;
 }
 
 /*
 	Bridge the palette into Tailwind utilities. `inline` makes Tailwind emit `var(--brand-primary)`
-	directly rather than adding a layer of indirection, so a change to the seed reaches
-	`bg-primary` too.
+	directly rather than adding a layer of indirection, so a change to the seed reaches `bg-primary`
+	too. One line per colour; this list only changes when the palette gains or loses a colour.
 */
 @theme inline {
+	--color-bg_lightest: var(--brand-bg_lightest);
+	--color-bg_lighter: var(--brand-bg_lighter);
+	--color-bg_light: var(--brand-bg_light);
 	--color-background: var(--brand-background);
-	--color-background-lightest: var(--brand-background-lightest);
-	--color-background-lighter: var(--brand-background-lighter);
-	--color-background-darker: var(--brand-background-darker);
-	--color-background-darkest: var(--brand-background-darkest);
+	--color-bg_dark: var(--brand-bg_dark);
+	--color-bg_darker: var(--brand-bg_darker);
+	--color-bg_darkest: var(--brand-bg_darkest);
 	--color-foreground: var(--brand-foreground);
-	--color-primary: var(--brand-primary);
+	--color-tertiary: var(--brand-tertiary);
 	--color-secondary: var(--brand-secondary);
+	--color-primary: var(--brand-primary);
 	--color-accent: var(--brand-accent);
+	--color-cottontail: var(--brand-cottontail);
 	--color-success: var(--brand-success);
 	--color-warning: var(--brand-warning);
 	--color-error: var(--brand-error);
 	--color-info: var(--brand-info);
 
-	--font-sans: var(--font-body);
+	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
 }
 
@@ -75,11 +101,11 @@
 
 body {
 	margin: 0;
-	background: var(--page-bg);
-	color: var(--page-fg);
-	font-family: var(--font-body);
-	font-size: 1rem;
-	line-height: 1.5;
+	background: var(--surface-page);
+	color: var(--brand-foreground);
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
@@ -89,16 +115,17 @@ a {
 }
 
 /*
-	One global focus ring, doubled.
+	One global focus ring.
 
-	This page deliberately renders content on white, on the palette's near-black, and on `primary`.
-	A single ring is invisible on at least one of those, so the inner ring provides separation from
-	whatever is behind it and the outer ring provides the visible indicator.
+	`info` rather than a brand colour: it is the only high-chroma colour in the system with a hue far
+	from both the shades (230) and primary (122), so the ring never risks reading as part of whatever
+	it is outlining. The inner ring is the page shade, which keeps it visible when the outlined thing
+	sits on a brand fill — the outer ring alone would be brand-on-brand, roughly 1:1.
 */
 :focus-visible {
 	outline: 2px solid var(--brand-info);
 	outline-offset: 2px;
-	box-shadow: 0 0 0 2px var(--page-bg);
+	box-shadow: 0 0 0 2px var(--surface-page);
 }
 
 @media (prefers-reduced-motion: reduce) {

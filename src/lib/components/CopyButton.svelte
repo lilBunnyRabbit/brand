@@ -54,10 +54,10 @@
 		font: inherit;
 		font-size: 0.8125rem;
 		font-weight: 600;
-		color: var(--page-fg);
+		color: var(--brand-foreground);
 		cursor: pointer;
 		background: transparent;
-		border: 1px solid var(--page-border);
+		border: 1px solid var(--fg-border);
 		border-radius: 999px;
 		transition:
 			background var(--dur-fast) var(--ease),
@@ -66,18 +66,19 @@
 	}
 
 	.copy:hover {
-		border-color: var(--page-fg);
+		border-color: var(--brand-foreground);
 	}
 
+	/* Text on a brand fill is always the page shade — never white, which is 2.23:1 on primary. */
 	.solid {
-		color: var(--page-bg);
-		background: var(--page-fg);
-		border-color: var(--page-fg);
+		color: var(--on-brand);
+		background: var(--brand-primary);
+		border-color: var(--brand-primary);
 	}
 
 	.solid:hover {
-		background: var(--brand-background-lighter);
-		border-color: var(--brand-background-lighter);
+		background: color-mix(in srgb, var(--brand-primary) 85%, transparent);
+		border-color: transparent;
 	}
 
 	.quiet {
@@ -88,18 +89,18 @@
 	}
 
 	.quiet:hover {
-		border-color: var(--page-border);
+		border-color: var(--fg-border);
 	}
 
 	/* State is carried by text as well as colour, so it does not rely on hue alone. */
 	.is-copied {
-		color: var(--page-bg);
+		color: var(--on-brand);
 		background: var(--brand-success);
 		border-color: var(--brand-success);
 	}
 
 	.is-failed {
-		color: var(--page-bg);
+		color: var(--on-brand);
 		background: var(--brand-error);
 		border-color: var(--brand-error);
 	}

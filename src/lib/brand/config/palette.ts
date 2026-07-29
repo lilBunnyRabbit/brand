@@ -1,104 +1,205 @@
 /**
- * The palette. EDIT HERE.
+ * Brand Dark v4 — the palette. EDIT HERE.
  *
- * Everything derives from ONE seed: `background`. Change its lightness, chroma or hue and the
- * whole scheme moves together, because every other colour is expressed as a formula against it
- * rather than as a pasted hex.
+ * **DARK ONLY.** There is no light mode. It is designed but not built, so there is nothing here to
+ * invert and no toggle to add. See `prohibitions.ts`.
  *
- * The formulas are transcribed exactly as authored:
+ * 17 colours, all generated from ONE literal — the seed `oklch(0.255 0.0233 230.47)`. Nothing is
+ * hand-picked. This file is a transcription of the Chromatics scheme, kept in the same shape so the
+ * two can be diffed by eye:
  *
- *   background            oklch(0.255 0.0233 230.47)                    Source
- *   background-lighter    $background.l + 0.05, $background.c + 0.005, $background.h
- *   background-lightest   $background.l + 0.1,  $background.c + 0.01,  $background.h
- *   background-darker     $background.l - 0.05, $background.c + 0.005, $background.h
- *   background-darkest    $background.l - 0.1,  $background.c + 0.01,  $background.h
- *   foreground            1 - $background.l, $background.c / 3, $background.h + 180
- *   primary               $foreground.l, $background.c * 3, $foreground.h + (360 / 5)
- *   secondary             $primary.l, $primary.c, $primary.h + 180
- *   accent                $primary.l, $primary.c, $foreground.h
- *   success/warning/error/info   $primary.l, $primary.c * 2, <fixed hue>
+ *   7 surface shades    the elevation ladder
+ *   1 foreground        all body copy
+ *   4 brand             hue is identity, chroma is rank
+ *   1 identity          cottontail — the brightest thing in the system
+ *   4 states            fixed cultural hues
  *
- * Note the shape of the neutral ramp: lightness moves away from the seed in BOTH directions while
- * chroma *increases* either way. Colour intensifies as the surface departs from the base, which is
- * what stops the darker steps going muddy and the lighter steps going chalky.
+ * THE CONTRACT: every one of the 10 non-shade colours clears WCAG AA (4.5:1) against every one of
+ * the 7 shades. 63 of those pairs are the load-bearing ones (the 9 at lightness 0.745); worst case
+ * 4.59. The practical consequence is that ANY shade can back ANY section and nothing needs
+ * re-checking. `tests/palette.test.ts` asserts it, so it cannot rot.
  */
 import { Color } from '$lib/color';
 
-/* ── the seed ─────────────────────────────────────────────────────────── */
+/* ── 1. Seed — the only literal ─────────────────────────────────────────── */
 
-export const background = new Color('background', 0.255, 0.0233, 230.47, 'Source');
+export const background = new Color(
+	'background',
+	0.255,
+	0.0233,
+	230.47,
+	'OKLCH(0.255, 0.0233, 230.47) — the seed'
+);
 
-/* ── derived ──────────────────────────────────────────────────────────── */
+const c = background.c;
+const bl = background.l;
+const bh = background.h;
 
-/**
- * Wrap a hue into [0, 360).
- *
- * `derive` sets channels absolutely and does not wrap (only `shift` does), so `230.47 + 180` would
- * be stored as 410.47. That renders identically — hue is modular — but the token would *display*
- * as `oklch(0.745 0.00777 410.47)`, and this guide's whole job is showing correct values.
- */
-const wrap = (h: number) => ((h % 360) + 360) % 360;
+/* ── 2. Foreground ──────────────────────────────────────────────────────── */
 
 const foreground = background.derive(
 	'foreground',
-	{ l: 1 - background.l, c: background.c / 3, h: wrap(background.h + 180) },
-	'1 - $background.l, $background.c / 3, $background.h + 180'
+	{ l: 1 - bl, c: c / 3, h: (bh + 180) % 360 },
+	'OKLCH(1 - bl, c / 3, (bh + 180) % 360)'
 );
 
-const primary = background.derive(
-	'primary',
-	{ l: foreground.l, c: background.c * 3, h: wrap(foreground.h + 360 / 5) },
-	'$foreground.l, $background.c * 3, $foreground.h + (360 / 5)'
-);
-
-/** Status colours share primary's lightness at double its chroma, on fixed hues. */
-const status = (name: string, hue: number, label: string) =>
-	primary.derive(name, { c: primary.c * 2, h: hue }, `$primary.l, $primary.c * 2, '${label}' hue`);
+/* ── 3. Brand — hue is identity, chroma is rank ─────────────────────────── */
 
 /**
- * The flat swatch registry. Keys are the canonical token names.
+ * The seed's chroma is the quantum: every rank is an integer multiple of it. Pinning primary at 3c
+ * forces the count — exactly two rungs beneath it, exactly two quieter siblings. 5c is left empty
+ * so the brand band (1–4c) and the state band (6c) stay apart.
+ */
+const primary = background.derive(
+	'primary',
+	{ l: foreground.l, c: c * 3, h: (foreground.h + 72) % 360 },
+	'OKLCH(foreground.ok_l, c * 3, (foreground.ok_h + 72) % 360)'
+);
+
+const secondary = primary
+	.complement('secondary')
+	.atChroma(c * 2, 'secondary', 'primary.complement().atChroma(c * 2)');
+
+const accent = primary
+	.derive('accent', { h: foreground.h })
+	.atChroma(c * 4, 'accent', 'primary.derive({ h: foreground.ok_h }).atChroma(c * 4)');
+
+const tertiary = primary
+	.shift('tertiary', { h: -120 })
+	.atChroma(c * 1, 'tertiary', 'primary.shift({ h: -120 }).atChroma(c * 1)');
+
+/* ── 4. States — fixed cultural hues at the top of the chroma ladder ────── */
+
+const state = (name: string, hue: number) =>
+	background.derive(
+		name,
+		{ l: foreground.l, c: c * 6, h: hue },
+		`OKLCH(foreground.ok_l, c * 6, ${hue})`
+	);
+
+/* ── 5. How far the ladder may reach — SOLVED, not chosen ───────────────── */
+
+/**
+ * `span` is the ladder's half-reach in lightness, and it is a solved quantity: the lightest shade
+ * is the lightest colour on which the hardest text still clears AA. `error` is the hardest (lowest
+ * luminance of everything at L 0.745).
  *
- * Flat and `as const` on purpose: it makes every key a string literal type, so a role or a group
- * naming a swatch that does not exist is a `svelte-check` error rather than a runtime surprise.
+ * The Chromatics scheme solves it with `ensureContrast(background.atLightness(0.50), error, 4.55)`
+ * and lands on 0.100. Kept as a literal here rather than re-deriving it, because reimplementing
+ * that solver would be a second source of truth for one number — and a number this load-bearing
+ * should be asserted, not recomputed. `tests/palette.test.ts` proves the property that matters:
+ * the contract holds at 0.100 and breaks above ~0.1047, so 0.100 sits at 96% of the true ceiling.
+ *
+ * Move the seed or change the states and this has to be re-solved in Chromatics.
+ */
+const span = 0.1;
+
+/* ── 6. The ladder — lightest to darkest ────────────────────────────────── */
+
+/**
+ * Chroma is proportional to lightness, which below the gamut cusp is the same as holding chroma at
+ * a constant fraction of the sRGB boundary. Lighter shades gain colour so they read as *elevated*;
+ * darker ones lose it and recede. Nothing leaves gamut.
+ */
+const shade = (name: string, l: number, formula: string) =>
+	background.derive(name, { l, c: (c * l) / bl }, formula);
+
+/* ── 6b. Identity ───────────────────────────────────────────────────────── */
+
+/**
+ * cottontail — the brightest colour in the system, the light half of the logo lockup, and display
+ * text on any shade.
+ *
+ * Lightness is two ladder spans above the text colour: it has to clear L 0.94 or the ears stop
+ * reading on the disc. Chroma is 60% of the sRGB boundary at that lightness and hue — expressed as
+ * a fraction rather than an absolute so it keeps its relationship to the gamut if the seed hue
+ * moves. 0.60 leaves real headroom; 0.92 would be full neon and would clip if the seed shifted.
+ *
+ * Contrast is flat across that whole range (13.7 on the page, 1.94 on primary), so the fraction is
+ * a look decision, not a legibility one.
+ */
+const lift = foreground.l + span * 2;
+const cottontailBase = primary.atLightness(lift);
+const cottontail = cottontailBase.atChroma(
+	cottontailBase.maxChroma * 0.6,
+	'cottontail',
+	'primary.atLightness(lift).atChroma(maxChroma() * 0.60)'
+);
+
+/* ── The registry ───────────────────────────────────────────────────────── */
+
+/**
+ * Flat and `as const`, so every key is a string literal type and a group or role naming a swatch
+ * that does not exist is a `svelte-check` error rather than a runtime surprise.
+ *
+ * Order is the elevation ladder first, lightest to darkest, then content, brand, identity, states.
  */
 export const swatches = {
-	'background-lightest': background.shift(
-		'background-lightest',
-		{ l: 0.1, c: 0.01 },
-		'$background.l + 0.1, $background.c + 0.01, $background.h'
+	bg_lightest: shade('bg_lightest', bl + span, 'OKLCH(bl + span, c * (bl + span) / bl, bh)'),
+	bg_lighter: shade(
+		'bg_lighter',
+		bl + (span * 2) / 3,
+		'OKLCH(bl + span * 2/3, c * (bl + span * 2/3) / bl, bh)'
 	),
-	'background-lighter': background.shift(
-		'background-lighter',
-		{ l: 0.05, c: 0.005 },
-		'$background.l + 0.05, $background.c + 0.005, $background.h'
-	),
+	bg_light: shade('bg_light', bl + span / 3, 'OKLCH(bl + span / 3, c * (bl + span / 3) / bl, bh)'),
 	background,
-	'background-darker': background.shift(
-		'background-darker',
-		{ l: -0.05, c: 0.005 },
-		'$background.l - 0.05, $background.c + 0.005, $background.h'
+	bg_dark: shade('bg_dark', bl - span / 3, 'OKLCH(bl - span / 3, c * (bl - span / 3) / bl, bh)'),
+	bg_darker: shade(
+		'bg_darker',
+		bl - (span * 2) / 3,
+		'OKLCH(bl - span * 2/3, c * (bl - span * 2/3) / bl, bh)'
 	),
-	'background-darkest': background.shift(
-		'background-darkest',
-		{ l: -0.1, c: 0.01 },
-		'$background.l - 0.1, $background.c + 0.01, $background.h'
-	),
+	bg_darkest: shade('bg_darkest', bl - span, 'OKLCH(bl - span, c * (bl - span) / bl, bh)'),
 
 	foreground,
+
+	tertiary,
+	secondary,
 	primary,
+	accent,
 
-	secondary: primary.shift('secondary', { h: 180 }, '$primary.l, $primary.c, $primary.h + 180'),
-	accent: primary.derive('accent', { h: foreground.h }, '$primary.l, $primary.c, $foreground.h'),
+	cottontail,
 
-	success: status('success', 140, 'green'),
-	warning: status('warning', 70, 'yellow-orange'),
-	error: status('error', 30, 'red'),
-	info: status('info', 240, 'blue')
+	success: state('success', 140),
+	warning: state('warning', 70),
+	error: state('error', 30),
+	info: state('info', 240)
 } as const;
 
 export type SwatchName = keyof typeof swatches;
 
-/* ── groups ───────────────────────────────────────────────────────────── */
+/* ── Structure ──────────────────────────────────────────────────────────── */
+
+/** The 7 legal page/section backgrounds, lightest to darkest. */
+export const shadeNames = [
+	'bg_lightest',
+	'bg_lighter',
+	'bg_light',
+	'background',
+	'bg_dark',
+	'bg_darker',
+	'bg_darkest'
+] as const satisfies readonly SwatchName[];
+
+export type ShadeName = (typeof shadeNames)[number];
+
+/** Everything that is not a shade — i.e. everything the contract has to hold for. */
+export const onShadeNames = [
+	'foreground',
+	'tertiary',
+	'secondary',
+	'primary',
+	'accent',
+	'cottontail',
+	'success',
+	'warning',
+	'error',
+	'info'
+] as const satisfies readonly SwatchName[];
+
+export function isShade(name: string): name is ShadeName {
+	return (shadeNames as readonly string[]).includes(name);
+}
 
 export interface PaletteGroup {
 	/** Anchor id, so a group is directly linkable. */
@@ -113,31 +214,63 @@ export const groups: readonly PaletteGroup[] = [
 		id: 'surfaces',
 		label: 'Surfaces',
 		description:
-			'One seed, stepped ±0.05 and ±0.1 in lightness. Chroma rises in both directions, so the ' +
-			'darker steps stay blue rather than going muddy.',
-		swatches: [
-			'background-lightest',
-			'background-lighter',
-			'background',
-			'background-darker',
-			'background-darkest'
-		]
+			'The elevation ladder, and the only legal section backgrounds. One hue; chroma rises with ' +
+			'lightness, so lighter shades look elevated and darker ones recede — a card one step up, a ' +
+			'well one step down. Never more than three in a viewport: adjacent shades are about 1.1:1 ' +
+			'apart and stack into noise.',
+		swatches: shadeNames
+	},
+	{
+		id: 'content',
+		label: 'Content',
+		description: 'All body copy, all UI text.',
+		swatches: ['foreground']
 	},
 	{
 		id: 'brand',
 		label: 'Brand',
 		description:
-			'Foreground is the seed inverted in lightness, a third of its chroma, opposite hue. ' +
-			'Primary, secondary and accent all sit at that same lightness — they are hue rotations, ' +
-			'not tints, so none of them out-shouts another.',
-		swatches: ['foreground', 'primary', 'secondary', 'accent']
+			'All four sit at the same lightness and differ only in hue and chroma, so chroma alone ' +
+			'encodes rank: tertiary is quietest, accent loudest. That also means no two of them may ' +
+			'touch — any pair is roughly 1:1.',
+		swatches: ['tertiary', 'secondary', 'primary', 'accent']
 	},
 	{
-		id: 'status',
-		label: 'Status',
+		id: 'identity',
+		label: 'Identity',
 		description:
-			"Primary's lightness at double its chroma, on fixed hues. Louder than the brand colours " +
-			'by chroma alone, which is what makes them read as signals.',
+			'The brightest colour in the system, and the light half of the logo lockup. Same hue family ' +
+			'as primary, lifted two ladder spans. Also display-scale text on any shade.',
+		swatches: ['cottontail']
+	},
+	{
+		id: 'states',
+		label: 'States',
+		description:
+			'Fixed cultural hues at the top of the chroma ladder. On a brand page these are ' +
+			'documentation — shown, not used as decoration.',
 		swatches: ['success', 'warning', 'error', 'info']
 	}
 ];
+
+/* ── Modifiers ──────────────────────────────────────────────────────────── */
+
+/**
+ * Interaction and de-emphasis are opacity on an existing colour, never a new colour. Composited in
+ * gamma sRGB (`color-mix(in srgb, …)`), which is what a browser paints.
+ */
+export const modifiers = {
+	hover: 0.85,
+	active: 0.7,
+	/** AA-large at best — captions and metadata only, and not on the lightest two shades. */
+	muted: 0.65,
+	/** 2.17:1. Legally exempt, but never for anything informational. */
+	disabled: 0.38,
+	/** The lowest alpha clearing 3:1 on EVERY shade. `muted` at 0.65 misses it on the lightest two. */
+	border: 0.67
+} as const;
+
+export type ModifierName = keyof typeof modifiers;
+
+/** The span, exported so the page and the tests can state it. */
+export const ladderSpan = span;

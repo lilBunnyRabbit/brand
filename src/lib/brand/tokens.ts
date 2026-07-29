@@ -1,16 +1,26 @@
 /**
- * Palette → CSS custom properties, and the copyable export formats.
+ * Palette → CSS custom properties, the swatch view model, and the copyable export formats.
  *
- * Every function here is pure and derives from `config/palette.ts`, so a change to the seed moves
- * the page, the swatch values and every export together. Nothing is maintained in parallel.
+ * Every function is pure and derives from `config/palette.ts`, so a change to the seed moves the
+ * page, the swatch values, the favicon and every export together.
  *
  * The emitted `<style>` block goes into `<svelte:head>`. Because the site is prerendered by
  * adapter-static, that string is evaluated during `vite build` and baked into the static HTML's
- * head — build-time output with no generator script, and no dependence on client JS for first
- * paint.
+ * head — build-time output, no generator script, and no dependence on client JS for first paint.
  */
-import type { Color } from '$lib/color';
-import { groups, swatches, type SwatchName } from './config/palette';
+import { contrastRatio, mixOver, type Color } from '$lib/color';
+import {
+	groups,
+	isShade,
+	modifiers,
+	shadeNames,
+	swatches,
+	type ModifierName,
+	type ShadeName,
+	type SwatchName
+} from './config/palette';
+
+const names = Object.keys(swatches) as SwatchName[];
 
 /** CSS custom property name for a swatch. */
 export function varName(name: string): string {
@@ -29,6 +39,17 @@ export function formatRgb(color: Color): string {
 	return `rgb(${r} ${g} ${b})`;
 }
 
+/**
+ * The label colour for a swatch card — a binary rule, not a luminance heuristic.
+ *
+ * Shades take `foreground` (4.84–8.60). Everything else takes `background` (6.55–13.66). Nothing
+ * else works: on the light swatches, `foreground`, `cottontail` and white all land between 1.0 and
+ * 2.4:1, and on `cottontail` specifically only `background` is legible.
+ */
+export function labelFor(name: string): SwatchName {
+	return isShade(name) ? 'foreground' : 'background';
+}
+
 export interface CopyFormat {
 	id: string;
 	label: string;
@@ -45,19 +66,31 @@ export function copyFormats(name: string, color: Color): CopyFormat[] {
 	];
 }
 
-const names = Object.keys(swatches) as SwatchName[];
+/* ────────────────────────────── the stylesheet ────────────────────────────── */
 
 /**
- * The document stylesheet.
+ * The document stylesheet: the 17 colours, the modifier alphas, and the page roles.
  *
- * Hex rather than `oklch()` for the values: the palette is authored in OKLCH and displayed in it,
- * but one swatch (`background-darkest`) sits marginally outside sRGB, and emitting raw OKLCH would
- * render it slightly differently from the hex this page tells people to use. The guide and the
- * thing it documents have to agree.
+ * Hex rather than `oklch()` for the values so that what the page renders is byte-identical to the
+ * hex it tells people to use.
+ *
+ * Modifiers are emitted as `color-mix(in srgb, …)` — gamma, which is what a browser paints. A
+ * linear-light blend would land somewhere nobody sees.
  */
 export function brandStyleSheet(): string {
-	const lines = names.map((name) => `\t${varName(name)}: ${swatches[name].hex};`);
-	return `:root {\n${lines.join('\n')}\n}`;
+	const colors = names.map((name) => `\t${varName(name)}: ${swatches[name].hex};`);
+
+	const alphas = (Object.keys(modifiers) as ModifierName[]).map(
+		(key) => `\t--alpha-${key}: ${modifiers[key]};`
+	);
+
+	// Composited foreground steps, so components never have to spell the mix out.
+	const mixes = (['muted', 'disabled', 'border'] as const).map(
+		(key) =>
+			`\t--fg-${key}: color-mix(in srgb, var(--brand-foreground) ${modifiers[key] * 100}%, transparent);`
+	);
+
+	return [':root {', ...colors, '', ...alphas, '', ...mixes, '}'].join('\n');
 }
 
 /* ────────────────────────────── export formats ────────────────────────────── */
@@ -96,7 +129,7 @@ export function exportJson(): string {
 	return `${JSON.stringify(out, null, 2)}\n`;
 }
 
-/** A column-aligned markdown table — the same shape the palette was handed over in. */
+/** A column-aligned markdown table — the shape the palette was handed over in. */
 export function exportMarkdown(): string {
 	const headers = ['name', 'hex', 'oklch', 'comment'];
 	const rows = names.map((name) => {
@@ -118,37 +151,24 @@ export interface ExportFormat {
 	id: string;
 	label: string;
 	filename: string;
-	lang: string;
 	render(): string;
 }
 
 /**
- * The export registry. The UI iterates this, so adding a sixth format is one entry plus one
+ * The export registry. The UI iterates this, so adding a fifth format is one entry plus one
  * function — no component change.
  */
 export const exportFormats: ExportFormat[] = [
-	{ id: 'css', label: 'CSS', filename: 'palette.css', lang: 'css', render: exportCss },
-	{
-		id: 'tailwind',
-		label: 'Tailwind',
-		filename: 'palette.theme.css',
-		lang: 'css',
-		render: exportTailwind
-	},
-	{ id: 'json', label: 'JSON', filename: 'palette.json', lang: 'json', render: exportJson },
-	{
-		id: 'markdown',
-		label: 'Markdown',
-		filename: 'palette.md',
-		lang: 'markdown',
-		render: exportMarkdown
-	}
+	{ id: 'css', label: 'CSS', filename: 'palette.css', render: exportCss },
+	{ id: 'tailwind', label: 'Tailwind', filename: 'palette.theme.css', render: exportTailwind },
+	{ id: 'json', label: 'JSON', filename: 'palette.json', render: exportJson },
+	{ id: 'markdown', label: 'Markdown', filename: 'palette.md', render: exportMarkdown }
 ];
 
 /* ────────────────────────────── view model ────────────────────────────── */
 
 export interface SwatchView {
-	name: string;
+	name: SwatchName;
 	color: Color;
 	hex: string;
 	oklch: string;
@@ -156,10 +176,12 @@ export interface SwatchView {
 	cssVar: string;
 	formula?: string;
 	formats: CopyFormat[];
-	/** Marginally outside sRGB — the page badges these rather than hiding them. */
+	/** `foreground` for a shade, `background` for everything else. */
+	labelVar: string;
+	/** Contrast of that label against the plate. */
+	labelRatio: number;
+	/** Marginally outside sRGB. None of these are, but the page would badge one if it appeared. */
 	outOfGamut: boolean;
-	/** True when this swatch is light enough to need dark text on it. */
-	needsDarkText: boolean;
 }
 
 export interface GroupView {
@@ -171,6 +193,7 @@ export interface GroupView {
 
 function toView(name: SwatchName): SwatchView {
 	const color = swatches[name];
+	const label = labelFor(name);
 	return {
 		name,
 		color,
@@ -180,13 +203,11 @@ function toView(name: SwatchName): SwatchView {
 		cssVar: varName(name),
 		formula: color.description,
 		formats: copyFormats(name, color),
-		outOfGamut: !color.isInGamut,
-		// OKLCH lightness is perceptual, so a plain threshold is a fair proxy here.
-		needsDarkText: color.l > 0.6
+		labelVar: varName(label),
+		labelRatio: contrastRatio(swatches[label], color),
+		outOfGamut: !color.isInGamut
 	};
 }
-
-export const swatchViews: SwatchView[] = names.map(toView);
 
 export const groupViews: GroupView[] = groups.map((group) => ({
 	id: group.id,
@@ -194,3 +215,39 @@ export const groupViews: GroupView[] = groups.map((group) => ({
 	description: group.description,
 	swatches: group.swatches.map(toView)
 }));
+
+/* ────────────────────────────── the contract ────────────────────────────── */
+
+export interface ContractResult {
+	/** Every non-shade colour against every shade. */
+	pairs: { on: SwatchName; shade: ShadeName; ratio: number }[];
+	worst: { on: SwatchName; shade: ShadeName; ratio: number };
+	holds: boolean;
+	count: number;
+}
+
+/**
+ * Measure the contract rather than asserting it in prose.
+ *
+ * The page states the worst cell as a live number, so if the seed ever moves and the contract
+ * degrades, the page says so instead of continuing to claim 4.59.
+ */
+export function measureContract(): ContractResult {
+	const pairs: ContractResult['pairs'] = [];
+	for (const shade of shadeNames) {
+		for (const name of names) {
+			if (isShade(name)) continue;
+			pairs.push({ on: name, shade, ratio: contrastRatio(swatches[name], swatches[shade]) });
+		}
+	}
+	const worst = pairs.reduce((a, b) => (b.ratio < a.ratio ? b : a));
+	return { pairs, worst, holds: worst.ratio >= 4.5, count: pairs.length };
+}
+
+/** Contrast of a foreground at a modifier alpha over a given shade, composited in gamma sRGB. */
+export function modifierRatio(fg: SwatchName, shade: ShadeName, modifier: ModifierName): number {
+	return contrastRatio(
+		mixOver(swatches[fg], swatches[shade], modifiers[modifier]),
+		swatches[shade]
+	);
+}

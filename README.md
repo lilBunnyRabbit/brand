@@ -1,14 +1,15 @@
 # lilBunnyRabbit — brand assets
 
-A single-page brand guide: the logo variants and the colour palette, everything copyable and
-downloadable. **[lilbunnyrabbit.github.io/brand](https://lilbunnyrabbit.github.io/brand/)**
+A single-page brand guide: the logo, the palette, a business card and the rules.
+**[lilbunnyrabbit.github.io/brand](https://lilbunnyrabbit.github.io/brand/)**
 
-The point of it: **drop an SVG into `src/lib/brand/logos/`, or change one seed colour in
+The point of it: **drop an SVG into `src/lib/brand/logos/`, or change the seed in
 `src/lib/brand/config/palette.ts`, and the whole page follows.** No component edits.
 
 SvelteKit + Svelte 5 + Tailwind v4 on bun, prerendered by `adapter-static`, deployed to GitHub Pages.
 
-> The mark is still being drawn. What is published is current but not final.
+> **Dark only.** A light mode is designed but not built — there is nothing here to invert and no
+> toggle to add. The mark is still being drawn; what is published is current but not final.
 
 ## Run it
 
@@ -22,11 +23,11 @@ bun run dev
 ```sh
 bun run check     # svelte-check; 0 errors, 0 warnings, no `svelte-ignore a11y_*` anywhere
 bun run lint      # prettier
-bun test          # SVG transforms, the palette formulas, the discovery layer
+bun test          # SVG transforms, the palette contract, the discovery layer
 bun run build     # must succeed with BASE_PATH unset
 ```
 
-To verify the site under the GitHub Pages base path _before_ pushing:
+Under the GitHub Pages base path, _before_ pushing:
 
 ```sh
 BASE_PATH=/brand bun run build
@@ -34,18 +35,66 @@ mkdir -p /tmp/stage && cp -R build /tmp/stage/brand
 cd /tmp/stage && python3 -m http.server 8899   # open http://localhost:8899/brand/
 ```
 
-`build/` must contain `.nojekyll`, `404.html` and `favicon.svg`.
+## The palette — Brand Dark v4
+
+17 colours, every one generated from **one literal**: the seed `oklch(0.255 0.0233 230.47)`.
+
+| group    | colours                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------- |
+| Surfaces | `bg_lightest` `bg_lighter` `bg_light` **`background`** `bg_dark` `bg_darker` `bg_darkest` |
+| Content  | `foreground`                                                                              |
+| Brand    | `tertiary` `secondary` **`primary`** `accent`                                             |
+| Identity | `cottontail`                                                                              |
+| States   | `success` `warning` `error` `info`                                                        |
+
+**The contract: every non-shade colour clears WCAG AA against every one of the seven shades.** Worst
+case 4.59, `error` on `bg_lightest`. So any shade can back any section and changing a section
+background never needs a contrast re-check. The page measures this live rather than quoting it, and
+`tests/palette.test.ts` asserts it — if the seed moves and the contract degrades, the page says so
+instead of continuing to claim 4.59.
+
+Three things in the palette are _solved_, not chosen, and the tests prove the property rather than
+trusting the number:
+
+- **`span = 0.100`** — the ladder's half-reach. The lightest shade is the lightest colour on which
+  the hardest text (`error`, lowest luminance at L 0.745) still clears AA. The tests confirm the
+  contract holds at 0.100 and breaks above **0.1047**, so it ships at 96% of the true ceiling.
+- **Brand chroma is an integer multiple of the seed's** — 1c, 2c, 3c, 4c for tertiary → accent, 6c
+  for the states, with 5c deliberately empty so the two bands stay apart. Chroma encodes rank.
+- **`cottontail` is 60% of the sRGB gamut boundary** at its lightness and hue, expressed as a
+  fraction so it keeps that relationship if the seed hue moves. `Color.maxChroma` finds the boundary
+  by bisection.
+
+All nine mid colours share lightness 0.745, which is why **no two brand colours may touch** — any
+pair is roughly 1:1. That is the single most important rule, and the Don't section renders it so it
+looks obviously wrong.
+
+Interaction and de-emphasis are **opacity on an existing colour**, never a new colour: hover 85%,
+active 70%, muted 65%, disabled 38%, borders 67%. Composited in gamma sRGB, which is what a browser
+paints. Muted text is AA-large at best — captions only, and not on the lightest two shades.
+
+## The logo
+
+`cottontail` ears on a `primary` disc, **1.94:1**, which is deliberate. WCAG exempts logotypes
+(SC 1.4.3, 1.4.11), so there is no stroke, no shadow and no lighter green. It works because the two
+colours differ in _lightness_ rather than hue: under greyscale and all three dichromacies the ratio
+moves by at most 0.01. The page renders those simulations and prints the measured values.
+
+On a light ground the disc becomes `background` instead — `primary` is 2.23:1 on white and the
+disc's edge disappears.
 
 ## How to change things
 
-| Task                                        | What to edit                                                                                                                                                                             |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Add a logo variant**                      | Drop the `.svg` into `src/lib/brand/logos/`. That is the whole step — it is auto-discovered. Optionally add an entry to `config/logos.ts` for a label, minimum size or clear space.      |
-| **Change the palette**                      | One seed in `config/palette.ts`. Every other colour is a formula against it, so the swatches, the page chrome, the CSS/Tailwind/JSON/Markdown exports and the favicon all move together. |
-| **Mark something as a draft**               | Name the file `….wip.svg`, or set `status: 'wip'` in `config/logos.ts`. The page badges it and the hero shows a notice.                                                                  |
-| **Regenerate the favicon**                  | `bun run favicon [source-file] [ink-swatch]` — derived from a mark so it cannot drift. Defaults to the current mark inked in `primary`.                                                  |
-| **Add an export format**                    | One entry in `exportFormats` in `brand/tokens.ts` plus one render function. The UI iterates the registry, so no component changes.                                                       |
-| **Swap the colour engine for `chromatics`** | Rewrite the body of `src/lib/color/index.ts`. Nothing else imports colour math directly.                                                                                                 |
+| Task                                        | What to edit                                                                                                                                                   |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Add a logo variant**                      | Drop the `.svg` into `src/lib/brand/logos/`. That is the whole step. Optionally add an entry to `config/logos.ts` for a label or minimum size.                 |
+| **Change the palette**                      | The seed in `config/palette.ts`. Everything else is a formula against it, so the swatches, the page, the card, the favicon and all four exports move together. |
+| **Change the card**                         | `config/card.ts` — size, role, contact lines, which shade each face uses. Placeholder lines are struck through on the page so nobody prints a draft.           |
+| **Change a rule**                           | `config/prohibitions.ts`. The Don't section is generated from it.                                                                                              |
+| **Mark something as a draft**               | Name the file `….wip.svg`, or set `status: 'wip'`. The page badges it.                                                                                         |
+| **Regenerate the favicon**                  | `bun run favicon [file] [ink] [disc]` — composes the lockup (disc + ears) so it cannot drift from the site.                                                    |
+| **Add an export format**                    | One entry in `exportFormats` in `brand/tokens.ts` plus one render function.                                                                                    |
+| **Swap the colour engine for `chromatics`** | Rewrite the body of `src/lib/color/index.ts`. Nothing else imports colour math directly.                                                                       |
 
 ### The logo filename convention
 
@@ -54,7 +103,6 @@ Dot-separated, every part optional, `<slug>.<token>.<token>….svg`:
 ```
 lilbunnyrabbit.mark.v6.wip.svg
 lilbunnyrabbit.wordmark.mono.on-dark.svg
-lilbunnyrabbit.favicon.32.svg
 whatever.svg                    still renders — a colour mark, with a hint to rename
 ```
 
@@ -73,27 +121,6 @@ whatever.svg                    still renders — a colour mark, with a hint to 
 Unknown tokens never error. A file with no `<svg>` root is listed as unreadable and skipped — one bad
 export must not block deploying the others.
 
-## The palette
-
-Every colour derives from one seed, `background = oklch(0.255 0.0233 230.47)`:
-
-| name                               | formula                                                         |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `background-lighter` / `-lightest` | `$background.l + 0.05 / + 0.1`, chroma `+0.005 / +0.01`         |
-| `background-darker` / `-darkest`   | `$background.l − 0.05 / − 0.1`, chroma `+0.005 / +0.01`         |
-| `foreground`                       | `1 − $background.l`, `$background.c / 3`, `$background.h + 180` |
-| `primary`                          | `$foreground.l`, `$background.c * 3`, `$foreground.h + 72`      |
-| `secondary`                        | `$primary` rotated 180°                                         |
-| `accent`                           | `$primary` at the foreground hue                                |
-| `success` `warning` `error` `info` | `$primary.l`, `$primary.c * 2`, fixed hues 140 / 70 / 30 / 240  |
-
-Chroma _rises_ as lightness moves away from the seed in either direction, which is what keeps the
-dark steps blue instead of muddy. `tests/palette.test.ts` asserts every derived hex against the
-authored table, so a mis-transcribed formula fails the build rather than shipping.
-
-`background-darkest` sits marginally outside sRGB (it clamps `#000e18` → `#000e17`, one step in
-blue) and is inside P3. The page badges it rather than hiding it.
-
 ## Why the SVG transforms exist
 
 `src/lib/svg.ts` is the highest-risk code here, and every transform is there because a real export
@@ -101,11 +128,11 @@ needed it:
 
 - **Design tools emit generic ids** — `svg1`, `defs1`, `path5-1-93-3-1-8`. Two problems. Inline two
   files and the second's `url(#…)` resolves to the _first_ one's mask, because the browser takes the
-  first match in document order — the wrong art under the right label, silently. And ids that
-  nothing references are dead weight that becomes a duplicate-id error once the same mark renders
-  five times on one page. So: unreferenced ids are pruned, the rest are namespaced per file
-  (`namespaceIds`) _and_ per render site (`instantiateSvg`). Substitution is longest-id-first, or
-  `path5-1-93-3-1-8` corrupts `path5-1-93-3-1-8-4` — both of which this mark declares.
+  first match in document order — the wrong art under the right label, silently. And ids that nothing
+  references become duplicate-id errors once the same mark renders eighteen times on one page. So:
+  unreferenced ids are pruned, the rest are namespaced per file (`namespaceIds`) **and** per render
+  site (`instantiateSvg`). Substitution is longest-id-first, or `path5-1-93-3-1-8` corrupts
+  `path5-1-93-3-1-8-4` — both of which this mark declares.
 - **Roots carry absolute sizes** (`199.28448mm`) that stop CSS sizing the mark, and sometimes a
   `style="color: …"` that outranks the inherited `color` which `currentColor` reads.
 - **Inkscape paints a solid mark as `style="…;fill:#ffffff;…"`** with no `currentColor` at all, so it
@@ -115,8 +142,8 @@ needed it:
 - **Comments are not markup.** `<!-- Created with Inkscape -->` is in every export, and a comment
   mentioning `<animate` would otherwise make a static mark report as animated.
 - **SMIL-animated masks** rasterise to an arbitrary mid-draw frame, and a mask can be authored fully
-  hidden (non-zero `stroke-dashoffset`) so that only its `<animate>` reveals it — dropping the
-  animation without rewriting the offset silently loses that stroke.
+  hidden (non-zero `stroke-dashoffset`) so only its `<animate>` reveals it — dropping the animation
+  without rewriting the offset silently loses that stroke.
 
 ## Layout
 
@@ -124,11 +151,12 @@ needed it:
 src/lib/color/       the colour seam — swap to chromatics here, nowhere else
 src/lib/svg.ts       pure string transforms (no DOM: runs at prerender and under bun test)
 src/lib/brand/
-  config/            THE FILES YOU EDIT — palette, logos, meta
+  config/            THE FILES YOU EDIT — palette, logos, card, prohibitions, meta
   logos/             DROP SVGs HERE
   logo-meta.ts       filename parsing + variant construction (pure, tested)
   discover.ts        import.meta.glob assembly (Vite-only, thin)
-  tokens.ts          palette → CSS vars + the export formats
+  tokens.ts          palette → CSS vars, the swatch view model, the exports, the contract
+  vision.ts          the lockup under greyscale and the three dichromacies
   nav.ts             the only module that builds internal hrefs
 src/routes/          one prerendered page
 tests/               bun test
@@ -137,10 +165,6 @@ tests/               bun test
 The palette is emitted into `<svelte:head>` as a `<style>` block. Because the site is prerendered,
 that string is evaluated during `vite build` and baked into the static HTML — so the page is fully
 styled on first paint with no client JS.
-
-The page surface is deliberately light while the palette it documents is dark: `--page-*` is the
-document's own chrome, `--brand-*` is the subject matter. Interactive accents come from the dark end
-of the palette, where the contrast against white is real.
 
 ## Deploy
 

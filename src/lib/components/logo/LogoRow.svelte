@@ -1,62 +1,50 @@
+<script lang="ts" module>
+	/** Drop trailing zeros from an artboard dimension: 174.10244 → 174.1. */
+	function trim(value: number): string {
+		return String(Number(value.toFixed(1)));
+	}
+</script>
+
 <script lang="ts">
 	import CopyButton from '$lib/components/CopyButton.svelte';
 	import DownloadButton from '$lib/components/DownloadButton.svelte';
-	import { instantiateSvg } from '$lib/svg';
+	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import type { LogoVariant } from '$lib/brand/types';
 
 	let { variant }: { variant: LogoVariant } = $props();
 
 	/*
-		One row per variant, as the reference does — but with a difference worth being explicit
-		about. The reference ships three files (colour, black, white) because its mark has baked
-		colours. This mark is single-colour and its paint has been converted to `currentColor`, so
-		one file covers every surface: each tile below is the SAME asset under a different CSS
-		`color`. There is nothing to keep in sync.
+		The mark on several shades, to show the lockup holding.
+
+		Three shades, not seven: adjacent shades are about 1.1:1 apart, so more than three in a
+		viewport reads as noise rather than as a demonstration. These three span the ladder's reach —
+		lightest, the seed, darkest — which is the interesting comparison.
+
+		No white ground here, deliberately. The primary disc is 2.23:1 on white and its edge
+		disappears; a light-ground variant has to swap the disc to `background`, which is what the
+		fourth tile shows.
 	*/
-	const tiles = [
-		{ id: 'light', label: 'On light', surface: 'var(--page-bg)', ink: 'var(--brand-background)' },
-		{
-			id: 'dark',
-			label: 'On dark',
-			surface: 'var(--brand-background)',
-			ink: 'var(--brand-foreground)'
-		},
-		{
-			id: 'brand',
-			label: 'On brand',
-			surface: 'var(--brand-primary)',
-			ink: 'var(--brand-background-darkest)'
-		}
+	const grounds = [
+		{ id: 'lightest', label: 'bg_lightest', bg: 'var(--brand-bg_lightest)' },
+		{ id: 'page', label: 'background', bg: 'var(--brand-background)' },
+		{ id: 'darkest', label: 'bg_darkest', bg: 'var(--brand-bg_darkest)' }
 	];
-
-	// The frozen form for a static mark is identical to the inline one; using it for animated marks
-	// keeps three copies from drawing out of sync in the same row.
-	const art = $derived(variant.motion === 'animated' ? variant.frozen : variant.inline);
-	const aspect = $derived(variant.viewBox?.aspect ?? 1);
-
-	/*
-		Three tiles render the SAME asset, so `prepareSvg`'s per-file namespacing is not enough — it
-		stops two different variants colliding, not one variant colliding with itself. Each copy gets
-		a per-instance, per-tile id namespace. For a mark with no internal references (most of them,
-		after id pruning) this is a no-op.
-	*/
-	const uid = $props.id();
-	const tileArt = (slot: string) => instantiateSvg(art, `${uid}-${slot}`);
-
-	/** Drop trailing zeros from a viewBox dimension: 174.10244 → 174.1. */
-	const trim = (value: number) => String(Number(value.toFixed(1)));
 </script>
 
 <article>
-	<div class="preview">
-		{#each tiles as tile (tile.id)}
-			<figure style="background: {tile.surface}; color: {tile.ink};">
-				<div class="art" style="aspect-ratio: {aspect};">
-					{@html tileArt(tile.id)}
-				</div>
-				<figcaption>{tile.label}</figcaption>
+	<div class="grounds">
+		{#each grounds as ground (ground.id)}
+			<figure style="background: {ground.bg};">
+				<Lockup {variant} size="5.5rem" key={ground.id} />
+				<figcaption>{ground.label}</figcaption>
 			</figure>
 		{/each}
+
+		<!-- The light-ground variant: disc swapped to `background`, 15.70:1 against the ears. -->
+		<figure style="background: #ffffff;">
+			<Lockup {variant} size="5.5rem" disc="var(--brand-background)" key="onlight" />
+			<figcaption class="on-light">light ground</figcaption>
+		</figure>
 	</div>
 
 	<div class="detail">
@@ -77,20 +65,20 @@
 				<dd><code>{variant.file}</code></dd>
 			</div>
 			<div>
-				<dt>Format</dt>
+				<dt>Artboard</dt>
 				<dd>
-					SVG, {variant.viewBox
-						? `${trim(variant.viewBox.width)}×${trim(variant.viewBox.height)}`
+					{variant.viewBox
+						? `${trim(variant.viewBox.width)} × ${trim(variant.viewBox.height)}`
 						: 'no viewBox'}
 				</dd>
 			</div>
 			<div>
-				<dt>Ink</dt>
-				<dd>{variant.recolorable ? 'Follows CSS colour' : 'Fixed'}</dd>
+				<dt>Ears</dt>
+				<dd>cottontail, via <code>currentColor</code></dd>
 			</div>
 			<div>
-				<dt>Minimum size</dt>
-				<dd>{variant.minSize}px wide</dd>
+				<dt>Disc</dt>
+				<dd>primary on dark, background on light</dd>
 			</div>
 		</dl>
 
@@ -109,128 +97,112 @@
 <style>
 	article {
 		display: grid;
-		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-		gap: clamp(1.5rem, 4vw, 3.5rem);
+		grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+		gap: clamp(var(--space-5), 4vw, var(--space-8));
 		align-items: center;
-		padding-block: clamp(2rem, 4vw, 3rem);
-		/*
-			Always a top rule, not `article + article`. Each row is its own component instance, so a
-			sibling selector never matches inside the scoped stylesheet — svelte-check flags it as
-			unused, correctly. On the first row the rule simply reads as a divider under the section
-			heading, which is what it should look like anyway.
-		*/
-		border-top: 1px solid var(--page-border);
 	}
 
-	.preview {
+	.grounds {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 0.75rem;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--space-3);
 	}
 
 	figure {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: var(--space-3);
 		align-items: center;
 		justify-content: center;
-		padding: clamp(1.25rem, 3vw, 2.25rem) 1rem 0.85rem;
+		padding: var(--space-5) var(--space-3) var(--space-3);
 		margin: 0;
-		border: 1px solid var(--page-border);
-		border-radius: 14px;
-	}
-
-	.art {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		max-width: 7rem;
-	}
-
-	.art :global(svg) {
-		display: block;
-		width: 100%;
-		height: auto;
+		border: 1px solid var(--fg-border);
+		border-radius: var(--radius-lg);
 	}
 
 	figcaption {
-		font-size: 0.6875rem;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		opacity: 0.65;
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	/* The one place on the page with a light ground, so the caption cannot use --fg-muted. */
+	.on-light {
+		color: var(--brand-background);
 	}
 
 	.heading {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.75rem;
+		gap: var(--space-3);
 		align-items: center;
 	}
 
 	h3 {
 		margin: 0;
-		font-size: 1.5rem;
+		font-size: var(--text-xl);
 		font-weight: 700;
 		letter-spacing: -0.02em;
 	}
 
 	.badge {
-		padding: 0.2rem 0.6rem;
-		font-size: 0.6875rem;
+		padding: 0.15rem 0.55rem;
+		font-size: var(--text-xs);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--brand-background-darkest);
+		color: var(--on-brand);
 		background: var(--brand-warning);
-		border-radius: 999px;
+		border-radius: var(--radius-pill);
 	}
 
 	.desc {
 		max-width: 44ch;
-		margin: 0.85rem 0 0;
-		line-height: 1.6;
-		color: var(--page-fg-muted);
+		margin: var(--space-3) 0 0;
+		color: var(--fg-muted);
 	}
 
 	dl {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-		gap: 1rem 1.5rem;
-		margin: 1.75rem 0 0;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		gap: var(--space-4) var(--space-5);
+		margin: var(--space-5) 0 0;
 	}
 
 	dt {
-		font-size: 0.6875rem;
+		font-size: var(--text-xs);
 		font-weight: 600;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--page-fg-subtle);
+		color: var(--fg-muted);
 	}
 
 	dd {
-		margin: 0.3rem 0 0;
-		font-size: 0.875rem;
+		margin: var(--space-1) 0 0;
+		font-size: var(--text-sm);
 		font-variant-numeric: tabular-nums;
 	}
 
 	code {
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
+		font-size: 0.9em;
 	}
 
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
-		margin-top: 1.75rem;
+		gap: var(--space-2);
+		margin-top: var(--space-5);
 	}
 
-	@media (max-width: 860px) {
+	@media (max-width: 900px) {
 		article {
 			grid-template-columns: minmax(0, 1fr);
-			gap: 1.75rem;
+			gap: var(--space-5);
+		}
+
+		.grounds {
+			grid-template-columns: repeat(2, 1fr);
 		}
 	}
 </style>

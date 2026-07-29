@@ -2,9 +2,9 @@
 	import '$lib/styles/app.css';
 
 	import Announcer from '$lib/components/Announcer.svelte';
+	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import { brandStyleSheet } from '$lib/brand/tokens';
 	import { home, sections } from '$lib/brand/nav';
-	import { instantiateSvg } from '$lib/svg';
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
 
@@ -13,37 +13,35 @@
 	/*
 		The palette as CSS custom properties.
 
-		This is evaluated by SSR during `vite build` and baked into the static HTML's <head>, so the
-		page is fully styled on first paint with no client JS involved. A `style` attribute on a
-		wrapper could not do this — it cannot reach `html`/`body`, so the page background,
-		`color-scheme` and scrollbar theming would all be left out.
+		Evaluated by SSR during `vite build` and baked into the static HTML's <head>, so the page is
+		fully styled on first paint with no client JS. A `style` attribute on a wrapper could not do
+		this — it cannot reach `html`/`body`, so the page background and `color-scheme` would be left
+		out.
+
+		Built as a whole tag here rather than interpolated inside {@html} in the markup: svelte-check
+		does not read a template literal inside {@html} as a usage, and `noUnusedLocals` then fails.
 	*/
-	// Built as a whole tag here rather than interpolated inside {@html} in the markup: svelte-check
-	// does not read a template literal inside {@html} as a usage, and `noUnusedLocals` then fails.
 	const tokenStyle = `<style id="brand-tokens">${brandStyleSheet()}</style>`;
 	const links = sections();
 
-	/** The mark, for the header. Frozen: header chrome is not the place for a looping animation. */
 	const mark = logos.variants.find((v) => !v.hidden);
-
-	// Per-instance id namespace: this same mark also renders in the hero and in every logo tile.
-	const uid = $props.id();
 </script>
 
 <svelte:head>
 	{@html tokenStyle}
-	<meta name="theme-color" content="#ffffff" />
+	<!-- Matches the page shade, so mobile browser chrome extends the page rather than framing it. -->
+	<meta name="theme-color" content="#17252c" />
 </svelte:head>
 
 <Announcer />
 
-<a class="skip" href="#logo">Skip to content</a>
+<a class="skip" href="#colours">Skip to content</a>
 
 <header class="bar">
 	<div class="inner">
 		<a class="brand" href={home()}>
 			{#if mark}
-				<span class="mark">{@html instantiateSvg(mark.frozen, `${uid}-header`)}</span>
+				<Lockup variant={mark} size="1.75rem" key="header" />
 			{/if}
 			<span class="wordmark">{meta.name}</span>
 		</a>
@@ -61,7 +59,7 @@
 
 <footer>
 	<div class="inner">
-		<p>{meta.name} — {meta.tagline}</p>
+		<p>{meta.name} — {meta.tagline} Dark only; a light mode is designed but not built.</p>
 		<nav aria-label="Elsewhere">
 			{#each meta.links as link (link.href)}
 				<a href={link.href}>{link.label}</a>
@@ -78,98 +76,87 @@
 
 	.skip:focus {
 		position: fixed;
-		top: 0.75rem;
-		left: 0.75rem;
+		top: var(--space-3);
+		left: var(--space-3);
 		z-index: 20;
-		padding: 0.6rem 1rem;
-		color: var(--page-bg);
+		padding: var(--space-2) var(--space-4);
+		color: var(--on-brand);
 		text-decoration: none;
-		background: var(--page-fg);
-		border-radius: 999px;
+		background: var(--brand-primary);
+		border-radius: var(--radius-pill);
 	}
 
 	.bar {
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		background: color-mix(in srgb, var(--page-bg) 88%, transparent);
-		backdrop-filter: blur(12px) saturate(160%);
-		border-bottom: 1px solid var(--page-border);
+		background: color-mix(in srgb, var(--surface-page) 86%, transparent);
+		border-bottom: 1px solid var(--fg-border);
+		backdrop-filter: blur(12px) saturate(150%);
 	}
 
 	.inner {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 1rem;
+		gap: var(--space-4);
 		align-items: center;
 		justify-content: space-between;
 		max-width: var(--measure);
-		padding: 0.85rem clamp(1rem, 4vw, 2.5rem);
+		padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-6));
 		margin-inline: auto;
 	}
 
 	.brand {
 		display: inline-flex;
-		gap: 0.6rem;
+		gap: var(--space-3);
 		align-items: center;
 		text-decoration: none;
 	}
 
-	.mark {
-		display: block;
-		width: 1.5rem;
-		color: var(--page-fg);
-	}
-
-	.mark :global(svg) {
-		display: block;
-		width: 100%;
-		height: auto;
-	}
-
 	.wordmark {
-		font-size: 0.9375rem;
+		font-size: var(--text-base);
 		font-weight: 700;
 		letter-spacing: -0.01em;
 	}
 
 	nav {
 		display: flex;
-		gap: 0.35rem;
+		gap: var(--space-1);
 	}
 
 	nav a {
-		padding: 0.4rem 0.7rem;
-		font-size: 0.8125rem;
+		padding: var(--space-2) var(--space-3);
+		font-size: var(--text-sm);
 		font-weight: 600;
-		color: var(--page-fg-muted);
+		color: var(--fg-muted);
 		text-decoration: none;
-		border-radius: 999px;
+		border-radius: var(--radius-pill);
 	}
 
 	nav a:hover {
-		color: var(--page-fg);
-		background: var(--page-surface);
+		color: var(--brand-foreground);
+		background: var(--surface-raised);
 	}
 
 	main {
 		max-width: var(--measure);
-		padding-inline: clamp(1rem, 4vw, 2.5rem);
+		padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
 		margin-inline: auto;
 	}
 
 	footer {
-		margin-top: clamp(3rem, 8vw, 6rem);
-		border-top: 1px solid var(--page-border);
+		margin-top: clamp(var(--space-8), 8vw, 5rem);
+		border-top: 1px solid var(--fg-border);
 	}
 
 	footer p {
+		max-width: 60ch;
 		margin: 0;
-		font-size: 0.8125rem;
-		color: var(--page-fg-subtle);
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
 	}
 
 	footer .inner {
-		padding-block: 2rem;
+		padding-block: var(--space-6);
 	}
 </style>

@@ -82,6 +82,41 @@ export class OKLCH {
 		);
 	}
 
+	/** Clone at an absolute lightness. */
+	atLightness(l: number, name?: string, description?: string): OKLCH {
+		return new OKLCH(name ?? this.name, l, this.c, this.h, description ?? this.description);
+	}
+
+	/** Clone at an absolute chroma. */
+	atChroma(c: number, name?: string, description?: string): OKLCH {
+		return new OKLCH(name ?? this.name, this.l, c, this.h, description ?? this.description);
+	}
+
+	/** Clone at the opposite hue. */
+	complement(name?: string, description?: string): OKLCH {
+		return this.shift(name ?? this.name, { h: 180 }, description ?? this.description);
+	}
+
+	/**
+	 * The largest chroma that stays inside sRGB at this lightness and hue.
+	 *
+	 * Found by bisection against culori's `displayable`, because the sRGB gamut boundary in OKLCH
+	 * has no closed form. 60 iterations resolves it far below the precision any hex can express.
+	 *
+	 * Used to express a colour as a *fraction of the boundary* rather than as an absolute chroma,
+	 * which is what keeps a colour's relationship to the gamut stable when the seed hue moves.
+	 */
+	get maxChroma(): number {
+		let lo = 0;
+		let hi = 0.5;
+		for (let i = 0; i < 60; i++) {
+			const mid = (lo + hi) / 2;
+			if (displayable({ mode: 'oklch', l: this.l, c: mid, h: this.h })) lo = mid;
+			else hi = mid;
+		}
+		return lo;
+	}
+
 	/** The culori color object. */
 	get culori(): Oklch {
 		return { mode: 'oklch', l: this.l, c: this.c, h: this.h };

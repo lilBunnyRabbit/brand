@@ -17,17 +17,19 @@
 
 <article>
 	<!--
-		The colour plate itself. It is a plain div rather than a button: the plate carries four
-		copyable formats, and one click target cannot mean four things. Each format below is its own
-		real button, which is also what makes the whole card keyboard-reachable without any custom
-		key handling.
+		The label colour is a binary rule, not a luminance heuristic: shades take `foreground`,
+		everything else takes `background`. Nothing else works — on the light swatches, `foreground`,
+		`cottontail` and white all land between 1.0 and 2.4:1, and on `cottontail` only `background`
+		is legible. The measured ratio is printed so the rule is checkable rather than asserted.
+
+		The plate is a div, not a button: it carries four copyable formats and one click target cannot
+		mean four things. Each format below is its own real button.
 	-->
-	<div class="plate" class:on-light={swatch.needsDarkText} style="background: {swatch.hex};">
+	<div class="plate" style="background: {swatch.hex}; color: var({swatch.labelVar});">
 		<span class="name">{swatch.name}</span>
+		<span class="ratio">{swatch.labelRatio.toFixed(2)}:1</span>
 		{#if swatch.outOfGamut}
-			<span class="gamut" title="Marginally outside sRGB; clamps to {swatch.color.gamutMapped.hex}">
-				outside sRGB
-			</span>
+			<span class="gamut">outside sRGB</span>
 		{/if}
 	</div>
 
@@ -48,7 +50,7 @@
 	</div>
 
 	{#if swatch.formula}
-		<p class="formula" title="How this colour is derived from the seed">{swatch.formula}</p>
+		<p class="formula">{swatch.formula}</p>
 	{/if}
 </article>
 
@@ -57,40 +59,41 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		border: 1px solid var(--page-border);
-		border-radius: 14px;
+		background: var(--surface-raised);
+		border: 1px solid var(--fg-border);
+		border-radius: var(--radius-lg);
 	}
 
 	.plate {
 		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-		align-items: flex-start;
-		justify-content: flex-end;
-		min-height: 7.5rem;
-		padding: 1rem;
-		/* Default assumption is a dark swatch, so light text. */
-		color: #ffffff;
-	}
-
-	.plate.on-light {
-		color: var(--brand-background-darkest);
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-3);
+		align-items: baseline;
+		min-height: 6.5rem;
+		padding: var(--space-4);
+		align-content: flex-end;
 	}
 
 	.name {
-		font-size: 0.9375rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
 		font-weight: 700;
-		letter-spacing: -0.01em;
+	}
+
+	.ratio {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		opacity: 0.75;
 	}
 
 	.gamut {
-		padding: 0.15rem 0.45rem;
-		font-size: 0.625rem;
+		padding: 0.1rem 0.4rem;
+		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		background: rgb(255 255 255 / 0.22);
-		border-radius: 999px;
+		border: 1px solid currentColor;
+		border-radius: var(--radius-pill);
 	}
 
 	.values {
@@ -100,42 +103,43 @@
 
 	.value {
 		display: grid;
-		grid-template-columns: 3.75rem minmax(0, 1fr) auto;
-		gap: 0.75rem;
+		grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+		gap: var(--space-3);
 		align-items: center;
-		padding: 0.55rem 0.85rem;
+		padding: var(--space-2) var(--space-4);
 		font: inherit;
+		color: inherit;
 		text-align: left;
 		cursor: pointer;
 		background: transparent;
 		border: 0;
-		border-top: 1px solid var(--page-border);
+		border-top: 1px solid var(--fg-border);
 	}
 
 	.value:hover {
-		background: var(--page-surface);
+		background: var(--surface-edge);
 	}
 
 	.key {
-		font-size: 0.625rem;
+		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--page-fg-subtle);
+		color: var(--fg-muted);
 	}
 
 	.val {
 		overflow: hidden;
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
+		font-size: var(--text-sm);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
 	.hint {
-		font-size: 0.6875rem;
+		font-size: var(--text-xs);
 		font-weight: 600;
-		color: var(--page-fg-subtle);
+		color: var(--fg-muted);
 		opacity: 0;
 		transition: opacity var(--dur-fast) var(--ease);
 	}
@@ -151,12 +155,12 @@
 	}
 
 	.formula {
-		padding: 0.6rem 0.85rem;
+		padding: var(--space-2) var(--space-4);
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 0.6875rem;
+		font-size: var(--text-xs);
 		line-height: 1.5;
-		color: var(--page-fg-subtle);
-		border-top: 1px solid var(--page-border);
+		color: var(--fg-muted);
+		border-top: 1px solid var(--fg-border);
 	}
 </style>

@@ -10,8 +10,10 @@
  * provide, so the contract below is the full list of what a replacement must satisfy:
  *
  *   Color            perceptual color value: channels l/c/h, name, description,
- *                    derive/shift, toCSS(), hex, isInGamut, isInP3, gamutMapped
+ *                    derive/shift/atLightness/atChroma/complement, maxChroma,
+ *                    toCSS(), hex, isInGamut, isInP3, gamutMapped
  *   parseColor       any CSS color string -> Color, throwing with the token name on failure
+ *   mixOver          composite a color over another at an alpha, in gamma sRGB
  *   contrastRatio    WCAG 2.x ratio between two Colors
  *   contrastRatioAlpha  same, with the foreground composited at an alpha
  *   wcagLevels       ratio -> { normal, large } pass levels
@@ -47,4 +49,23 @@ export type Color = OKLCH;
 /** Parse any CSS color string. `name` is the token name, used in the error on failure. */
 export function parseColor(css: string, name?: string): Color {
 	return OKLCH.fromCSS(css, name);
+}
+
+/**
+ * Composite `fg` over `bg` at `alpha`, in **gamma** sRGB.
+ *
+ * Gamma, not linear-light, because that is what a browser paints for `rgba()` and
+ * `color-mix(in srgb, …)`. Measuring a translucent token in a linear blend would report a ratio
+ * nobody will ever see — the palette brief calls this out specifically.
+ */
+export function mixOver(fg: Color, bg: Color, alpha: number): Color {
+	const [fr, fg_, fb] = fg.srgb;
+	const [br, bg_, bb] = bg.srgb;
+	const mix = (a: number, b: number) => a * alpha + b * (1 - alpha);
+	return OKLCH.fromCSS(
+		`rgb(${[mix(fr, br), mix(fg_, bg_), mix(fb, bb)]
+			.map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255))
+			.join(' ')})`,
+		`${fg.name}/${Math.round(alpha * 100)}`
+	);
 }

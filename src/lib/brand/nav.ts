@@ -19,8 +19,10 @@ export interface SectionLink {
 }
 
 const SECTIONS = [
+	{ id: 'colours', label: 'Colour' },
 	{ id: 'logo', label: 'Logo' },
-	{ id: 'colours', label: 'Colours' },
+	{ id: 'card', label: 'Card' },
+	{ id: 'rules', label: "Don't" },
 	{ id: 'assets', label: 'Assets' }
 ] as const;
 

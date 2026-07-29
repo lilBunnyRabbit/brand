@@ -28,6 +28,6 @@
 
 	p {
 		margin: 0 0 1rem;
-		color: var(--page-fg-muted);
+		color: var(--fg-muted);
 	}
 </style>
