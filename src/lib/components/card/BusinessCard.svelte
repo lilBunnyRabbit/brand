@@ -33,29 +33,29 @@
 				</div>
 			</div>
 
-			<!-- Front: mark top-left, name and role, details along the bottom. -->
+			<!-- Front. -->
 			<div
 				class="face"
 				style="background: {row.groundCss}; color: {row.inkCss}; --quiet: {row.quietCss};"
 			>
 				<div class="inner front">
-					<Mark {variant} size="12%" ink="currentColor" key="front-{row.id}" />
 					<!--
-						Name and details sit on one baseline row at the foot of the card, the way a real card
-						is set. Three stacked blocks spread over the full height left two large voids in the
-						middle, which is what made it read as a poster rather than a card.
+						Placement follows the reference: mark top-right, name and role on the left at about
+						mid-height, contact lines at the foot. Everything left-aligned and uppercase with wide
+						tracking, so the empty right-hand half is deliberate rather than a gap.
 					-->
-					<div class="foot">
-						<div class="who">
-							<p class="name">{card.name}</p>
-							<p class="role">{card.role}</p>
-						</div>
-						<ul class="lines">
-							{#each card.lines as line (line.label)}
-								<li>{line.value}</li>
-							{/each}
-						</ul>
+					<div class="mark">
+						<Mark {variant} size="100%" ink="currentColor" key="front-{row.id}" />
 					</div>
+					<div class="who">
+						<p class="name">{card.name}</p>
+						<p class="role">{card.role}</p>
+					</div>
+					<ul class="lines">
+						{#each card.lines as line (line.label)}
+							<li>{line.value}</li>
+						{/each}
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -63,7 +63,7 @@
 </div>
 
 <p class="note">
-	{card.widthMm} × {card.heightMm} mm with {card.bleedMm} mm bleed. Struck-through lines are placeholders.
+	{card.widthMm} × {card.heightMm} mm with {card.bleedMm} mm bleed. Contact details are placeholders.
 </p>
 
 <style>
@@ -126,45 +126,55 @@
 	}
 
 	.front {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-rows: auto 1fr auto;
+		column-gap: 5cqi;
 	}
 
-	.foot {
-		display: flex;
-		gap: 6cqi;
-		align-items: flex-end;
-		justify-content: space-between;
+	.mark {
+		grid-row: 1;
+		grid-column: 2;
+		width: 17cqi;
 	}
 
 	.who {
+		grid-row: 2;
+		grid-column: 1;
+		align-self: end;
 		min-width: 0;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 13cqi;
-		font-weight: 700;
+		font-size: 9.5cqi;
+		font-weight: 500;
 		line-height: 1;
-		letter-spacing: -0.03em;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 	}
 
 	.role {
-		margin: 1.5cqi 0 0;
-		font-size: 4.4cqi;
-		line-height: 1.2;
+		margin: 2cqi 0 0;
+		font-size: 3cqi;
+		line-height: 1;
+		letter-spacing: 0.32em;
+		text-transform: uppercase;
 		color: var(--quiet);
 	}
 
 	.lines {
+		grid-row: 3;
+		grid-column: 1 / -1;
 		display: grid;
-		gap: 1.2cqi;
+		gap: 1cqi;
 		padding: 0;
 		margin: 0;
-		font-size: 4cqi;
-		line-height: 1.3;
-		text-align: right;
+		font-family: var(--font-mono);
+		font-size: 3.4cqi;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
 		list-style: none;
 		color: var(--quiet);
 	}
