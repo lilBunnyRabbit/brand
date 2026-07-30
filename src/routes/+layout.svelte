@@ -25,6 +25,31 @@
 	const links = sections();
 
 	const mark = logos.variants.find((v) => !v.hidden);
+
+	/*
+		Hide the bar on the way down, bring it back on the way up, and pin the mark to the corner while
+		it is away — so the brand never actually leaves the screen.
+
+		Thresholds rather than raw direction: TOP keeps the bar down over the hero regardless, and STEP
+		ignores sub-pixel and rubber-band jitter that would otherwise flicker the header on iOS.
+	*/
+	const TOP = 90;
+	const STEP = 6;
+
+	let hidden = $state(false);
+	let scrolled = $state(false);
+	let lastY = 0;
+
+	function onScroll() {
+		const y = window.scrollY;
+		scrolled = y > 8;
+
+		if (y < TOP) hidden = false;
+		else if (y > lastY + STEP) hidden = true;
+		else if (y < lastY - STEP) hidden = false;
+
+		lastY = y;
+	}
 </script>
 
 <svelte:head>
@@ -33,11 +58,23 @@
 	<meta name="theme-color" content="#17252c" />
 </svelte:head>
 
+<svelte:window onscroll={onScroll} />
+
 <Announcer />
 
 <a class="skip" href="#colours">Skip to content</a>
 
-<header class="bar">
+<!--
+	The mark, parked in the corner while the bar is away. `aria-hidden` because it duplicates the
+	header's own home link — a screen reader should not hear two of them.
+-->
+{#if mark}
+	<a class="perch" class:is-shown={hidden} href={home()} tabindex="-1" aria-hidden="true">
+		<Mark variant={mark} size="1.5rem" ink="var(--brand-primary)" key="perch" />
+	</a>
+{/if}
+
+<header class="bar" class:is-hidden={hidden} class:is-scrolled={scrolled}>
 	<div class="inner">
 		<a class="brand" href={home()}>
 			{#if mark}
@@ -92,8 +129,46 @@
 		top: 0;
 		z-index: 10;
 		background: color-mix(in srgb, var(--brand-background) 82%, transparent);
-		border-bottom: 1px solid var(--hairline);
+		border-bottom: 1px solid transparent;
 		backdrop-filter: blur(12px) saturate(150%);
+		transition:
+			transform var(--dur) var(--ease),
+			border-color var(--dur) var(--ease);
+	}
+
+	/* The hairline only appears once there is something to separate from. */
+	.bar.is-scrolled {
+		border-bottom-color: var(--hairline);
+	}
+
+	.bar.is-hidden {
+		transform: translateY(-100%);
+	}
+
+	.perch {
+		position: fixed;
+		top: var(--space-4);
+		left: var(--space-4);
+		z-index: 11;
+		display: grid;
+		place-items: center;
+		padding: var(--space-2);
+		background: color-mix(in srgb, var(--brand-bg_darkest) 78%, transparent);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-pill);
+		backdrop-filter: blur(10px);
+		opacity: 0;
+		transform: scale(0.6) translateY(-0.35rem);
+		transition:
+			opacity var(--dur) var(--ease),
+			transform var(--dur) var(--ease-spring, var(--ease));
+		pointer-events: none;
+	}
+
+	.perch.is-shown {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
 	}
 
 	.inner {
@@ -190,5 +265,16 @@
 
 	footer .inner {
 		padding-block: var(--space-6);
+	}
+
+	/*
+		The bar still hides — that is behaviour, not decoration — it just snaps instead of sliding. The
+		global reduced-motion rule already caps durations, this makes the intent explicit.
+	*/
+	@media (prefers-reduced-motion: reduce) {
+		.bar,
+		.perch {
+			transition: none;
+		}
 	}
 </style>
