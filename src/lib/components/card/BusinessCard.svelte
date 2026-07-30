@@ -41,10 +41,12 @@
 				<div class="inner front">
 					<!--
 						Placement, straight off the reference:
-						  mark      top-right
-						  name      left, floating in the middle band — NOT pushed down onto the contacts
+						  name      top-left
 						  role      directly beneath it, tiny, very wide tracking
+						  mark      top-right
 						  contacts  bottom-left, three mono lines
+
+						The middle row takes the slack, so the space sits between the name and the contacts.
 
 						All uppercase, all left-aligned, name at regular weight. The empty right half below
 						the mark is deliberate.
@@ -141,14 +143,14 @@
 	.mark {
 		grid-row: 1;
 		grid-column: 2;
+		align-self: start;
 		width: 16cqi;
 	}
 
 	.who {
-		grid-row: 2;
-		grid-column: 1 / -1;
-		/* `center`, not `end`. `end` dropped the name onto the contact block. */
-		align-self: center;
+		grid-row: 1;
+		grid-column: 1;
+		align-self: start;
 		min-width: 0;
 	}
 
