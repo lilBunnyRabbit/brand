@@ -207,6 +207,41 @@ a {
 	}
 }
 
+/*
+	The mark's flight between the hero, the header and the corner.
+
+	Only the named element animates: the root snapshot is pinned so the rest of the page does not
+	cross-fade behind it, which is what makes a view transition read as one object moving rather than
+	the whole document blinking.
+*/
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+::view-transition-group(brand-mark) {
+	animation-duration: 520ms;
+	animation-timing-function: var(--ease);
+}
+
+::view-transition-old(brand-mark),
+::view-transition-new(brand-mark) {
+	/* Cross-fade the two inks over the whole flight, so primary becomes foreground on the way. */
+	animation-duration: 520ms;
+	animation-timing-function: var(--ease);
+	height: 100%;
+	object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
