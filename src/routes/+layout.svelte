@@ -70,7 +70,7 @@
 -->
 {#if mark}
 	<a class="perch" class:is-shown={hidden} href={home()} tabindex="-1" aria-hidden="true">
-		<Mark variant={mark} size="1.5rem" ink="var(--brand-primary)" key="perch" />
+		<Mark variant={mark} size="1.5rem" ink="var(--brand-foreground)" key="perch" />
 	</a>
 {/if}
 
@@ -145,18 +145,13 @@
 		transform: translateY(-100%);
 	}
 
+	/* The bare mark in `foreground`, matching the header. No pill, no ground of its own. */
 	.perch {
 		position: fixed;
 		top: var(--space-4);
-		left: var(--space-4);
+		left: clamp(var(--space-4), 4vw, var(--space-6));
 		z-index: 11;
-		display: grid;
-		place-items: center;
-		padding: var(--space-2);
-		background: color-mix(in srgb, var(--brand-bg_darkest) 78%, transparent);
-		border: 1px solid var(--hairline);
-		border-radius: var(--radius-pill);
-		backdrop-filter: blur(10px);
+		display: block;
 		opacity: 0;
 		transform: scale(0.6) translateY(-0.35rem);
 		transition:
