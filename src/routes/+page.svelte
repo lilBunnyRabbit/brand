@@ -10,7 +10,6 @@
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
 	import { logos } from '$lib/brand/discover';
-	import { markSlot } from '$lib/brand/mark-slot.svelte';
 	import { meta } from '$lib/brand/config/meta';
 	import { swatches } from '$lib/brand/config/palette';
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
@@ -53,23 +52,6 @@
 	const mutedOnPage = modifierRatio('foreground', 'background', 'muted');
 	const mutedOnLightest = modifierRatio('foreground', 'bg_lightest', 'muted');
 
-	/*
-		Watch the hero mark's slot rather than a scroll offset: when it leaves the viewport the mark
-		hands itself to the header (or the corner, if the bar is hidden), and the view transition flies
-		it there. `rootMargin` fires it a little early so the flight starts before the gap is obvious.
-	*/
-	let heroSlot = $state<HTMLElement | null>(null);
-
-	$effect(() => {
-		if (!heroSlot) return;
-		const io = new IntersectionObserver(
-			([entry]) => markSlot.setHeroOnScreen(entry.isIntersecting),
-			{ rootMargin: '-24px 0px 0px 0px' }
-		);
-		io.observe(heroSlot);
-		return () => io.disconnect();
-	});
-
 	let format = $state(exportFormats[0].id);
 	const active = $derived(exportFormats.find((f) => f.id === format) ?? exportFormats[0]);
 	const rendered = $derived(active.render());
@@ -95,11 +77,8 @@
 	</div>
 
 	{#if hero}
-		<!-- The slot keeps its size whether or not the mark is in it, so nothing reflows mid-flight. -->
-		<div class="hero-mark" bind:this={heroSlot}>
-			{#if markSlot.current === 'hero'}
-				<span class="flyer"><Mark variant={hero} size="min(52vw, 14rem)" key="hero" /></span>
-			{/if}
+		<div class="hero-mark">
+			<Mark variant={hero} size="min(52vw, 14rem)" key="hero" />
 		</div>
 	{/if}
 </div>
@@ -556,13 +535,6 @@
 	.hero-mark {
 		display: grid;
 		place-items: center;
-		/* Reserve the space so handing the mark away does not collapse the hero. */
-		min-height: min(52vw, 14rem);
-	}
-
-	.flyer {
-		display: block;
-		view-transition-name: brand-mark;
 	}
 
 	/* ── contract banner ── */

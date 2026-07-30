@@ -6,7 +6,6 @@
 	import { brandStyleSheet } from '$lib/brand/tokens';
 	import { home, sections } from '$lib/brand/nav';
 	import { logos } from '$lib/brand/discover';
-	import { markSlot } from '$lib/brand/mark-slot.svelte';
 	import { meta } from '$lib/brand/config/meta';
 
 	let { children } = $props();
@@ -65,17 +64,23 @@
 	The mark, parked in the corner while the bar is away. `aria-hidden` because it duplicates the
 	header's own home link — a screen reader should not hear two of them.
 -->
-{#if mark && markSlot.current === 'perch'}
-	<a class="perch" href={home()} tabindex="-1" aria-hidden="true">
-		<span class="flyer"
-			><Mark variant={mark} size="1.5rem" ink="var(--brand-foreground)" key="perch" /></span
-		>
+{#if mark}
+	<!--
+		Always in the DOM and toggled by a class, not created and destroyed — a CSS transition cannot
+		run on an element that did not exist a frame ago.
+	-->
+	<a class="perch" class:is-shown={hidden} href={home()} tabindex="-1" aria-hidden="true">
+		<Mark variant={mark} size="1.5rem" ink="var(--brand-foreground)" key="perch" />
 	</a>
 {/if}
 
 <header class="bar" class:is-hidden={hidden} class:is-scrolled={scrolled}>
 	<div class="inner">
 		<a class="brand" href={home()}>
+			{#if mark}
+				<!-- The mark stays in the bar. It is chrome, so `foreground`. -->
+				<Mark variant={mark} size="1.35rem" ink="var(--brand-foreground)" key="header" />
+			{/if}
 			<span class="wordmark">{meta.name}</span>
 		</a>
 		<nav aria-label="Sections">
@@ -141,21 +146,28 @@
 	}
 
 	/* The bare mark in `foreground`, matching the header. No pill, no ground of its own. */
+	/*
+		The mark, kept on screen while the bar is away. Aligned to the same gutter the bar uses, so it
+		lands exactly where the bar's own mark was rather than near it.
+	*/
 	.perch {
 		position: fixed;
-		top: var(--space-4);
+		top: var(--space-3);
 		left: clamp(var(--space-4), 4vw, var(--space-6));
 		z-index: 11;
 		display: block;
+		opacity: 0;
+		transform: scale(0.55) translateY(-0.5rem);
+		transition:
+			opacity 0.22s var(--ease),
+			transform 0.28s var(--ease-spring, var(--ease));
+		pointer-events: none;
 	}
 
-	/*
-		The one element that flies. Only ever one of these exists at a time — see mark-slot.svelte.ts —
-		because two live elements sharing a view-transition-name is an error and kills the animation.
-	*/
-	.flyer {
-		display: block;
-		view-transition-name: brand-mark;
+	.perch.is-shown {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
 	}
 
 	.inner {
