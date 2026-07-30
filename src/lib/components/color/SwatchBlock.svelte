@@ -90,10 +90,7 @@
 	<dialog bind:this={sheet} aria-label="{swatch.label} — every notation">
 		<div class="sheet-head">
 			<span class="sheet-chip" style="background: {swatch.hex};" aria-hidden="true"></span>
-			<span class="sheet-id">
-				<strong>{swatch.label}</strong>
-				<code>{swatch.cssVar}</code>
-			</span>
+			<strong>{swatch.label}</strong>
 			<button type="button" class="x" aria-label="Close" onclick={() => sheet.close()}>✕</button>
 		</div>
 
@@ -244,9 +241,20 @@
 		colour in the palette as a different dialog. It is a document surface, so it uses the document's
 		own tokens, and inside a light region those resolve light.
 	*/
-	dialog {
+	/*
+		`display` goes on `dialog[open]`, NEVER on `dialog`.
+
+		The UA stylesheet closes a dialog with `dialog:not([open]) { display: none }`, which any author
+		`display` on the bare element beats — so a plain `dialog { display: flex }` renders all 34 sheets
+		inline, in the swatch grid, as if each card were a panel of conversion rows. It looks like a card
+		redesign rather than a broken selector, which is exactly what makes it worth a comment.
+	*/
+	dialog[open] {
 		display: flex;
 		flex-direction: column;
+	}
+
+	dialog {
 		width: min(30rem, calc(100vw - 2 * var(--space-4)));
 		max-height: min(32rem, calc(100vh - 2 * var(--space-6)));
 		padding: 0;
@@ -275,16 +283,8 @@
 		border-radius: var(--radius-sm);
 	}
 
-	.sheet-id {
-		display: grid;
+	.sheet-head strong {
 		flex: 1;
-		gap: 0.1rem;
-	}
-
-	.sheet-id code {
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		color: var(--fg-muted);
 	}
 
 	.x {
