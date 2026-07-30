@@ -7,7 +7,7 @@
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
 	import Wordmark from '$lib/components/logo/Wordmark.svelte';
-	import DerivationGrow from '$lib/components/color/DerivationGrow.svelte';
+	import SeedTree from '$lib/components/color/SeedTree.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
 	import Footer from '$lib/components/Footer.svelte';
@@ -377,6 +377,20 @@
 				Muted is the one place the contract does not hold: AA-large at best. Captions and metadata
 				only, and keep it off the lightest two shades.
 			</p>
+		</div>
+
+		<!--
+			The derivation as a family tree, one colour at a time. Its own group rather than sitting beside
+			the `.chain` list at the top: the list is the arithmetic in six lines, this is the same story with
+			the colours actually moving, and putting both in one viewport made each look like a draft of the
+			other.
+		-->
+		<div class="group">
+			<div class="group-head">
+				<h3>One seed, in order</h3>
+				<p>Every colour, and the move that made it. It builds itself once when you reach it.</p>
+			</div>
+			<SeedTree theme="dark" />
 		</div>
 	</Section>
 
@@ -748,24 +762,6 @@
 		{/if}
 	</Section>
 
-	<!-- ─── The family tree, parked ────────────────────────────────────────── -->
-
-	{#if hero}
-		<!--
-		Unlisted on purpose: not in the nav, collapsed by default, sitting at the foot of the page.
-		<details> gives it a real keyboard-operable toggle with no JS and no custom ARIA.
-	-->
-		<details class="stash">
-			<summary>
-				<span>Watch it grow</span>
-				<span class="stash-hint">unfinished</span>
-			</summary>
-			<div class="stash-body">
-				<DerivationGrow />
-			</div>
-		</details>
-	{/if}
-
 	<!-- ─── Assets ─────────────────────────────────────────────────────────── -->
 
 	<Section
@@ -905,6 +901,15 @@
 			{/each}
 
 			{@render cottontailPanel('light')}
+
+			<!-- The same figure on the light palette. Same shape, different answers. -->
+			<div class="group">
+				<div class="group-head">
+					<h3>One seed, in order</h3>
+					<p>The light twins, built the same way.</p>
+				</div>
+				<SeedTree theme="light" />
+			</div>
 		</Section>
 
 		<!-- ─── The hue that moved ─────────────────────────────────────────── -->
@@ -1088,29 +1093,6 @@
 		color: var(--brand-warning);
 	}
 
-	/* ── parked experiment ── */
-	.stash {
-		margin-top: var(--stack-section);
-	}
-
-	.stash summary {
-		display: inline-flex;
-		gap: var(--space-3);
-		align-items: baseline;
-		padding: var(--space-2) var(--space-4);
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-		cursor: pointer;
-		border: 1px solid var(--hairline);
-		border-radius: var(--radius-pill);
-	}
-
-	.stash summary:hover {
-		color: var(--brand-foreground);
-		background: var(--surface-raised);
-	}
-
 	/* ── the threshold, and the dawn into light ── */
 
 	/*
@@ -1228,15 +1210,6 @@
 
 	.statement strong {
 		color: var(--brand-primary);
-	}
-
-	.stash-hint {
-		font-size: var(--text-xs);
-		color: var(--brand-warning);
-	}
-
-	.stash-body {
-		margin-top: var(--space-5);
 	}
 
 	/* ── the seed / maths ── */
@@ -1581,12 +1554,14 @@
 
 	.faces {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 		gap: var(--space-4);
 	}
 
+	/* `min-width: 0`, so a long licence line wraps instead of setting the card's floor. */
 	.face-card {
 		display: grid;
+		min-width: 0;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: clamp(var(--space-4), 3vw, var(--space-5));
 		align-items: start;
@@ -1639,6 +1614,7 @@
 		margin: var(--space-4) 0 0;
 		font-size: var(--text-xs);
 		color: var(--fg-muted);
+		overflow-wrap: anywhere;
 	}
 
 	.face-meta code {
@@ -1655,13 +1631,15 @@
 	}
 
 	/*
-		The sample column is fixed and the type inside it is not clipped, so the hero step overflows its
-		cell rather than resizing the row. That is deliberate: seeing 4.75rem next to 0.75rem at their real
-		sizes is the only thing a scale specimen is for.
+		`auto`, not a fixed width, for the sample column.
+
+		It was `6rem`, which the two fluid steps do not fit in: "Aa" at `--text-hero` is about 9rem wide, so
+		it overflowed its own cell and printed on top of the token name beside it. A grid column is shared by
+		every row, so `auto` sizes the track to the largest sample and all eight labels still line up.
 	*/
 	.scale li {
 		display: grid;
-		grid-template-columns: 6rem minmax(0, 1fr);
+		grid-template-columns: auto minmax(0, 1fr);
 		gap: var(--space-4);
 		align-items: center;
 		padding-block: var(--space-3);

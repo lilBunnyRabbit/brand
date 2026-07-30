@@ -14,6 +14,7 @@
  *                    toCSS(), hex, isInGamut, isInP3, gamutMapped
  *   parseColor       any CSS color string -> Color, throwing with the token name on failure
  *   mixOver          composite a color over another at an alpha, in gamma sRGB
+ *   travelAxes       interpolate from one Color to another ONE AXIS AT A TIME, for animation
  *   contrastRatio    WCAG 2.x ratio between two Colors
  *   contrastRatioAlpha  same, with the foreground composited at an alpha
  *   wcagLevels       ratio -> { normal, large } pass levels
@@ -70,6 +71,58 @@ export function mixOver(fg: Color, bg: Color, alpha: number): Color {
 			.join(' ')})`,
 		`${fg.name}/${Math.round(alpha * 100)}`
 	);
+}
+
+/** The three channels a colour can travel along, named as the `Color` fields are. */
+export type ColorAxis = 'l' | 'c' | 'h';
+
+/**
+ * Travel from one colour to another ONE AXIS AT A TIME.
+ *
+ * `t` runs 0 → 1 and is cut into equal phases, one per entry in `axes`: the first axis moves while
+ * the others hold at `from`, then the second, and so on. Lives here rather than in the component
+ * that animates it because interpolating channels is colour maths, and because "what does a blend
+ * between two palette colours look like" is a question a replacement implementation has to answer
+ * the same way.
+ *
+ * The phasing is not decoration. Most of this palette shares one lightness, so a simultaneous blend
+ * between two of its colours passes through near-grey at the halfway point — the move reads as a
+ * fade rather than as a turn. One axis at a time keeps each move legible as the thing it is.
+ *
+ * Hue takes the SHORTER arc and lands on `to`'s own hue rather than on a caller-supplied delta, so a
+ * phase list cannot disagree with the palette about where a colour ends up. `t >= 1` returns `to`
+ * exactly, which means an axis the caller forgot to list shows up mid-flight and never at rest.
+ */
+export function travelAxes(from: Color, to: Color, axes: readonly ColorAxis[], t: number): Color {
+	if (t <= 0 || axes.length === 0) return from;
+	if (t >= 1) return to;
+
+	const span = 1 / axes.length;
+	const channels = { l: from.l, c: from.c, h: from.h };
+
+	axes.forEach((axis, index) => {
+		const f = Math.min(1, Math.max(0, (t - index * span) / span));
+		if (f === 0) return;
+
+		if (axis === 'h') {
+			/*
+				±180 is a tie between the two arcs, and it resolves FORWARDS — which is how a complement
+				reads, and is what a hue defined as `h + 180` looks like on the wheel.
+
+				The tolerance is load-bearing rather than defensive: a palette that derives its complement
+				arithmetically lands on 179.99999999999997 or 180.00000000000003 depending on which way the
+				subtraction rounds, so a bare `> 180` sends half of the exact complements the long way
+				round and the two of them travel through opposite sides of the wheel.
+			*/
+			let turn = (((to.h - from.h) % 360) + 360) % 360;
+			if (turn > 180 + 1e-6) turn -= 360;
+			channels.h = (((from.h + turn * f) % 360) + 360) % 360;
+		} else {
+			channels[axis] = from[axis] + (to[axis] - from[axis]) * f;
+		}
+	});
+
+	return new OKLCH(`${from.name}→${to.name}`, channels.l, channels.c, channels.h);
 }
 
 /* ────────────────────────────── notations ────────────────────────────── */
