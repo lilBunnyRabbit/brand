@@ -274,14 +274,30 @@
 		The colour comes from the inline style, same as the card. Everything inside is `currentColor`
 		against it, so one binary label rule covers the whole sheet.
 	*/
+	/*
+		Height is capped by the VIEWPORT and nothing else, so the sheet shows all twenty notations at once
+		wherever there is room and only scrolls when there genuinely is not. It used to carry a `32rem` cap
+		as well, which made it scroll on a screen with hundreds of spare pixels either side of it.
+
+		`dvh` rather than `vh`, and `--space-6` off each edge so it never touches a screen edge.
+	*/
 	dialog {
 		width: min(30rem, calc(100vw - 2 * var(--space-4)));
-		max-height: min(32rem, calc(100vh - 2 * var(--space-6)));
+		max-height: calc(100dvh - 2 * var(--space-6));
 		margin: auto;
 		padding: 0;
 		overflow: hidden;
 		border: 0;
 		border-radius: var(--radius-lg);
+		/*
+			`outline`, not `border`, and that is what makes it work on all 34: an outline is painted OUTSIDE
+			the box, on the scrim, so it reads even on the cottontail swatch itself — where a border would
+			have been cottontail on cottontail and simply disappeared.
+
+			`--brand-cottontail` resolves per scope, so a sheet opened in the light region is outlined in
+			light's cottontail without a second rule.
+		*/
+		outline: 2px solid var(--brand-cottontail);
 	}
 
 	dialog::backdrop {

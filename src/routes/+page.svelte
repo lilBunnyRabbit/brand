@@ -6,6 +6,7 @@
 	import Mark from '$lib/components/logo/Mark.svelte';
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
+	import Wordmark from '$lib/components/logo/Wordmark.svelte';
 	import DerivationGrow from '$lib/components/color/DerivationGrow.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
@@ -17,6 +18,7 @@
 	import { dark, light, modifiers, themes, type ThemeName } from '$lib/brand/config/palette';
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
+	import { wordmarks } from '$lib/brand/config/wordmarks';
 	import { hueEvidence, hueMoves, lightUsage } from '$lib/brand/config/light-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
 	import { lockupVision, lockupVisionSpread } from '$lib/brand/vision';
@@ -487,12 +489,64 @@
 		{/if}
 	</Section>
 
+	<!-- ─── The name beside the mark ───────────────────────────────────────── -->
+
+	{#if hero}
+		<Section
+			id="wordmark"
+			index="04"
+			accent="secondary"
+			title="The name"
+			lede="There is no wordmark asset. The name is set in Hack — the same face as every value on this page — so a lockup is a layout decision, not a drawing."
+		>
+			<p class="undecided">
+				Nothing here is chosen yet. Twelve arrangements of the same two objects, at the same size,
+				on the same shade — so the only thing different between any two of them is the thing being
+				compared.
+			</p>
+
+			<div class="marks">
+				{#each wordmarks as lockup (lockup.id)}
+					<figure class="wm">
+						<div class="wm-stage">
+							<Wordmark variant={hero} {lockup} size="3.25rem" />
+						</div>
+						<figcaption>
+							<span class="wm-label">{lockup.label}</span>
+							<span class="wm-note">{lockup.note}</span>
+						</figcaption>
+					</figure>
+				{/each}
+			</div>
+
+			<!--
+				The same lockup at the sizes it has to survive. Whichever one wins, this is the check that
+				decides whether it can be used small — the name is set in a mono face at 42% of a 16px mark,
+				which is 6.7px.
+			-->
+			<div class="group">
+				<div class="group-head">
+					<h3>How small it goes</h3>
+					<p>
+						The horizontal lockup at four sizes. Below about 32px the name stops being readable
+						before the mark stops being recognisable, so that is where the mark goes on alone.
+					</p>
+				</div>
+				<div class="wm-sizes">
+					{#each ['1rem', '1.5rem', '2.25rem', '3.25rem'] as size (size)}
+						<Wordmark variant={hero} lockup={wordmarks[0]} {size} />
+					{/each}
+				</div>
+			</div>
+		</Section>
+	{/if}
+
 	<!-- ─── Business card ──────────────────────────────────────────────────── -->
 
 	{#if hero}
 		<Section
 			id="card"
-			index="04"
+			index="05"
 			accent="accent"
 			title="Business card"
 			lede="Front and back. Nothing fancy."
@@ -505,7 +559,7 @@
 
 	<Section
 		id="rules"
-		index="05"
+		index="06"
 		accent="tertiary"
 		title="Don't"
 		lede="A short list, and most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
@@ -564,7 +618,7 @@
 
 	<Section
 		id="assets"
-		index="06"
+		index="07"
 		accent="secondary"
 		title="Assets"
 		lede="Grab the palette however you need it."
@@ -639,7 +693,7 @@
 	<div class="measure">
 		<Section
 			id="light"
-			index="07"
+			index="08"
 			accent="primary"
 			title="Light mode"
 			lede="It exists because interfaces need it. It is not the brand."
@@ -677,7 +731,7 @@
 		-->
 		<Section
 			id="light-colour"
-			index="08"
+			index="09"
 			accent="secondary"
 			title="Seventeen twins"
 			lede="Same names, same groups, same order — and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
@@ -705,7 +759,7 @@
 
 		<Section
 			id="light-orange"
-			index="09"
+			index="10"
 			accent="accent"
 			title="The orange one"
 			lede="Everything else is a twin. The primary changed hue — and that was measured, not chosen."
@@ -758,7 +812,7 @@
 
 		<Section
 			id="light-logo"
-			index="10"
+			index="11"
 			accent="tertiary"
 			title="The mark on paper"
 			lede="The same five combinations, in the light palette."
@@ -1232,6 +1286,77 @@
 		width: 0.7rem;
 		height: 0.7rem;
 		border-radius: 50%;
+	}
+
+	/* ── the name beside the mark ── */
+
+	.undecided {
+		max-width: 66ch;
+		margin: 0 0 var(--stack-sm);
+		font-size: var(--text-base);
+		color: var(--fg-muted);
+	}
+
+	/*
+		Wide cells, and every stage the same height.
+
+		A lockup is only judged against the others, so the comparison means nothing unless everything else
+		is held still: same shade, same mark size, same box. `19rem` is what the three-line variant needs
+		without scaling down, and that sets the floor for all of them.
+	*/
+	.marks {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+		gap: var(--space-4);
+	}
+
+	.wm {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		margin: 0;
+	}
+
+	.wm-stage {
+		display: grid;
+		place-items: center;
+		min-height: 9rem;
+		padding: var(--space-5);
+		background: var(--surface-well);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	.wm figcaption {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.wm-label {
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.wm-note {
+		max-width: 40ch;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	/* Bottom-aligned, so the four sizes read as one object growing rather than as four objects. */
+	.wm-sizes {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-5) clamp(var(--space-5), 4vw, var(--space-8));
+		align-items: flex-end;
+		width: fit-content;
+		max-width: 100%;
+		padding: var(--space-5) var(--space-6);
+		margin-top: var(--space-5);
+		background: var(--surface-well);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
 	}
 
 	/*

@@ -27,6 +27,7 @@ const SECTIONS = [
 	{ id: 'colours', label: 'Colour' },
 	{ id: 'idea', label: 'Idea' },
 	{ id: 'logo', label: 'Logo' },
+	{ id: 'wordmark', label: 'Name' },
 	{ id: 'card', label: 'Card' },
 	{ id: 'rules', label: "Don't" },
 	{ id: 'assets', label: 'Assets' },
