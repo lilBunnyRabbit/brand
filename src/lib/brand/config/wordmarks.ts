@@ -56,7 +56,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'row-camel',
 		label: 'Horizontal',
-		note: 'Mark, gap, name. The one that works on a README, a business card and a browser tab.',
+		note: 'Mark, gap, name. The default. Holds up in a README or a browser tab.',
 		layout: 'row',
 		align: 'center',
 		scale: 0.42,
@@ -89,7 +89,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'row-light',
 		label: 'Regular weight',
-		note: 'The same arrangement at 400. Sits back rather than announcing itself — good in a footer.',
+		note: 'The same arrangement at 400. Quieter. Good in a footer.',
 		layout: 'row',
 		align: 'center',
 		scale: 0.42,
@@ -100,7 +100,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'row-lower',
 		label: 'All lowercase',
-		note: 'Loses the humps, so tracking has to carry the rhythm. Reads as a handle, not a name.',
+		note: 'Loses the humps, so tracking has to carry the rhythm. Reads like a handle.',
 		layout: 'row',
 		align: 'center',
 		scale: 0.42,
@@ -135,7 +135,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'row-reverse',
 		label: 'Mark trailing',
-		note: 'Name first. Reads as a signature — and the mark stops being the thing you see first.',
+		note: 'Name first. Reads as a signature, and the mark stops being the first thing you see.',
 		layout: 'row-reverse',
 		align: 'center',
 		scale: 0.42,
@@ -146,7 +146,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'stack-center',
 		label: 'Stacked, centred',
-		note: 'For a square-ish space: an avatar frame, a splash, the middle of a card.',
+		note: 'For a square-ish space: an avatar frame, or the middle of a card.',
 		layout: 'stack',
 		align: 'center',
 		scale: 0.34,
@@ -180,7 +180,7 @@ export const wordmarks: readonly WordmarkLockup[] = [
 	{
 		id: 'row-three-lines',
 		label: 'Three lines',
-		note: 'A block of name beside the mark. Tall, deliberate, and hard to use small.',
+		note: 'A block of name beside the mark. Tall, and hard to use small.',
 		layout: 'row',
 		align: 'center',
 		scale: 0.26,

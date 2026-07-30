@@ -98,7 +98,7 @@
 	<dialog
 		bind:this={sheet}
 		style="background: {swatch.hex}; color: var({swatch.labelVar});"
-		aria-label="{swatch.label} — every notation"
+		aria-label="{swatch.label}, every notation"
 		onclick={(event) => {
 			if (event.target === sheet) sheet.close();
 		}}
@@ -129,7 +129,7 @@
 			{/each}
 
 			{#if libRows.length}
-				<p class="divider">Not valid CSS — culori spaces</p>
+				<p class="divider">Not valid CSS: culori spaces</p>
 				{#each libRows as format (format.id)}
 					<button
 						type="button"

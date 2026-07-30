@@ -17,17 +17,24 @@ export interface BrandMeta {
 	links: BrandLink[];
 	/** Repo folder holding the source SVGs, linked as the no-JS download fallback. */
 	assetsUrl: string;
+	/**
+	 * Where the site is published, with no trailing slash.
+	 *
+	 * Needed because `og:image` and `og:url` must be ABSOLUTE. A scraper is not a browser: it does not
+	 * resolve a relative path against the page it fetched, so `base`-prefixed URLs from `$app/paths`
+	 * are not enough on their own.
+	 */
+	siteUrl: string;
 }
 
 export const meta: BrandMeta = {
 	name: 'lilBunnyRabbit',
 	tagline: 'Take what you need.',
-	description:
-		'The mark, the colours, and a handful of rules. Everything on this page can be copied or ' +
-		'downloaded — help yourself.',
+	description: 'The mark, the colours and the rules. Copy or download anything here.',
 	links: [
 		{ label: 'GitHub', href: 'https://github.com/lilBunnyRabbit' },
 		{ label: 'Repo', href: 'https://github.com/lilBunnyRabbit/brand' }
 	],
-	assetsUrl: 'https://github.com/lilBunnyRabbit/brand/tree/master/src/lib/brand/logos'
+	assetsUrl: 'https://github.com/lilBunnyRabbit/brand/tree/master/src/lib/brand/logos',
+	siteUrl: 'https://lilbunnyrabbit.github.io/brand'
 };

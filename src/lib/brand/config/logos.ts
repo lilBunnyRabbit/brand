@@ -14,8 +14,8 @@ export const logoOverrides: Record<string, LogoOverride> = {
 	'lilbunnyrabbit.mark.v6.wip.svg': {
 		label: 'Mark',
 		description:
-			'Two mirrored strokes. Single-colour, so its ink follows whatever colour it sits in — ' +
-			'there is no light and dark version to keep in sync.',
+			'Two mirrored strokes. Single-colour, so its ink follows whatever it sits in. No light ' +
+			'and dark version to keep in sync.',
 		tone: 'mono',
 		status: 'wip',
 		order: -1

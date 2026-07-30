@@ -19,13 +19,13 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'light-is-ui-only',
 		rule: 'Light mode is UI only.',
-		why: 'Use it when a product surface needs it. Never for brand recognition, marketing, the app icon or social cards — those are always dark.',
+		why: 'Use it when a product surface needs it. Never for brand recognition, marketing, the app icon or social cards. Those are always dark.',
 		severity: 'never'
 	},
 	{
 		id: 'nothing-on-white',
 		rule: 'Nothing brand-coloured on white.',
-		why: 'The light ground is #f5ecdc, a cream — not white. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff.',
+		why: 'The light ground is #f5ecdc, a cream. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff.',
 		severity: 'never'
 	},
 	{
@@ -73,7 +73,7 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'logo-exempt',
 		rule: 'Do not “fix” the logo’s contrast.',
-		why: 'The bright badge is 1.94:1 on purpose — logos are exempt (WCAG 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
+		why: 'The bright badge is 1.94:1 on purpose. Logos are exempt (WCAG 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
 		severity: 'never'
 	}
 ];

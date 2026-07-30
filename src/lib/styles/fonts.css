@@ -1,10 +1,32 @@
 /*
-	Hack, self-hosted. The site's one loaded webfont.
+	Inter, self-hosted, as ONE variable file.
+
+	`--font-sans` named Inter for months while nothing loaded it, so the page rendered in whatever the
+	visitor happened to fall through to: -apple-system on a Mac, Segoe UI on Windows, Roboto on Android.
+	Three different typefaces for a document whose subject is visual consistency.
+
+	The variable file rather than static instances because the page asks for five weights (400 body, 500,
+	600, 700 and 800 on the hero). Five static cuts would be five requests and more bytes than this one
+	352 kB file, and a variable axis means no weight is ever synthesised.
+
+	`font-weight: 100 900` declares the axis range. Without it a browser treats the file as a single
+	weight and synthesises the rest, which is the exact thing self-hosting was supposed to stop.
+*/
+@font-face {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../brand/fonts/InterVariable.woff2') format('woff2');
+}
+
+/*
+	Hack, self-hosted. The site's mono face, and now the wordmark's.
 
 	Every value on this page is mono — hexes, `oklch()` literals, token names, px sizes, ratios — so the
-	mono face is not a detail here, it is most of the type. It ships as a real font rather than a name in
-	a stack: `--font-mono` used to start at 'JetBrains Mono' and fall through to `ui-monospace`, which
-	means the page rendered in whatever the visitor happened to have and looked different per machine.
+	mono face is not a detail here, it is most of the type. Same story as Inter above: `--font-mono` used
+	to start at 'JetBrains Mono' and fall through to `ui-monospace`, so the page rendered in whatever the
+	visitor happened to have installed.
 
 	Two faces, not four. 400 and 700 are the only weights the page asks for; CSS font matching maps a
 	requested 500 down to 400 and a 600 up to 700, which is the normal behaviour of any two-weight

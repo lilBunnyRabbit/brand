@@ -12,7 +12,7 @@
 
 <footer>
 	<div class="measure inner">
-		<p>{meta.name} — {meta.tagline} Dark is the brand; light is for interfaces.</p>
+		<p>{meta.name}. {meta.tagline} Dark is the brand; light is for interfaces.</p>
 		<nav aria-label="Elsewhere">
 			{#each meta.links as link (link.href)}
 				<a href={link.href}>{link.label}</a>

@@ -6,7 +6,7 @@ export interface Step {
 }
 
 export const logoStory = {
-	rule: 'Design from the nose first. The ears are a hint, not the hero.',
+	rule: 'Design from the nose first. The ears are only ever a hint.',
 	steps: [
 		{ n: '1', title: 'Rabbit nose', body: 'The Y of the philtrum.' },
 		{ n: '2', title: 'Reduce', body: 'Down to a bare Y.' },

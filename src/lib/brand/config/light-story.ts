@@ -11,12 +11,12 @@
 /** Where light mode is allowed, and where it is not. The second list is the one people misread. */
 export const lightUsage = {
 	yes: [
-		'Product UI — an app, a dashboard, a settings screen.',
+		'Product UI: an app, a dashboard, a settings screen.',
 		'Anywhere a user has asked for a light interface.',
 		'Documents and print, where paper is the ground anyway.'
 	],
 	no: [
-		'Brand recognition — the mark, anywhere it introduces itself.',
+		'Brand recognition. The mark anywhere it introduces itself.',
 		'Marketing, landing pages, decks.',
 		'The app icon and the favicon.',
 		'Social cards and share images.'
@@ -34,7 +34,7 @@ export const hueEvidence = {
 	green: 13.1,
 	orange: 15.2,
 	unit: 'ΔE',
-	note: 'Distance from the page’s own darkened form. Further is better — it is what makes a colour read as ink rather than as a tint of the paper.'
+	note: 'Distance from the page’s own darkened form. Further is better: the colour reads as ink on the paper instead of a tint of it.'
 } as const;
 
 export interface HueMove {
@@ -71,7 +71,7 @@ export const hueMoves: readonly HueMove[] = [
 		rule: 'primary + 180°',
 		kept: false,
 		outcome:
-			'The complement of orange is blue, and blue is already info. Moved to 190° — the centre of the legal teal arc, 50° clear of both success and info.'
+			'The complement of orange is blue, and blue is already info. Moved to 190°, the centre of the legal teal arc, 50° clear of both success and info.'
 	},
 	{
 		id: 'warning',

@@ -35,7 +35,7 @@ export async function copyText(value: string, describe?: string): Promise<boolea
 		if (describe) announce(`Copied ${describe}`);
 		return true;
 	} catch {
-		announce('Copy failed — select the value and copy manually');
+		announce('Copy failed. Select the value and copy manually');
 		return false;
 	}
 }

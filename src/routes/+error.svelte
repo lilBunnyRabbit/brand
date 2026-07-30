@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>{page.status} — brand assets</title>
+	<title>{page.status} · brand assets</title>
 </svelte:head>
 
 <!-- `measure` because `main` no longer constrains width — the light region needs to run full-bleed. -->

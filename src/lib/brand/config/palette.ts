@@ -127,7 +127,7 @@ const COPY: Record<ThemeName, Record<GroupId, { label: string; description: stri
 		surfaces: {
 			label: 'Surfaces',
 			description:
-				'Seven shades of the same deep blue-grey. Pick any of them for a background — three at ' +
+				'Seven shades of the same deep blue-grey. Any of them works as a background. Three at ' +
 				'a time is plenty.'
 		},
 		content: { label: 'Content', description: 'For everything you read.' },
@@ -152,7 +152,7 @@ const COPY: Record<ThemeName, Record<GroupId, { label: string; description: stri
 		surfaces: {
 			label: 'Surfaces',
 			description:
-				'Seven shades of warm paper, plain white down to soft sand. Same job as the dark seven — ' +
+				'Seven shades of warm paper, plain white down to soft sand. Same job as the dark seven: ' +
 				'pick one and build on it.'
 		},
 		content: {
@@ -165,13 +165,13 @@ const COPY: Record<ThemeName, Record<GroupId, { label: string; description: stri
 			label: 'Brand',
 			description:
 				'The same four ranks, re-solved for a warm ground. The loud one turned orange on the way ' +
-				'over — that story is further down.'
+				'over. That story is further down.'
 		},
 		identity: {
 			label: 'Identity',
 			description:
-				'The one token that changed job. Here it is a UI colour — a focus ring, a marker, a ' +
-				'highlight on a chart. Not text, and not the logo.'
+				'The one token that changed job. Here it is a UI colour: a focus ring, a marker, a ' +
+				'chart highlight. Never text, and never the logo.'
 		},
 		states: {
 			label: 'States',

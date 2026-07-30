@@ -1,11 +1,14 @@
 <script lang="ts">
 	import '$lib/styles/app.css';
 	/*
-		Imported for its URL rather than written out as a path, so Vite hashes it and applies the base path.
-		The preload is worth the line: `--font-mono` sets nearly every value on the page — 34 hex labels, the
-		formulas, every ratio — and the face is only discovered when the CSS that references it is parsed.
-		Bold is not preloaded; it is a fraction of the mono on screen.
+		Imported for their URLs rather than written out as paths, so Vite hashes them and applies the base
+		path.
+
+		Both are worth preloading: a webfont is only discovered when the CSS referencing it is parsed, which
+		is one round trip after the HTML. Inter sets every word of prose and Hack sets every value — 34 hex
+		labels, the formulas, every ratio. Hack's bold is left out; it is a fraction of the mono on screen.
 	*/
+	import interVariable from '$lib/brand/fonts/InterVariable.woff2?url';
 	import hackRegular from '$lib/brand/fonts/hack-regular.woff2?url';
 
 	import Announcer from '$lib/components/Announcer.svelte';
@@ -79,6 +82,7 @@
 
 <svelte:head>
 	{@html tokenStyle}
+	<link rel="preload" href={interVariable} as="font" type="font/woff2" crossorigin="anonymous" />
 	<link rel="preload" href={hackRegular} as="font" type="font/woff2" crossorigin="anonymous" />
 	<!--
 		Matches the page shade under the browser chrome, so it extends the page rather than framing it.

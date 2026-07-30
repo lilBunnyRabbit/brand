@@ -19,8 +19,10 @@
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
 	import { wordmarks } from '$lib/brand/config/wordmarks';
+	import { faces, typeScale } from '$lib/brand/config/typography';
 	import { hueEvidence, hueMoves, lightUsage } from '$lib/brand/config/light-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
+	import { misuses } from '$lib/brand/config/misuse';
 	import { lockupVision, lockupVisionSpread } from '$lib/brand/vision';
 	import {
 		cottontailOnShades,
@@ -102,7 +104,7 @@
 		[
 			['hover', 'a pointer resting on it'],
 			['active', 'held down'],
-			['muted', 'captions and metadata — nothing you need to read'],
+			['muted', 'captions and metadata, nothing you need to read'],
 			['disabled', 'exempt from contrast, so never informational'],
 			['border', 'the lowest alpha still clearing 3:1 on every shade']
 		] as const
@@ -138,7 +140,7 @@
 			{
 				id: 'badge',
 				label: 'The mark on a primary badge',
-				detail: `${contrastRatio(themes[theme].cottontail, themes[theme].primary).toFixed(2)} — a logotype allowance, never text`,
+				detail: `${contrastRatio(themes[theme].cottontail, themes[theme].primary).toFixed(2)}: a logotype allowance, never text`,
 				ok: theme === 'dark'
 			},
 			{
@@ -151,13 +153,27 @@
 	};
 </script>
 
+<!--
+	`summary_large_image` was declared here for months with no image to go with it, so every share of
+	this link produced a blank card. `static/og.png` is now a real 1200×630 plate, and it is generated
+	from this repo's own palette and mark rather than drawn by hand.
+
+	Absolute URLs, from `meta.siteUrl`: a scraper does not resolve a relative path against the page it
+	fetched, so `base` alone is not enough for these two.
+-->
 <svelte:head>
-	<title>{meta.name} — brand assets</title>
+	<title>{meta.name} · brand assets</title>
 	<meta name="description" content={meta.description} />
-	<meta property="og:title" content="{meta.name} — brand assets" />
+	<meta property="og:title" content="{meta.name} · brand assets" />
 	<meta property="og:description" content={meta.description} />
 	<meta property="og:type" content="website" />
+	<meta property="og:url" content="{meta.siteUrl}/" />
+	<meta property="og:image" content="{meta.siteUrl}/og.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="The {meta.name} mark and name" />
 	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="{meta.siteUrl}/og.png" />
 </svelte:head>
 
 <!--
@@ -210,7 +226,7 @@
 			<p class="cotton-what">
 				{theme === 'dark'
 					? 'The brightest thing in the system, named after the flash of a rabbit’s tail. The ring around this panel is it.'
-					: 'The same token on paper — and the only one that lost jobs on the way over. The ring around this panel is it.'}
+					: 'The same token on paper, and the only one that lost jobs on the way over. The ring around this panel is it.'}
 			</p>
 		</div>
 
@@ -262,7 +278,7 @@
 			<h1>{meta.tagline}</h1>
 			<p class="lede">{meta.description}</p>
 			{#if anyWip}
-				<p class="notice">Still being drawn — current, not final.</p>
+				<p class="notice">Still being drawn. Current, not final.</p>
 			{/if}
 		</div>
 
@@ -280,7 +296,7 @@
 		index="01"
 		accent="secondary"
 		title="Colour"
-		lede="Seventeen colours, all grown from a single starting colour."
+		lede="Seventeen colours, all grown from one seed."
 	>
 		<div class="seed">
 			<div class="seed-copy">
@@ -295,8 +311,8 @@
 				</h3>
 				<p>
 					Every other colour is a formula against that one. Change the seed and all seventeen move
-					together, still in tune — and they stay readable: {contract.count} colour-on-background combinations,
-					the closest still comfortable at {contract.worst.ratio.toFixed(2)}:1.
+					with it. They stay readable too: {contract.count} colour-on-background combinations, the closest
+					still comfortable at {contract.worst.ratio.toFixed(2)}:1.
 				</p>
 			</div>
 
@@ -358,8 +374,8 @@
 				{/each}
 			</ul>
 			<p class="warn">
-				Muted is the one place the contract does not hold: AA-large at best, so captions and
-				metadata only — and keep it off the lightest two shades.
+				Muted is the one place the contract does not hold: AA-large at best. Captions and metadata
+				only, and keep it off the lightest two shades.
 			</p>
 		</div>
 	</Section>
@@ -407,12 +423,12 @@
 		index="03"
 		accent="primary"
 		title="Logo"
-		lede="Most of the time it is just the mark, in one colour, on whatever it is sitting on."
+		lede="Most of the time it is just the mark, one colour, on whatever it sits on."
 	>
 		{#if variants.length === 0}
 			<p class="empty">
 				No marks yet. Drop an <code>.svg</code> into <code>src/lib/brand/logos/</code> and it appears
-				here — no code changes needed.
+				here. No code changes needed.
 			</p>
 		{:else}
 			{#each variants as variant (variant.id)}
@@ -423,7 +439,7 @@
 				<div class="group">
 					<div class="group-head">
 						<h3>Which colour</h3>
-						<p>Three combinations. The first is the one you want almost every time.</p>
+						<p>Five combinations. The first is the one you want almost every time.</p>
 					</div>
 
 					<div class="combos">
@@ -448,13 +464,62 @@
 						<h3>Small sizes</h3>
 						<p>It is a thin mark. Worth a look before it ends up in a favicon.</p>
 					</div>
+					<!--
+						The floor is drawn on the ladder rather than written under it. A rung below `minSize` is
+						struck and labelled, so "how small can it go" is answered by looking at it.
+					-->
 					<div class="ladder">
 						{#each sizes as size (size)}
-							<div class="rung">
+							<div class="rung" class:is-under={size < hero.minSize}>
 								<Mark variant={hero} size="{size}px" key="size-{size}" />
 								<span>{size}px</span>
 							</div>
 						{/each}
+					</div>
+				</div>
+
+				<!--
+					Room and floor. Both numbers come from `logo-meta.ts` and both are still the conservative
+					defaults rather than measured values, hence the note. When they are set, this follows.
+				-->
+				<div class="group">
+					<div class="group-head">
+						<h3>Room and floor</h3>
+						<p>
+							How much space it needs around it, and how small it may go. Provisional: these are the
+							defaults, not measured.
+						</p>
+					</div>
+
+					<div class="room">
+						<!--
+							The band IS the rule, drawn. `--pad` is the clear space expressed in the mark's own
+							units, so the overlay is the number rather than a picture of it.
+						-->
+						<div class="room-demo">
+							<div class="clear" style="--pad: calc(6rem * {hero.clearSpace});">
+								<Mark variant={hero} size="6rem" key="clear" />
+							</div>
+						</div>
+
+						<dl class="room-facts">
+							<div>
+								<dt>Clear space</dt>
+								<dd>
+									<strong>×{hero.clearSpace}</strong>
+									<span
+										>of the mark’s {hero.clearSpaceUnit}, all four sides. Nothing inside it.</span
+									>
+								</dd>
+							</div>
+							<div>
+								<dt>Minimum size</dt>
+								<dd>
+									<strong>{hero.minSize}px</strong>
+									<span>wide. Below this the ear strokes close up.</span>
+								</dd>
+							</div>
+						</dl>
 					</div>
 				</div>
 
@@ -464,7 +529,7 @@
 						<p>
 							In greyscale and all three kinds of colour blindness, the badge shifts by at most {lockupVisionSpread.toFixed(
 								2
-							)} — because the two colours differ in brightness, not hue.
+							)}. The two colours differ in brightness, not hue.
 						</p>
 					</div>
 					<div class="vision">
@@ -497,12 +562,11 @@
 			index="04"
 			accent="secondary"
 			title="The name"
-			lede="There is no wordmark asset. The name is set in Hack — the same face as every value on this page — so a lockup is a layout decision, not a drawing."
+			lede="There is no wordmark asset. The name is set in Hack, the same face as every value on this page. So a lockup is a layout decision, not a drawing."
 		>
 			<p class="undecided">
 				Nothing here is chosen yet. Twelve arrangements of the same two objects, at the same size,
-				on the same shade — so the only thing different between any two of them is the thing being
-				compared.
+				on the same shade. The only difference between any two is the thing being compared.
 			</p>
 
 			<div class="marks">
@@ -541,12 +605,68 @@
 		</Section>
 	{/if}
 
+	<!-- ─── Type ───────────────────────────────────────────────────────────── -->
+
+	<Section
+		id="type"
+		index="05"
+		accent="tertiary"
+		title="Type"
+		lede="Two faces. One for reading, one for values."
+	>
+		<div class="faces">
+			{#each faces as face (face.id)}
+				<div class="face-card">
+					<p class="face-specimen" style="font-family: var({face.cssVar});">Aa</p>
+					<div class="face-body">
+						<h3>{face.name}</h3>
+						<p class="face-role">{face.role}</p>
+						<!-- Set in the face itself, so the row is a specimen rather than a list of numbers. -->
+						<ul class="face-weights" style="font-family: var({face.cssVar});">
+							{#each face.weights as weight (weight)}
+								<li style="font-weight: {weight};">{weight}</li>
+							{/each}
+						</ul>
+						<p class="face-meta">
+							<code>{face.cssVar}</code>
+							<span>{face.source}</span>
+							<span>{face.licence}</span>
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<div class="group">
+			<div class="group-head">
+				<h3>The ladder</h3>
+				<p>
+					Eight steps. The two largest are fluid so they fit a phone. The body sizes are fixed, so
+					the measure never moves.
+				</p>
+			</div>
+			<!-- Each row is set at its own step, so it demonstrates the value beside it. -->
+			<ul class="scale">
+				{#each typeScale as step (step.id)}
+					<li>
+						<span class="scale-sample" style="font-size: var(--text-{step.id});">Aa</span>
+						<span class="scale-meta">
+							<code>--text-{step.id}</code>
+							<span class="scale-value">{step.value}</span>
+							<span class="scale-use">{step.use}</span>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</Section>
+
 	<!-- ─── Business card ──────────────────────────────────────────────────── -->
 
 	{#if hero}
 		<Section
 			id="card"
-			index="05"
+			index="06"
 			accent="accent"
 			title="Business card"
 			lede="Front and back. Nothing fancy."
@@ -559,10 +679,10 @@
 
 	<Section
 		id="rules"
-		index="06"
+		index="07"
 		accent="tertiary"
 		title="Don't"
-		lede="A short list, and most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
+		lede="A short list. Most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
 	>
 		<div class="dont-demo">
 			<div class="demo">
@@ -571,7 +691,7 @@
 						class="chip secondary">secondary</span
 					>
 				</div>
-				<p><strong>Don't.</strong> Brand colours touching — roughly 1:1, so the edges vanish.</p>
+				<p><strong>Don't.</strong> Brand colours touching. Roughly 1:1, so the edges vanish.</p>
 			</div>
 			<div class="demo">
 				<div class="good">
@@ -594,6 +714,38 @@
 				</li>
 			{/each}
 		</ul>
+
+		{#if hero}
+			<div class="group">
+				<div class="group-head">
+					<h3>Not to the mark</h3>
+					<p>
+						Every tile below is the real SVG with one CSS declaration on it. No broken copy of the
+						logo exists in this repo, so none of these can go stale when the mark changes.
+					</p>
+				</div>
+				<div class="misuses">
+					{#each misuses as bad (bad.id)}
+						<figure class="misuse">
+							<div class="misuse-plate">
+								<!--
+									`overflow: hidden` on the plate, so a stretched or rotated mark is clipped by its own
+									tile rather than colliding with the one beside it.
+								-->
+								<span class="misuse-art" style={bad.css}>
+									<Mark variant={hero} size="3.5rem" key="bad-{bad.id}" />
+								</span>
+								<span class="misuse-x" aria-hidden="true">✕</span>
+							</div>
+							<figcaption>
+								<span class="misuse-label">{bad.label}</span>
+								<span class="misuse-why">{bad.why}</span>
+							</figcaption>
+						</figure>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</Section>
 
 	<!-- ─── The family tree, parked ────────────────────────────────────────── -->
@@ -618,7 +770,7 @@
 
 	<Section
 		id="assets"
-		index="07"
+		index="08"
 		accent="secondary"
 		title="Assets"
 		lede="Grab the palette however you need it."
@@ -693,16 +845,16 @@
 	<div class="measure">
 		<Section
 			id="light"
-			index="08"
+			index="09"
 			accent="primary"
 			title="Light mode"
 			lede="It exists because interfaces need it. It is not the brand."
 		>
 			<div class="statement">
 				<p>
-					Every dark token has a twin here — same name, same job, same position. Nothing rebinds and
+					Every dark token has a twin here: same name, same job, same position. Nothing rebinds and
 					no component gets a variant. <strong>That does not make them interchangeable.</strong> Dark
-					is the brand; light is what you reach for when a product surface needs it. If someone will recognise
+					is the brand. Light is what you reach for when a product surface needs it. If someone will recognise
 					the mark from it, it should be dark.
 				</p>
 			</div>
@@ -731,10 +883,10 @@
 		-->
 		<Section
 			id="light-colour"
-			index="09"
+			index="10"
 			accent="secondary"
 			title="Seventeen twins"
-			lede="Same names, same groups, same order — and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
+			lede="Same names, same groups, same order, and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
 				2
 			)}:1."
 		>
@@ -759,10 +911,10 @@
 
 		<Section
 			id="light-orange"
-			index="10"
+			index="11"
 			accent="accent"
 			title="The orange one"
-			lede="Everything else is a twin. The primary changed hue — and that was measured, not chosen."
+			lede="Everything else is a twin. The primary changed hue. That was measured, not chosen."
 		>
 			<!--
 				The comparison, on the ground it was decided on: both candidates set as text and as a fill on
@@ -770,7 +922,7 @@
 				being tested — which is what makes the number underneath mean something.
 			-->
 			<div class="tryout">
-				{#each [{ id: 'green', hex: dark.primary.hex, delta: hueEvidence.green, verdict: 'Dark’s green — sinks into the paper', reject: true }, { id: 'orange', hex: light.primary.hex, delta: hueEvidence.orange, verdict: 'Orange — sits on it', reject: false }] as probe (probe.id)}
+				{#each [{ id: 'green', hex: dark.primary.hex, delta: hueEvidence.green, verdict: 'Dark’s green: sinks into the paper', reject: true }, { id: 'orange', hex: light.primary.hex, delta: hueEvidence.orange, verdict: 'Orange: sits on it', reject: false }] as probe (probe.id)}
 					<figure class="try" class:is-reject={probe.reject}>
 						<div class="try-plate">
 							<span class="try-text" style="color: {probe.hex};">Aa the quick brown fox</span>
@@ -812,7 +964,7 @@
 
 		<Section
 			id="light-logo"
-			index="11"
+			index="12"
 			accent="tertiary"
 			title="The mark on paper"
 			lede="The same five combinations, in the light palette."
@@ -828,11 +980,11 @@
 			</div>
 
 			<p class="closing">
-				One thing to know before you use the bright badge on paper: it measures
+				One thing before you use the bright badge on paper: it measures
 				{lightCombos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 here against
 				{combos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 in dark, and it
-				loses more than that in greyscale. Still a logotype, still exempt — but the neutral pair is
-				the safer one when you cannot control the reproduction.
+				loses more than that in greyscale. Still a logotype, still exempt. When you cannot control
+				the reproduction, use the neutral pair.
 			</p>
 		</Section>
 	</div>
@@ -1228,19 +1380,27 @@
 		margin-top: var(--space-5);
 	}
 
+	/*
+		Content pushed up under the mark, not distributed.
+
+		`space-between` tied the caption to the bottom edge, so a card with a two-line note and a card with
+		a four-line note put their labels in different places and the row read as ragged. Packed to the top,
+		the label sits the same distance below the mark on all five, whatever the note does. `min-height`
+		still equalises the boxes; the slack just falls at the bottom where nothing is looking.
+	*/
 	.combos figure {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-5);
 		align-items: flex-start;
-		justify-content: space-between;
+		justify-content: flex-start;
 		min-height: 15rem;
 		padding: var(--space-5);
 		margin: 0;
 		border-radius: var(--radius-lg);
 	}
 
-	/* One tight block at the foot of the card. The figure's `space-between` does the placing. */
+	/* One tight block, directly under the mark. */
 	.combos figcaption {
 		display: flex;
 		flex-direction: column;
@@ -1286,6 +1446,260 @@
 		width: 0.7rem;
 		height: 0.7rem;
 		border-radius: 50%;
+	}
+
+	/* ── room and floor ── */
+
+	.room {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: clamp(var(--space-5), 4vw, var(--space-8));
+		align-items: center;
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: var(--space-5);
+		background: var(--surface-well);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	/*
+		The clear-space band, as padding of exactly `--pad` with a dashed edge on it. Padding rather than an
+		absolutely positioned overlay, so the box IS the rule: whatever `clearSpace` says, that is the gap
+		you can measure on screen.
+	*/
+	.clear {
+		display: grid;
+		place-items: center;
+		padding: var(--pad);
+		border: 1px dashed var(--fg-border);
+		border-radius: var(--radius-sm);
+	}
+
+	.room-facts {
+		display: grid;
+		gap: var(--space-4);
+		margin: 0;
+	}
+
+	.room-facts dt {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--fg-muted);
+	}
+
+	.room-facts dd {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-3);
+		align-items: baseline;
+		margin: var(--space-2) 0 0;
+	}
+
+	.room-facts strong {
+		font-family: var(--font-mono);
+		font-size: var(--text-xl);
+		font-variant-numeric: tabular-nums;
+		color: var(--brand-primary);
+	}
+
+	.room-facts dd span {
+		max-width: 42ch;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	/* A rung under the minimum. Struck and dimmed, never colour alone. */
+	.rung.is-under {
+		opacity: 0.45;
+	}
+
+	.rung.is-under span {
+		text-decoration: line-through;
+	}
+
+	/* ── misuse ── */
+
+	.misuses {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+		gap: var(--space-4);
+		margin-top: var(--space-5);
+	}
+
+	.misuse {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		margin: 0;
+	}
+
+	/* `overflow: hidden`, so a stretched or rotated mark is clipped by its own tile. */
+	.misuse-plate {
+		position: relative;
+		display: grid;
+		place-items: center;
+		min-height: 7.5rem;
+		overflow: hidden;
+		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-md);
+	}
+
+	.misuse-art {
+		display: block;
+		color: var(--brand-primary);
+	}
+
+	.misuse-x {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-3);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--brand-error);
+	}
+
+	.misuse figcaption {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.misuse-label {
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.misuse-why {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	/* ── type ── */
+
+	.faces {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+		gap: var(--space-4);
+	}
+
+	.face-card {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: clamp(var(--space-4), 3vw, var(--space-5));
+		align-items: start;
+		padding: clamp(var(--space-4), 3vw, var(--space-5));
+		background: var(--surface-well);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	/*
+		One glyph pair at a size where the face is actually identifiable. Smaller than this and Inter and
+		Hack are two grey blobs, which is the opposite of a specimen.
+	*/
+	.face-specimen {
+		margin: 0;
+		font-size: clamp(3rem, 9vw, 4.5rem);
+		font-weight: 700;
+		line-height: 0.9;
+		letter-spacing: -0.03em;
+		color: var(--brand-primary);
+	}
+
+	.face-card h3 {
+		margin: 0;
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	.face-role {
+		max-width: 40ch;
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	/* Each number set at its own weight. The list IS the weight ladder. */
+	.face-weights {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		padding: 0;
+		margin: var(--space-4) 0 0;
+		font-size: var(--text-sm);
+		list-style: none;
+	}
+
+	.face-meta {
+		display: grid;
+		gap: 0.15rem;
+		margin: var(--space-4) 0 0;
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	.face-meta code {
+		font-family: var(--font-mono);
+		color: var(--brand-secondary);
+	}
+
+	.scale {
+		display: grid;
+		gap: 0;
+		padding: 0;
+		margin: var(--space-5) 0 0;
+		list-style: none;
+	}
+
+	/*
+		The sample column is fixed and the type inside it is not clipped, so the hero step overflows its
+		cell rather than resizing the row. That is deliberate: seeing 4.75rem next to 0.75rem at their real
+		sizes is the only thing a scale specimen is for.
+	*/
+	.scale li {
+		display: grid;
+		grid-template-columns: 6rem minmax(0, 1fr);
+		gap: var(--space-4);
+		align-items: center;
+		padding-block: var(--space-3);
+	}
+
+	.scale li + li {
+		border-top: 1px solid var(--hairline);
+	}
+
+	.scale-sample {
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.02em;
+	}
+
+	.scale-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-4);
+		align-items: baseline;
+	}
+
+	.scale-meta code {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.scale-value {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-variant-numeric: tabular-nums;
+		color: var(--brand-secondary);
+	}
+
+	.scale-use {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
 	}
 
 	/* ── the name beside the mark ── */

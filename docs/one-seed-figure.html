@@ -1,0 +1,770 @@
+<title>One seed</title>
+
+<style>
+	:root {
+		--ink: #e8e6e3;
+		--ink-2: rgba(232, 230, 227, 0.62);
+		--ink-3: rgba(232, 230, 227, 0.36);
+		--page: #10161a;
+		--edge: rgba(232, 230, 227, 0.14);
+		--mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+		--sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	}
+	@media (prefers-color-scheme: light) {
+		:root {
+			--ink: #1c2226;
+			--ink-2: rgba(28, 34, 38, 0.68);
+			--ink-3: rgba(28, 34, 38, 0.42);
+			--page: #f4f1eb;
+			--edge: rgba(28, 34, 38, 0.16);
+		}
+	}
+	:root[data-theme='dark'] {
+		--ink: #e8e6e3;
+		--ink-2: rgba(232, 230, 227, 0.62);
+		--ink-3: rgba(232, 230, 227, 0.36);
+		--page: #10161a;
+		--edge: rgba(232, 230, 227, 0.14);
+	}
+	:root[data-theme='light'] {
+		--ink: #1c2226;
+		--ink-2: rgba(28, 34, 38, 0.68);
+		--ink-3: rgba(28, 34, 38, 0.42);
+		--page: #f4f1eb;
+		--edge: rgba(28, 34, 38, 0.16);
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+	body {
+		margin: 0;
+		background: var(--page);
+		color: var(--ink);
+		font-family: var(--sans);
+		line-height: 1.55;
+		-webkit-font-smoothing: antialiased;
+	}
+	.wrap {
+		max-width: 860px;
+		margin: 0 auto;
+		padding: 56px 22px 80px;
+	}
+
+	h1 {
+		font-size: clamp(28px, 6vw, 42px);
+		line-height: 1.05;
+		margin: 0 0 14px;
+		font-weight: 620;
+		letter-spacing: -0.022em;
+	}
+	.lede {
+		color: var(--ink-2);
+		font-size: 16px;
+		margin: 0 0 26px;
+		max-width: 56ch;
+	}
+	.lede strong {
+		color: var(--ink);
+		font-weight: 560;
+	}
+
+	.modes {
+		display: flex;
+		gap: 8px;
+		margin-bottom: 14px;
+	}
+	button {
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		background: none;
+		border: 1px solid currentColor;
+		color: var(--ink-2);
+		opacity: 0.6;
+		padding: 6px 12px;
+		border-radius: 2px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	button:hover,
+	button:focus-visible {
+		opacity: 1;
+	}
+	button[aria-pressed='true'] {
+		opacity: 1;
+		color: var(--ink);
+	}
+
+	.fig {
+		border: 1px solid var(--edge);
+		border-radius: 5px;
+		padding: 20px;
+		transition: background 300ms linear;
+	}
+	.fig svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		transition: color 300ms linear;
+	}
+	text {
+		font-family: var(--mono);
+		fill: currentColor;
+		user-select: none;
+	}
+	.op {
+		font-size: 10.5px;
+		opacity: 0.62;
+	}
+	.sn {
+		font-size: 11px;
+		letter-spacing: 0.05em;
+	}
+	.sh {
+		font-size: 9.5px;
+		opacity: 0.7;
+	}
+	.sm {
+		font-size: 9.5px;
+		opacity: 0.62;
+		letter-spacing: 0.02em;
+	}
+	.wire {
+		fill: none;
+		stroke: currentColor;
+		opacity: 0.32;
+		stroke-width: 1.25;
+	}
+	.node text {
+		pointer-events: none;
+	}
+
+	.strip {
+		margin-top: 20px;
+	}
+	.strip h2 {
+		font-family: var(--mono);
+		font-size: 10px;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		margin: 0 0 7px;
+		opacity: 0.55;
+		font-weight: 400;
+		transition: color 300ms linear;
+	}
+	.row {
+		display: grid;
+		gap: 3px;
+	}
+	.row.st {
+		grid-template-columns: repeat(4, 1fr);
+	}
+	.row.sf {
+		grid-template-columns: repeat(7, 1fr);
+	}
+	.sw {
+		aspect-ratio: 2.6/1;
+		border-radius: 3px;
+		box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.3);
+		display: flex;
+		align-items: flex-end;
+		padding: 6px 7px;
+	}
+	.sw span {
+		font-family: var(--mono);
+		font-size: 9.5px;
+		letter-spacing: 0.04em;
+	}
+
+	.bar {
+		display: flex;
+		align-items: baseline;
+		gap: 16px;
+		margin-top: 20px;
+	}
+	.cap {
+		font-size: 14.5px;
+		color: var(--ink-2);
+		flex: 1;
+		margin: 0;
+		min-height: 3em;
+	}
+	.cap b {
+		color: var(--ink);
+		font-weight: 560;
+	}
+	.foot {
+		color: var(--ink-2);
+		font-size: 13px;
+		margin-top: 14px;
+		max-width: 62ch;
+		min-height: 2.8em;
+	}
+	code {
+		font-family: var(--mono);
+		font-size: 0.9em;
+	}
+	@media (max-width: 640px) {
+		.wrap {
+			padding: 34px 14px 60px;
+		}
+		.fig {
+			padding: 14px 12px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		* {
+			transition-duration: 1ms !important;
+		}
+	}
+</style>
+
+<div class="wrap">
+	<h1>One seed</h1>
+	<p class="lede">
+		Every colour in the brand is worked out from a single one.
+		<strong>Watch each swatch travel out from the colour it came from</strong> — it leaves as its
+		parent and arrives as itself.
+	</p>
+
+	<div class="modes">
+		<button id="mDark" aria-pressed="true">Dark</button>
+		<button id="mLight" aria-pressed="false">Light</button>
+	</div>
+
+	<div class="fig" id="fig">
+		<svg id="tree" role="img" aria-label="How each brand colour is derived from the seed"></svg>
+
+		<div class="strip">
+			<h2 id="h2a">Status colours — chosen, not worked out</h2>
+			<div class="row st" id="states"></div>
+		</div>
+
+		<div class="strip">
+			<h2 id="h2b">Surfaces — the seed, lightened and darkened</h2>
+			<div class="row sf" id="surfaces"></div>
+		</div>
+	</div>
+
+	<div class="bar">
+		<p class="cap" id="cap"></p>
+		<button id="replay">Replay</button>
+	</div>
+	<p class="foot" id="foot"></p>
+</div>
+
+<script>
+	(() => {
+		'use strict';
+		const M = Math;
+
+		// ── OKLCH → sRGB ─────────────────────────────────────────────
+		function lin(L, C, H) {
+			const h = (H * M.PI) / 180,
+				a = C * M.cos(h),
+				b = C * M.sin(h);
+			const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+			const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+			const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+			return [
+				4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+				-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+				-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
+			];
+		}
+		const gm = (x) => (x <= 0.0031308 ? 12.92 * x : 1.055 * M.pow(x, 1 / 2.4) - 0.055);
+		const h2 = (v) =>
+			M.round(M.min(1, M.max(0, v)) * 255)
+				.toString(16)
+				.padStart(2, '0');
+		const hex = (L, C, H) => {
+			const c = lin(L, C, H);
+			return '#' + h2(gm(c[0])) + h2(gm(c[1])) + h2(gm(c[2]));
+		};
+		const inG = (L, C, H) => lin(L, C, H).every((v) => v >= -1e-6 && v <= 1.000001);
+		const maxC = (L, H) => {
+			let lo = 0,
+				hi = 0.45;
+			for (let i = 0; i < 28; i++) {
+				const m = (lo + hi) / 2;
+				inG(L, m, H) ? (lo = m) : (hi = m);
+			}
+			return lo;
+		};
+		const T = (L, C, H) => ({ L, C, H, hex: hex(L, C, H) });
+
+		const lum = (L, C, H) => {
+			const c = lin(L, C, H),
+				f = (v) => {
+					v = M.min(1, M.max(0, gm(v)));
+					return v <= 0.04045 ? v / 12.92 : M.pow((v + 0.055) / 1.055, 2.4);
+				};
+			return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+		};
+		const ratio = (a, b) => {
+			const x = lum(a.L, a.C, a.H),
+				y = lum(b.L, b.C, b.H);
+			return (M.max(x, y) + 0.05) / (M.min(x, y) + 0.05);
+		};
+		// names ride on the swatches, so pick whichever neutral reads on each one
+		const inkFor = (c) => (ratio(c, P.seed) >= ratio(c, P.text) ? P.seed.hex : P.text.hex);
+
+		// ── the two palettes ─────────────────────────────────────────
+		const BL = 0.255,
+			BC = 0.0233,
+			BH = 230.47,
+			SPAN = 0.1;
+		function darkPalette() {
+			const fL = 1 - BL,
+				fH = (BH + 180) % 360,
+				pH = (fH + 72) % 360;
+			const P = {
+				seed: T(BL, BC, BH),
+				text: T(fL, BC / 3, fH),
+				primary: T(fL, BC * 3, pH),
+				secondary: T(fL, BC * 2, (pH + 180) % 360),
+				tertiary: T(fL, BC * 1, (pH - 120 + 360) % 360),
+				accent: T(fL, BC * 4, fH),
+				success: T(fL, BC * 6, 140),
+				warning: T(fL, BC * 6, 70),
+				error: T(fL, BC * 6, 30),
+				info: T(fL, BC * 6, 240)
+			};
+			const ct = fL + SPAN * 2;
+			P.cottontail = T(ct, maxC(ct, pH) * 0.6, pH);
+			P.surfaces = [1, 2 / 3, 1 / 3, 0, -1 / 3, -2 / 3, -1].map((k) => {
+				const L = BL + SPAN * k;
+				return T(L, (BC * L) / BL, BH);
+			});
+			return P;
+		}
+		const LIGHT = {
+			seed: [0.945, 0.023019, 80],
+			text: [0.425, 0.0233, 260],
+			tertiary: [0.425, 0.020462, 290.47],
+			secondary: [0.425, 0.040923, 190],
+			primary: [0.425, 0.061385, 50.47],
+			accent: [0.425, 0.081847, 338.47],
+			error: [0.425, 0.12277, 30],
+			warning: [0.426839, 0.092774, 109.3148],
+			success: [0.425, 0.12277, 140],
+			info: [0.432921, 0.111909, 246.2376],
+			cottontail: [0.545, 0.143122, 50.47]
+		};
+		const LSURF = [
+			[1, 0, 0],
+			[0.979801, 0.021893, 85.9452],
+			[0.963333, 0.023019, 80],
+			[0.945, 0.023019, 80],
+			[0.905, 0.023019, 80],
+			[0.865, 0.023019, 80],
+			[0.825, 0.023019, 80]
+		];
+		function lightPalette() {
+			const P = {};
+			for (const k in LIGHT) P[k] = T(...LIGHT[k]);
+			P.surfaces = LSURF.map((r) => T(...r));
+			return P;
+		}
+
+		// the drawing must agree with the published palette
+		const WANT = {
+			dark: {
+				seed: '#17252c',
+				text: '#b1aba8',
+				primary: '#a4b483',
+				secondary: '#b2a6c5',
+				tertiary: '#baa7ab',
+				accent: '#dc9b76',
+				error: '#f88876',
+				warning: '#e49b39',
+				success: '#7ac26a',
+				info: '#49b7fb',
+				cottontail: '#e0f9ab'
+			},
+			light: {
+				seed: '#f5ecdc',
+				text: '#474f5c',
+				primary: '#6a442f',
+				secondary: '#335653',
+				tertiary: '#4e4d59',
+				accent: '#6b3c5e',
+				error: '#852d22',
+				warning: '#535200',
+				success: '#225e12',
+				info: '#00548a',
+				cottontail: '#af5100'
+			}
+		};
+		for (const [k, pal] of [
+			['dark', darkPalette()],
+			['light', lightPalette()]
+		]) {
+			const bad = Object.keys(WANT[k]).filter((n) => pal[n].hex !== WANT[k][n]);
+			bad.length
+				? console.warn(k + ' mismatch:', bad)
+				: console.info(k + ': all tokens match their published hex');
+		}
+
+		// ── the family. parent, the move in words, then the move in axes ──
+		//    One phase per axis so the colour never travels through mud.
+		// [child, parent, the move — short enough to sit on the card, axes]
+		const STEPS = {
+			dark: [
+				['text', 'seed', 'turned inside out', [['L'], ['C'], ['H', 180]]],
+				['primary', 'text', '3× · into green', [['C'], ['H', 72]]],
+				['accent', 'text', '4× · same hue', [['C']]],
+				['secondary', 'primary', '2× · other side', [['C'], ['H', 180]]],
+				['tertiary', 'primary', '1× · turned back', [['C'], ['H', -120]]],
+				['cottontail', 'primary', 'lifted brighter', [['L'], ['C']]]
+			],
+			light: [
+				['text', 'seed', 'dark enough to read', [['L'], ['C'], ['H', 180]]],
+				['primary', 'text', '3× · into orange', [['C'], ['H', 150.47]]],
+				['accent', 'text', '4× · into pink', [['C'], ['H', 78.47]]],
+				['secondary', 'primary', '2× · into teal', [['C'], ['H', 139.53]]],
+				['tertiary', 'primary', '1× · turned back', [['C'], ['H', -120]]],
+				['cottontail', 'primary', 'lifted brighter', [['L'], ['C']]]
+			]
+		};
+		const ROOT_NOTE = { dark: 'the one choice', light: 'the paper' };
+		const STATES = ['success', 'warning', 'error', 'info'];
+
+		// ── two layouts. Wide: a left-to-right tree, the move written in the gap
+		//    between columns. Narrow: an indented list, the move written beside
+		//    each swatch — which is how a tree reflows without shrinking the type.
+		// With the move written on the card, the gaps only have to carry a wire —
+		// so the columns close right up and the swatches get the space instead.
+		// Both forks stay symmetric: text sits midway between primary and accent,
+		// and primary midway through its own three children.
+		const WIDE = {
+			SW: 132,
+			SH: 76,
+			vb: [696, 398],
+			curve: true,
+			pos: {
+				seed: [6, 212],
+				text: [192, 212],
+				primary: [378, 110],
+				accent: [378, 314],
+				secondary: [564, 8],
+				tertiary: [564, 110],
+				cottontail: [564, 212]
+			}
+		};
+		const NARROW = {
+			SW: 190,
+			SH: 64,
+			vb: [266, 544],
+			curve: false,
+			pos: {
+				seed: [4, 4],
+				text: [26, 82],
+				primary: [48, 160],
+				secondary: [70, 238],
+				tertiary: [70, 316],
+				cottontail: [70, 394],
+				accent: [48, 472]
+			}
+		};
+
+		const NS = 'http://www.w3.org/2000/svg';
+		const el = (n, a) => {
+			const e = document.createElementNS(NS, n);
+			for (const k in a) e.setAttribute(k, a[k]);
+			return e;
+		};
+		const txt = (x, y, s, cls, extra) => {
+			const t = el('text', Object.assign({ x, y, class: cls }, extra || {}));
+			t.textContent = s;
+			return t;
+		};
+
+		const svg = document.getElementById('tree');
+		const fig = document.getElementById('fig');
+		const capEl = document.getElementById('cap');
+		const footEl = document.getElementById('foot');
+
+		let mode = 'dark',
+			P = darkPalette(),
+			steps = STEPS.dark,
+			L = WIDE;
+		const g = {};
+
+		function build() {
+			L = fig.clientWidth < 560 ? NARROW : WIDE;
+			svg.setAttribute('viewBox', '0 0 ' + L.vb[0] + ' ' + L.vb[1]);
+			svg.textContent = '';
+			fig.style.background = P.seed.hex;
+			svg.style.color = P.text.hex;
+			for (const id of ['h2a', 'h2b']) document.getElementById(id).style.color = P.text.hex;
+
+			const gWire = el('g', {}),
+				gNode = el('g', {});
+			svg.append(gWire, gNode);
+			g.wires = {};
+			g.nodes = {};
+			const { SW, SH } = L;
+
+			for (const [child, parent] of steps) {
+				const [ax, ay] = L.pos[parent],
+					[bx, by] = L.pos[child];
+				const d = L.curve
+					? (() => {
+							const x1 = ax + SW,
+								y1 = ay + SH / 2,
+								x2 = bx,
+								y2 = by + SH / 2,
+								mx = (x1 + x2) / 2;
+							return `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+						})()
+					: (() => {
+							const sx = ax + 16,
+								y2 = by + SH / 2;
+							return `M${sx} ${ay + SH} L${sx} ${y2} L${bx} ${y2}`;
+						})();
+				const p = el('path', { d, class: 'wire' });
+				gWire.append(p);
+				g.wires[child] = { path: p, len: 0 };
+			}
+			for (const c in g.wires) {
+				const w = g.wires[c];
+				w.len = w.path.getTotalLength();
+				w.path.setAttribute('stroke-dasharray', w.len);
+			}
+
+			for (const name in L.pos) {
+				const c = P[name],
+					[x, y] = L.pos[name];
+				const grp = el('g', { class: 'node' });
+				const r = el('rect', {
+					x,
+					y,
+					width: SW,
+					height: SH,
+					rx: 3,
+					fill: c.hex,
+					stroke: 'rgba(128,128,128,.36)',
+					'stroke-width': 1
+				});
+				// set via inline style, not a fill attribute — the `text { fill:currentColor }`
+				// rule would otherwise win and paint every label in the ink colour
+				const ink = inkFor(c);
+				const step = steps.find((s) => s[0] === name);
+				const nm = txt(x + 11, y + 25, name, 'sn', { style: 'fill:' + ink });
+				const hx = txt(x + 11, y + 40, c.hex, 'sh', { style: 'fill:' + ink });
+				const mv = txt(x + 11, y + SH - 11, step ? step[2] : ROOT_NOTE[mode], 'sm', {
+					style: 'fill:' + ink
+				});
+				grp.append(r, nm, hx, mv);
+				gNode.append(grp);
+				g.nodes[name] = {
+					grp,
+					rect: r,
+					texts: [
+						[nm, 25],
+						[hx, 40],
+						[mv, SH - 11]
+					],
+					c
+				};
+			}
+
+			const st = document.getElementById('states');
+			st.textContent = '';
+			for (const n of STATES) {
+				const d = document.createElement('div');
+				d.className = 'sw';
+				d.style.background = P[n].hex;
+				d.title = n + ' ' + P[n].hex;
+				const s = document.createElement('span');
+				s.textContent = n;
+				s.style.color = inkFor(P[n]);
+				d.append(s);
+				st.append(d);
+			}
+			const sf = document.getElementById('surfaces');
+			sf.textContent = '';
+			P.surfaces.forEach((r) => {
+				const d = document.createElement('div');
+				d.className = 'sw';
+				d.style.background = r.hex;
+				d.title = r.hex;
+				sf.append(d);
+			});
+			footEl.innerHTML =
+				mode === 'dark'
+					? 'Everything here comes from <code>#17252c</code> — the colour behind this box.'
+					: 'The same six moves, run again on paper. Same shape, different answers.';
+		}
+
+		// ── the animation ────────────────────────────────────────────
+		function tween(child, parent, ops, t) {
+			const a = P[parent],
+				b = P[child],
+				n = ops.length;
+			const i = M.min(n - 1, M.floor(t * n)),
+				u = t * n - i;
+			const o = { L: a.L, C: a.C, H: a.H };
+			for (let j = 0; j <= i; j++) {
+				const [ax, dH] = ops[j],
+					f = j < i ? 1 : u;
+				if (ax === 'L') o.L = a.L + (b.L - a.L) * f;
+				if (ax === 'C') o.C = a.C + (b.C - a.C) * f;
+				if (ax === 'H') o.H = (((a.H + dH * f) % 360) + 360) % 360;
+			}
+			return o;
+		}
+
+		const WHEN = {
+			text: [800, 2400],
+			primary: [2400, 3700],
+			accent: [3700, 4800],
+			secondary: [4800, 6000],
+			tertiary: [4800, 6000],
+			cottontail: [6000, 7200]
+		};
+		const BEATS = () => [
+			[
+				0,
+				800,
+				mode === 'dark'
+					? 'One colour — the dark blue-green behind this box.'
+					: 'One colour — the warm paper behind this box.'
+			],
+			[
+				800,
+				2400,
+				'The text colour is that seed <b>turned inside out</b>: as light as the seed is dark.'
+			],
+			[
+				2400,
+				3700,
+				'primary leaves the text colour <b>three times stronger</b>, and turns into the ' +
+					(mode === 'dark' ? 'greens' : 'oranges') +
+					'.'
+			],
+			[
+				3700,
+				4800,
+				'accent goes further — <b>four times stronger</b>' +
+					(mode === 'dark' ? ', staying on the same hue.' : ', round into the pinks.')
+			],
+			[
+				4800,
+				6000,
+				'secondary and tertiary both come off primary, <b>each one quieter</b> than the last.'
+			],
+			[
+				6000,
+				7200,
+				'cottontail is primary again, <b>lifted</b> until it is the brightest thing here — the logo colour.'
+			],
+			[7200, 8000, 'Seven colours, six moves. The only real decision was the first one.']
+		];
+		const END = 8000;
+		const ez = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 1 - M.pow(1 - t, 3));
+
+		let raf = 0,
+			t0 = 0,
+			beats = BEATS();
+
+		function seek(t) {
+			const { SW, SH } = L;
+			g.nodes.seed.grp.style.display = t >= 400 ? '' : 'none';
+
+			for (const [child, parent, , ops] of steps) {
+				const [a, b] = WHEN[child];
+				const nd = g.nodes[child],
+					w = g.wires[child];
+				const raw = t <= a ? 0 : t >= b ? 1 : (t - a) / (b - a);
+				const u = ez(raw);
+
+				if (raw <= 0) {
+					nd.grp.style.display = 'none';
+					w.path.setAttribute('stroke-dashoffset', w.len);
+					continue;
+				}
+				nd.grp.style.display = '';
+				w.path.setAttribute('stroke-dashoffset', w.len * (1 - u));
+
+				const [fx, fy] = L.pos[parent],
+					[tx2, ty2] = L.pos[child];
+				const x = fx + (tx2 - fx) * u,
+					y = fy + (ty2 - fy) * u;
+				const c = tween(child, parent, ops, u);
+				nd.rect.setAttribute('x', x);
+				nd.rect.setAttribute('y', y);
+				nd.rect.setAttribute('fill', hex(c.L, c.C, c.H));
+				for (const [node, dy] of nd.texts) {
+					node.setAttribute('x', x + 11);
+					node.setAttribute('y', y + dy);
+					node.style.visibility = raw >= 1 ? 'visible' : 'hidden';
+				}
+			}
+
+			const beat = beats.find((b) => t >= b[0] && t < b[1]) || beats[beats.length - 1];
+			if (capEl.dataset.b !== String(beat[0])) {
+				capEl.dataset.b = beat[0];
+				capEl.innerHTML = beat[2];
+			}
+		}
+
+		function tick(ts) {
+			if (!t0) t0 = ts;
+			const t = ts - t0;
+			seek(M.min(END, t));
+			if (t < END) raf = requestAnimationFrame(tick);
+		}
+		function play() {
+			cancelAnimationFrame(raf);
+			t0 = 0;
+			raf = requestAnimationFrame(tick);
+		}
+
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+		function setMode(m) {
+			mode = m;
+			P = m === 'dark' ? darkPalette() : lightPalette();
+			steps = STEPS[m];
+			beats = BEATS();
+			document.getElementById('mDark').setAttribute('aria-pressed', m === 'dark');
+			document.getElementById('mLight').setAttribute('aria-pressed', m === 'light');
+			cancelAnimationFrame(raf);
+			build();
+			capEl.dataset.b = '';
+			reduced.matches ? seek(END) : play();
+		}
+		document.getElementById('mDark').addEventListener('click', () => setMode('dark'));
+		document.getElementById('mLight').addEventListener('click', () => setMode('light'));
+		document
+			.getElementById('replay')
+			.addEventListener('click', () => (reduced.matches ? seek(END) : play()));
+
+		// re-lay out when the layout actually has to change, not on every pixel
+		let wasNarrow = null;
+		new ResizeObserver(() => {
+			const n = fig.clientWidth < 560;
+			if (n === wasNarrow) return;
+			wasNarrow = n;
+			cancelAnimationFrame(raf);
+			build();
+			seek(END);
+		}).observe(fig);
+
+		build();
+		seek(END);
+		if (!reduced.matches)
+			new IntersectionObserver(
+				(es, o) => {
+					if (es[0].isIntersecting) {
+						o.disconnect();
+						play();
+					}
+				},
+				{ threshold: 0.25 }
+			).observe(svg);
+	})();
+</script>

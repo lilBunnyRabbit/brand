@@ -38,7 +38,7 @@ export const logoCombos: readonly LogoCombo[] = [
 		kind: 'disc',
 		ground: 'primary',
 		ink: 'background',
-		note: 'Flipped, as a filled badge — an avatar, an app icon, a favicon. Carries its own ground, so it works anywhere.'
+		note: 'Flipped into a filled badge: an avatar, an app icon, a favicon. It carries its own ground, so it goes anywhere.'
 	},
 	{
 		id: 'primary-cottontail',
@@ -46,7 +46,7 @@ export const logoCombos: readonly LogoCombo[] = [
 		kind: 'disc',
 		ground: 'primary',
 		ink: 'cottontail',
-		note: 'The bright one, for when the badge should catch the eye. Lower contrast by design — fine for a logotype, never for text.',
+		note: 'The bright one, for when the badge should catch the eye. Low contrast on purpose: fine for a logotype, never for text.',
 		exempt: true
 	},
 	/*
@@ -68,7 +68,7 @@ export const logoCombos: readonly LogoCombo[] = [
 		kind: 'disc',
 		ground: 'background',
 		ink: 'foreground',
-		note: 'The same pair the other way round. On the page itself the disc IS the page, so only the ears show — a knockout, not a badge.'
+		note: 'The same pair the other way round. On the page itself the disc IS the page, so only the ears show. A knockout, not a badge.'
 	}
 ];
 
@@ -132,7 +132,7 @@ export const markVariants: readonly MarkVariant[] = [
 		theme: 'light',
 		disc: 'primary',
 		ears: null,
-		note: 'Same ears, orange disc. The most legible of the four — and still not the one to use for recognition.'
+		note: 'Same ears, orange disc. The most legible of the four. Still not the one to use for recognition.'
 	},
 	{
 		id: 'light-neutral',

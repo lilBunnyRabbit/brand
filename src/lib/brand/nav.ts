@@ -28,6 +28,7 @@ const SECTIONS = [
 	{ id: 'idea', label: 'Idea' },
 	{ id: 'logo', label: 'Logo' },
 	{ id: 'wordmark', label: 'Name' },
+	{ id: 'type', label: 'Type' },
 	{ id: 'card', label: 'Card' },
 	{ id: 'rules', label: "Don't" },
 	{ id: 'assets', label: 'Assets' },

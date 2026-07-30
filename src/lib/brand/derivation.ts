@@ -66,7 +66,7 @@ const HOW: Record<SwatchName, string> = {
 	background_darkest: 'A full span down. Chroma falls with it.',
 	foreground:
 		'The seed, inside out. Lightness flipped, chroma cut to a third, hue turned right around.',
-	tertiary: 'One seed of chroma — exactly what the background carries. The quiet one.',
+	tertiary: 'One seed of chroma, exactly what the background carries. The quiet one.',
 	secondary: 'Primary, straight across. Two seeds.',
 	primary: "Foreground's lightness, three seeds of chroma, 72° round from it.",
 	accent: "Foreground's hue, twelve times louder.",
@@ -75,7 +75,7 @@ const HOW: Record<SwatchName, string> = {
 	success: 'Six seeds of chroma. The hue is a convention, not a derivation.',
 	warning: 'Six seeds of chroma, on the amber convention.',
 	error: 'Six seeds, and the darkest thing on the rail. It sized the whole ladder.',
-	info: 'Six seeds. At this hue that is almost everything sRGB has — the reason there is no 7c.'
+	info: 'Six seeds. At this hue that is almost everything sRGB has, which is why there is no 7c.'
 };
 
 const ALL = Object.keys(dark) as SwatchName[];
@@ -172,7 +172,7 @@ export const rail = {
 };
 
 /** The empty 5c rung, sitting between accent (4c) and the states (6c). */
-export const vacancy = { x: xOf(SEED * 5), label: '5c — empty on purpose.' };
+export const vacancy = { x: xOf(SEED * 5), label: '5c: empty on purpose.' };
 
 /**
  * Where sRGB runs out at the rail's lightness. `info`'s hue is the tightest, so this is the wall
@@ -261,7 +261,7 @@ export const generations: { gen: number; title: string; blurb: string; steps: St
 		gen: 3,
 		title: 'Everything else is a rotation off it',
 		blurb:
-			'Same lightness, different hue, and chroma in whole multiples of the seed — 1, 2, 4, then 6 ' +
+			'Same lightness, different hue, and chroma in whole multiples of the seed: 1, 2, 4, then 6 ' +
 			'for the states. Nothing sits at 5.',
 		steps: recipe.filter((s) => s.gen === 3)
 	}
@@ -320,7 +320,7 @@ export const stages: { gen: number; kicker: string; line: string }[] = [
 	{
 		gen: 0,
 		kicker: 'One colour',
-		line: 'Everything starts here. Picked once, by hand — the only one.'
+		line: 'Everything starts here. Picked once, by hand. The only one.'
 	},
 	{
 		gen: 1,
@@ -335,7 +335,7 @@ export const stages: { gen: number; kicker: string; line: string }[] = [
 	{
 		gen: 3,
 		kicker: 'Fan it out',
-		line: 'Same lightness, rotated hues, chroma in whole multiples of the seed. One, two, four — then six for the states. Never five.'
+		line: 'Same lightness, rotated hues, chroma in whole multiples of the seed. One, two, four, then six for the states. Never five.'
 	}
 ];
 
