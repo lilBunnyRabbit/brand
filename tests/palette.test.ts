@@ -314,6 +314,34 @@ describe('logo combos', () => {
 	});
 });
 
+describe('cottontail as the focus ring', () => {
+	it('clears 3:1 against every shade, so the ring is visible anywhere on the page', () => {
+		for (const shade of shadeNames) {
+			expect(contrastRatio(swatches.cottontail, swatches[shade])).toBeGreaterThanOrEqual(3);
+		}
+	});
+
+	it('needs the offset gap against a brand fill, which is why the pattern has one', () => {
+		// Ring against a primary button alone is under 3:1 — it only works via ring / gap / component.
+		expect(contrastRatio(swatches.cottontail, swatches.primary)).toBeLessThan(3);
+		// Ring against the gap, and the gap against the button, both clear.
+		expect(contrastRatio(swatches.cottontail, swatches.background)).toBeGreaterThanOrEqual(3);
+		expect(contrastRatio(swatches.background, swatches.primary)).toBeGreaterThanOrEqual(3);
+	});
+
+	it('takes `background` as its text and never `foreground`', () => {
+		expect(contrastRatio(swatches.background, swatches.cottontail)).toBeGreaterThan(10);
+		expect(contrastRatio(swatches.foreground, swatches.cottontail)).toBeLessThan(2.5);
+	});
+
+	it('must never touch another brand colour', () => {
+		for (const name of onShadeNames) {
+			if (name === 'cottontail') continue;
+			expect(contrastRatio(swatches.cottontail, swatches[name])).toBeLessThan(2.2);
+		}
+	});
+});
+
 // ─── modifiers ──────────────────────────────────────────────────────────────
 
 describe('modifiers', () => {

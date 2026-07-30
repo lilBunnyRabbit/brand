@@ -160,12 +160,16 @@ a {
 /*
 	One global focus ring.
 
-	`primary`. Not cottontail, even though it is brighter: cottontail is only ever used as ink on a
-	primary ground, and a ring floating on a shade would break that. The inner ring is the page shade,
-	which keeps the outline visible when the focused thing is itself a primary fill.
+	`cottontail` — 9.56 to 16.98 against the seven shades, the highest-contrast thing in the system,
+	and unmistakably ours.
+
+	Against a primary fill it is only 1.94:1 on its own, which fails the two-sided requirement. The
+	ring-plus-offset pattern fixes that and is WCAG 2.4.11's own technique rather than a dodge: ring,
+	then a gap of the page shade, then the component. Ring against gap is 13.66 and gap against a
+	primary button is 7.06 — both clear.
 */
 :focus-visible {
-	outline: 2px solid var(--brand-primary);
+	outline: 2px solid var(--brand-cottontail);
 	outline-offset: 2px;
 	box-shadow: 0 0 0 2px var(--surface-page);
 }

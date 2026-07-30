@@ -175,6 +175,11 @@
 				one job — the mark on a primary badge — and it is never text. On primary it measures 1.94:1,
 				which is fine for a logo and nothing else.
 			</p>
+			<ul class="cotton-jobs">
+				<li>The focus ring — 9.56 to 16.98 on every shade.</li>
+				<li>A loud badge or callout, sparingly, with <code>background</code> as its text.</li>
+				<li>The ink of the logo badge, on primary.</li>
+			</ul>
 			<p class="cotton-hex"><code>#e0f9ab</code> · <code>oklch(0.945 0.10332 122.47)</code></p>
 		</div>
 	</div>
@@ -729,6 +734,26 @@
 		color: var(--fg-muted);
 	}
 
+	.cotton-jobs {
+		display: grid;
+		gap: var(--space-1);
+		padding: 0;
+		margin: var(--space-4) 0 0;
+		font-size: var(--text-base);
+		color: var(--fg-muted);
+		list-style: none;
+	}
+
+	.cotton-jobs li {
+		padding-left: var(--space-4);
+		text-indent: calc(var(--space-4) * -1);
+	}
+
+	.cotton-jobs li::before {
+		content: '— ';
+		color: var(--brand-cottontail);
+	}
+
 	.cotton-hex {
 		font-size: var(--text-sm) !important;
 	}
@@ -772,10 +797,20 @@
 		list-style: none;
 	}
 
+	/*
+		The one loud cottontail fill on the page. 13.66:1 against the shade behind it, and `background`
+		as its text is 13.66 the other way. Never `foreground` on it (1.97), and never on a brand
+		ground — it is 1.88–2.09 against everything at L 0.745.
+	*/
 	.idea-rule {
+		display: inline-block;
+		padding: var(--space-2) var(--space-4) !important;
 		margin: var(--space-4) 0 0 !important;
 		font-size: var(--text-base) !important;
-		color: var(--brand-tertiary);
+		font-weight: 600;
+		color: var(--on-brand);
+		background: var(--brand-cottontail);
+		border-radius: var(--radius-pill);
 	}
 
 	.steps li {
@@ -1067,7 +1102,7 @@
 	}
 
 	.fchip:has(input:focus-visible) {
-		outline: 2px solid var(--brand-primary);
+		outline: 2px solid var(--brand-cottontail);
 		outline-offset: 2px;
 	}
 
