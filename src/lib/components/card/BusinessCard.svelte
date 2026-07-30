@@ -40,9 +40,14 @@
 			>
 				<div class="inner front">
 					<!--
-						Placement follows the reference: mark top-right, name and role on the left at about
-						mid-height, contact lines at the foot. Everything left-aligned and uppercase with wide
-						tracking, so the empty right-hand half is deliberate rather than a gap.
+						Placement, straight off the reference:
+						  mark      top-right
+						  name      left, floating in the middle band — NOT pushed down onto the contacts
+						  role      directly beneath it, tiny, very wide tracking
+						  contacts  bottom-left, three mono lines
+
+						All uppercase, all left-aligned, name at regular weight. The empty right half below
+						the mark is deliberate.
 					-->
 					<div class="mark">
 						<Mark {variant} size="100%" ink="currentColor" key="front-{row.id}" />
@@ -128,52 +133,54 @@
 	.front {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
+		/* The middle row takes the slack, so the name floats near the centre. */
 		grid-template-rows: auto 1fr auto;
-		column-gap: 5cqi;
+		column-gap: 4cqi;
 	}
 
 	.mark {
 		grid-row: 1;
 		grid-column: 2;
-		width: 17cqi;
+		width: 16cqi;
 	}
 
 	.who {
 		grid-row: 2;
-		grid-column: 1;
-		align-self: end;
+		grid-column: 1 / -1;
+		/* `center`, not `end`. `end` dropped the name onto the contact block. */
+		align-self: center;
 		min-width: 0;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 9.5cqi;
-		font-weight: 500;
+		font-size: 8.5cqi;
+		font-weight: 400;
 		line-height: 1;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.13em;
 		text-transform: uppercase;
 	}
 
 	.role {
-		margin: 2cqi 0 0;
-		font-size: 3cqi;
+		margin: 2.2cqi 0 0;
+		font-size: 2.4cqi;
 		line-height: 1;
-		letter-spacing: 0.32em;
+		letter-spacing: 0.46em;
 		text-transform: uppercase;
 		color: var(--quiet);
 	}
 
 	.lines {
+		display: grid;
 		grid-row: 3;
 		grid-column: 1 / -1;
-		display: grid;
-		gap: 1cqi;
+		gap: 0.9cqi;
 		padding: 0;
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 3.4cqi;
-		line-height: 1.2;
-		letter-spacing: 0.02em;
+		font-size: 3.2cqi;
+		line-height: 1.3;
+		letter-spacing: 0.04em;
 		text-transform: uppercase;
 		list-style: none;
 		color: var(--quiet);
