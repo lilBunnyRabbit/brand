@@ -6,6 +6,7 @@
 	import Mark from '$lib/components/logo/Mark.svelte';
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
+	import DerivationPlot from '$lib/components/color/DerivationPlot.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
 	import { logos } from '$lib/brand/discover';
@@ -407,6 +408,24 @@
 	</ul>
 </Section>
 
+<!-- ─── The family tree, parked ────────────────────────────────────────── -->
+
+{#if hero}
+	<!--
+		Unlisted on purpose: not in the nav, collapsed by default, sitting at the foot of the page.
+		<details> gives it a real keyboard-operable toggle with no JS and no custom ARIA.
+	-->
+	<details class="stash">
+		<summary>
+			<span>How the colours relate</span>
+			<span class="stash-hint">unfinished</span>
+		</summary>
+		<div class="stash-body">
+			<DerivationPlot />
+		</div>
+	</details>
+{/if}
+
 <!-- ─── Assets ─────────────────────────────────────────────────────────── -->
 
 <Section
@@ -601,6 +620,38 @@
 		margin: var(--space-4) 0 0;
 		font-size: var(--text-sm);
 		color: var(--brand-warning);
+	}
+
+	/* ── parked experiment ── */
+	.stash {
+		margin-top: clamp(var(--space-6), 6vw, 4rem);
+	}
+
+	.stash summary {
+		display: inline-flex;
+		gap: var(--space-3);
+		align-items: baseline;
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+		cursor: pointer;
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-pill);
+	}
+
+	.stash summary:hover {
+		color: var(--brand-foreground);
+		background: var(--surface-raised);
+	}
+
+	.stash-hint {
+		font-size: var(--text-xs);
+		color: var(--brand-warning);
+	}
+
+	.stash-body {
+		margin-top: var(--space-5);
 	}
 
 	/* ── the seed / maths ── */
