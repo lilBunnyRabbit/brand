@@ -1049,9 +1049,19 @@
 
 	/* ── groups ── */
 
-	/* `.cotton` too: Modifiers follows it directly and was sitting on its outline. */
-	.group + .group,
-	.cotton + .group {
+	/*
+		A group gets its top gap from whatever precedes it, except a section head.
+
+		This was a list of pairs — `.group + .group`, then `.cotton + .group` when Modifiers turned up
+		flush against the cottontail panel, and it would have needed `.rules + .group` next, then the one
+		after that. Enumerating the predecessors is the bug: every new block above a group is another
+		missing rule, and the symptom is always a heading welded to the thing above it.
+
+		`header` is the exclusion because `Section` renders one, and the head-to-content gap is
+		`--stack-sm` and belongs to the header. Adjacent margins collapse, so a predecessor that already
+		carries its own bottom gap does not double up.
+	*/
+	:not(header) + .group {
 		margin-top: var(--stack);
 	}
 
