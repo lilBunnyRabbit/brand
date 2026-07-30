@@ -89,23 +89,18 @@ export function tokenName(name: string, theme: ThemeName): string {
 /**
  * What a swatch is CALLED, as opposed to what it is keyed by.
  *
- * Within the Surfaces group the seven shades read as a ladder — Lightest through Darkest — rather than
- * repeating the word "background" seven times. And there is no `light_` here: a card sitting on cream
- * inside a light section does not need to announce which mode it is in.
+ * The whole key, capitalised word by word: `background_lightest` is "Background Lightest", not
+ * "Lightest". Shortening it to the ladder rung alone read as a different token — the shade IS a
+ * background, and the card is the place that says so.
  *
- * The machine name is still one click away, on the swatch's own copy buttons.
+ * No `light_` prefix, though: a card sitting on cream inside a light section does not need to announce
+ * which mode it is in, and the machine name is one click away on the card's own copy buttons.
  */
-const DISPLAY: Partial<Record<SwatchName, string>> = {
-	background_lightest: 'Lightest',
-	background_lighter: 'Lighter',
-	background_light: 'Light',
-	background_dark: 'Dark',
-	background_darker: 'Darker',
-	background_darkest: 'Darkest'
-};
-
 export function displayName(name: SwatchName): string {
-	return DISPLAY[name] ?? name.charAt(0).toUpperCase() + name.slice(1);
+	return name
+		.split('_')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
 }
 
 export interface PaletteGroup {

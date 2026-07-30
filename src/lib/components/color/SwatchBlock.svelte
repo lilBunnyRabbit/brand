@@ -20,13 +20,18 @@
 	const rest = $derived(swatch.primary.slice(1));
 
 	/*
-		"More" holds every remaining notation culori can produce, CSS-valid ones first and the
-		library-only spaces after a divider. A native <details> rather than a custom dropdown: it gets
-		focus, keyboard operation and expanded state from the platform, and each row is its own copy
-		button rather than a <select> that could only report one value at a time.
+		A native <dialog>, opened with showModal(), because the sheet used to be a <details> INSIDE the
+		card: the card has `overflow: hidden` and is one cell of a grid, so an expanded sheet was clipped
+		on the right and pushed the row's other cards down. A modal renders in the top layer, which no
+		ancestor can clip, and the platform supplies Escape, focus trapping and inertness for free.
+
+		It lists EVERY notation rather than the leftovers — once it is a sheet of its own it may as well be
+		the complete reference, so hex and the two on the face appear here too.
 	*/
-	const cssExtra = $derived(swatch.extra.filter((n) => n.css));
-	const libExtra = $derived(swatch.extra.filter((n) => !n.css));
+	let sheet: HTMLDialogElement;
+
+	const cssRows = $derived(swatch.notations.filter((n) => n.css));
+	const libRows = $derived(swatch.notations.filter((n) => !n.css));
 </script>
 
 <!--
@@ -67,13 +72,51 @@
 			</button>
 		{/each}
 
-		<details class="pick">
-			<summary aria-label="More notations for {swatch.token}">More</summary>
-			<div class="sheet">
-				{#each cssExtra as format (format.id)}
+		<!--
+			Not styled like its neighbours on purpose. The two beside it copy; this one opens something, so
+			it drops the fill and sits quieter until you go looking for it.
+		-->
+		<button
+			type="button"
+			class="pick"
+			aria-haspopup="dialog"
+			aria-label="All {swatch.notations.length} notations for {swatch.token}"
+			onclick={() => sheet.showModal()}
+		>
+			More
+		</button>
+	</div>
+
+	<dialog bind:this={sheet} aria-label="{swatch.label} — every notation">
+		<div class="sheet-head">
+			<span class="sheet-chip" style="background: {swatch.hex};" aria-hidden="true"></span>
+			<span class="sheet-id">
+				<strong>{swatch.label}</strong>
+				<code>{swatch.cssVar}</code>
+			</span>
+			<button type="button" class="x" aria-label="Close" onclick={() => sheet.close()}>✕</button>
+		</div>
+
+		<div class="rows">
+			{#each cssRows as format (format.id)}
+				<button
+					type="button"
+					class="row"
+					class:is-copied={copied === format.id}
+					aria-label="Copy {swatch.token} as {format.label}: {format.value}"
+					onclick={() => copy(format.id, format.value, `${swatch.token} ${format.label}`)}
+				>
+					<span class="rl">{format.label}</span>
+					<span class="rv">{copied === format.id ? 'Copied' : format.value}</span>
+				</button>
+			{/each}
+
+			{#if libRows.length}
+				<p class="divider">Not valid CSS — culori spaces</p>
+				{#each libRows as format (format.id)}
 					<button
 						type="button"
-						class="row"
+						class="row is-lib"
 						class:is-copied={copied === format.id}
 						aria-label="Copy {swatch.token} as {format.label}: {format.value}"
 						onclick={() => copy(format.id, format.value, `${swatch.token} ${format.label}`)}
@@ -82,25 +125,9 @@
 						<span class="rv">{copied === format.id ? 'Copied' : format.value}</span>
 					</button>
 				{/each}
-
-				{#if libExtra.length}
-					<p class="divider">Not valid CSS — culori spaces</p>
-					{#each libExtra as format (format.id)}
-						<button
-							type="button"
-							class="row is-lib"
-							class:is-copied={copied === format.id}
-							aria-label="Copy {swatch.token} as {format.label}: {format.value}"
-							onclick={() => copy(format.id, format.value, `${swatch.token} ${format.label}`)}
-						>
-							<span class="rl">{format.label}</span>
-							<span class="rv">{copied === format.id ? 'Copied' : format.value}</span>
-						</button>
-					{/each}
-				{/if}
-			</div>
-		</details>
-	</div>
+			{/if}
+		</div>
+	</dialog>
 </article>
 
 <style>
@@ -169,15 +196,13 @@
 		opacity: 0.8;
 	}
 
+	/* One row: two copies and a way in. No wrapping — three items fit at any card width. */
 	.more {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 1px;
 	}
 
-	.more > button,
-	.pick > summary {
-		flex: 1;
+	.more button {
 		padding: var(--space-2) var(--space-1);
 		font: inherit;
 		font-size: var(--text-xs);
@@ -185,48 +210,110 @@
 		color: inherit;
 		text-align: center;
 		cursor: pointer;
-		/* A wash of the label colour rather than a border — same hue, no extra line. */
-		background: color-mix(in srgb, currentColor 12%, transparent);
+		background: none;
 		border: 0;
 	}
 
-	.more > button:hover,
-	.more > button.is-copied,
-	.pick > summary:hover,
-	.pick[open] > summary {
+	/* The two that copy. A wash of the label colour rather than a border — same hue, no extra line. */
+	.more button:not(.pick) {
+		flex: 1;
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
+	.more button:not(.pick):hover,
+	.more button.is-copied {
 		background: color-mix(in srgb, currentColor 26%, transparent);
 	}
 
+	/* Quieter than the two it sits beside, and no fill: it opens rather than copies. */
 	.pick {
-		flex: 1 0 100%;
+		padding-inline: var(--space-4);
+		font-weight: 500;
+		opacity: 0.7;
 	}
 
-	.pick > summary {
-		display: block;
-		list-style: none;
-	}
-
-	.pick > summary::-webkit-details-marker {
-		display: none;
+	.pick:hover {
+		background: color-mix(in srgb, currentColor 12%, transparent);
+		opacity: 1;
 	}
 
 	/*
-		The sheet scrolls, because there are twenty notations and the card is not tall. Capped in `em` so
-		it tracks the type size rather than a fixed pixel guess.
+		The sheet stops inheriting the plate.
+
+		It is a child of the coloured card, so without these it would render as text-on-swatch — every
+		colour in the palette as a different dialog. It is a document surface, so it uses the document's
+		own tokens, and inside a light region those resolve light.
 	*/
-	.sheet {
+	dialog {
+		display: flex;
+		flex-direction: column;
+		width: min(30rem, calc(100vw - 2 * var(--space-4)));
+		max-height: min(32rem, calc(100vh - 2 * var(--space-6)));
+		padding: 0;
+		overflow: hidden;
+		color: var(--brand-foreground);
+		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	dialog::backdrop {
+		background: color-mix(in srgb, #000 62%, transparent);
+	}
+
+	.sheet-head {
+		display: flex;
+		gap: var(--space-3);
+		align-items: center;
+		padding: var(--space-4);
+		border-bottom: 1px solid var(--hairline);
+	}
+
+	.sheet-chip {
+		width: 2rem;
+		height: 2rem;
+		border-radius: var(--radius-sm);
+	}
+
+	.sheet-id {
 		display: grid;
-		max-height: 16em;
+		flex: 1;
+		gap: 0.1rem;
+	}
+
+	.sheet-id code {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	.x {
+		padding: var(--space-1) var(--space-2);
+		font: inherit;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+		cursor: pointer;
+		background: none;
+		border: 0;
+	}
+
+	.x:hover {
+		color: var(--brand-foreground);
+	}
+
+	/* `min-height: 0` so the flex child is allowed to be shorter than its content and scroll. */
+	.rows {
+		display: grid;
+		min-height: 0;
 		overflow-y: auto;
-		background: color-mix(in srgb, currentColor 8%, transparent);
 	}
 
 	.row {
 		display: flex;
-		gap: var(--space-3);
+		gap: var(--space-4);
 		align-items: baseline;
 		justify-content: space-between;
-		padding: var(--space-2) var(--space-3);
+		padding: var(--space-2) var(--space-4);
 		font: inherit;
 		color: inherit;
 		text-align: left;
@@ -237,7 +324,7 @@
 
 	.row:hover,
 	.row.is-copied {
-		background: color-mix(in srgb, currentColor 18%, transparent);
+		background: var(--surface-edge);
 	}
 
 	.rl {
@@ -252,7 +339,7 @@
 		font-size: var(--text-xs);
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		opacity: 0.75;
+		color: var(--fg-muted);
 	}
 
 	.row.is-lib .rl {
@@ -261,12 +348,12 @@
 	}
 
 	.divider {
-		padding: var(--space-3) var(--space-3) var(--space-1);
+		padding: var(--space-4) var(--space-4) var(--space-1);
 		margin: 0;
 		font-size: var(--text-xs);
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		opacity: 0.55;
+		color: var(--fg-muted);
 	}
 </style>

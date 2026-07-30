@@ -42,23 +42,24 @@
 	const sizes = [16, 24, 32, 48, 64];
 
 	/*
-		The derivation, as seven rows: what it is called, what it is, and the move that produced it.
+		The derivation, as seven rows: what it is called and the move that produced it.
 
-		`C × 1` on its own was not enough — every brand colour is a chroma multiple AND a hue turn, and
-		showing only the first half made the rows look interchangeable. Hexes are read off the palette so
-		a row cannot claim a colour the palette does not have.
+		No hex. Every one of these colours has a swatch card of its own a screen further down, with its hex
+		as the card's own label and four ways to copy it — repeating the value here made the row a data
+		table when its whole job is the arithmetic.
+
+		`C × 1` on its own was not enough either: every brand colour is a chroma multiple AND a hue turn,
+		and showing only the first half made the rows look interchangeable.
 	*/
-	const chain = (
-		[
-			{ name: 'background', on: 'background', ink: 'foreground', op: 'the seed' },
-			{ name: 'foreground', on: 'foreground', ink: 'background', op: '1 − L · C ÷ 3 · H + 180°' },
-			{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H − 120°' },
-			{ name: 'secondary', on: 'secondary', ink: 'background', op: 'C × 2 · H + 180°' },
-			{ name: 'primary', on: 'primary', ink: 'background', op: 'C × 3 · H + 72°' },
-			{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' },
-			{ name: '4 states', on: 'error', ink: 'background', op: 'C × 6 · fixed hues' }
-		] as const
-	).map((row) => ({ ...row, hex: dark[row.on].hex }));
+	const chain = [
+		{ name: 'background', on: 'background', ink: 'foreground', op: 'the seed' },
+		{ name: 'foreground', on: 'foreground', ink: 'background', op: '1 − L · C ÷ 3 · H + 180°' },
+		{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H − 120°' },
+		{ name: 'secondary', on: 'secondary', ink: 'background', op: 'C × 2 · H + 180°' },
+		{ name: 'primary', on: 'primary', ink: 'background', op: 'C × 3 · H + 72°' },
+		{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' },
+		{ name: '4 states', on: 'error', ink: 'background', op: 'C × 6 · fixed hues' }
+	] as const;
 
 	/*
 		Ratios measured from the palette rather than written down, so they cannot drift.
@@ -114,8 +115,6 @@
 	/* ── the light region ── */
 
 	const lightContract = measureContract('light');
-	const darkBody = contrastRatio(dark.foreground, dark.background);
-	const lightBody = contrastRatio(light.foreground, light.background);
 
 	/*
 		How `cottontail` is actually used, per mode, so the panel can demonstrate the jobs rather than
@@ -161,7 +160,10 @@
 	A snippet rather than duplicated markup, because the two sections drifted into different designs the
 	last time they were written out twice. The whole card is the ground and the mark sits in it — no
 	disc, because the card IS the colour, which is the only way a pair like "primary + background" reads
-	as a pair. Mark and title share a top edge so the card reads as one label rather than two.
+	as a pair.
+
+	Mark, then title, then note — one column, in that order. Putting the title beside the mark to share a
+	top edge left a two-word label crammed into whatever was left of a 15rem card and wrapping mid-pair.
 -->
 {#snippet comboCard(combo: ComboView)}
 	<figure
@@ -170,13 +172,11 @@
 			: 'background'});"
 	>
 		<figcaption>
-			<span class="combo-head">
-				<Mark variant={hero} size="3.25rem" ink={combo.inkVar} key="combo-{combo.key}" />
-				<span class="combo-id">
-					<span class="combo-label">{combo.label}</span>
-					<span class="combo-ratio">
-						{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
-					</span>
+			<Mark variant={hero} size="3.25rem" ink={combo.inkVar} key="combo-{combo.key}" />
+			<span class="combo-id">
+				<span class="combo-label">{combo.label}</span>
+				<span class="combo-ratio">
+					{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
 				</span>
 			</span>
 			<span class="combo-note">{combo.note}</span>
@@ -193,16 +193,18 @@
 	the whole point of the section — same token, fewer jobs on paper.
 -->
 {#snippet cottontailPanel(theme: ThemeName)}
+	<!--
+		The panel wears the ring it is describing: 2px of cottontail, offset by a gap of the page shade.
+		That is WCAG 2.4.11's own two-sided technique at panel scale, so the section's first exhibit is the
+		section's own frame.
+	-->
 	<div class="cotton">
 		<div class="cotton-head">
 			<h3>cottontail</h3>
 			<p class="cotton-what">
 				{theme === 'dark'
-					? 'The brightest thing in the system, named after the flash of a rabbit’s tail.'
-					: 'The same token on paper — and the only one that lost jobs on the way over.'}
-			</p>
-			<p class="cotton-hex">
-				<code>{themes[theme].cottontail.hex}</code>
+					? 'The brightest thing in the system, named after the flash of a rabbit’s tail. The ring around this panel is it.'
+					: 'The same token on paper — and the only one that lost jobs on the way over. The ring around this panel is it.'}
 			</p>
 		</div>
 
@@ -211,11 +213,16 @@
 				<li class:is-off={!job.ok}>
 					<span class="job-demo">
 						{#if job.id === 'ring'}
-							<!-- The real thing: ring, page-shade gap, then the component. -->
-							<span class="demo-ring">Focused</span>
+							<!-- The real thing, at the size it is used: ring, page-shade gap, then the component. -->
+							<span class="demo-ring">Save changes</span>
 						{:else if job.id === 'badge'}
 							<span class="demo-badge">
-								<Mark variant={hero} size="1.5rem" ink="var(--brand-cottontail)" key="ct-{theme}" />
+								<Mark
+									variant={hero}
+									size="2.75rem"
+									ink="var(--brand-cottontail)"
+									key="ct-{theme}"
+								/>
 							</span>
 						{:else}
 							<span class="demo-pop">New</span>
@@ -224,8 +231,8 @@
 					<span class="job-copy">
 						<span class="job-label">{job.label}</span>
 						<span class="job-detail">{job.detail}</span>
+						{#if !job.ok}<span class="job-no">not on paper</span>{/if}
 					</span>
-					{#if !job.ok}<span class="job-no">not on paper</span>{/if}
 				</li>
 			{/each}
 		</ul>
@@ -279,12 +286,11 @@
 				</p>
 			</div>
 
-			<!-- Name, value, formula. Hexes come from the palette, so the rows cannot drift from it. -->
+			<!-- Name and move. The row IS the colour, so it does not also have to print it. -->
 			<ol class="chain">
 				{#each chain as row (row.name)}
 					<li style="background: var(--brand-{row.on}); color: var(--brand-{row.ink});">
 						<span class="chain-name">{row.name}</span>
-						<span class="chain-hex">{row.hex}</span>
 						<span class="chain-formula">{row.op}</span>
 					</li>
 				{/each}
@@ -654,20 +660,20 @@
 
 		<!-- ─── The twins ──────────────────────────────────────────────────── -->
 
+		<!--
+			The contract lives in the lede rather than in a paragraph of its own. As a paragraph it sat
+			between the lede and the first group heading with no space either side, and it restated what the
+			dark half had already proven — the number is the only new part, so the number is all that is left.
+		-->
 		<Section
 			id="light-colour"
 			index="08"
 			accent="secondary"
 			title="Seventeen twins"
-			lede="Same names, same groups, same order. Laid out like the dark palette so the mapping is visible by position."
+			lede="Same names, same groups, same order — and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
+				2
+			)}:1."
 		>
-			<p class="closing">
-				Same guarantee as the dark half: {lightContract.count} colour-on-background combinations, the
-				closest still comfortable at {lightContract.worst.ratio.toFixed(2)}:1. Body text lands on
-				{lightBody.toFixed(2)} against {darkBody.toFixed(2)} in dark — solved to match, so neither side
-				reads harsher.
-			</p>
-
 			{#each groupViews('light') as group (group.id)}
 				<div class="group" id="light-{group.id}">
 					<div class="group-head">
@@ -846,7 +852,10 @@
 	}
 
 	/* ── groups ── */
-	.group + .group {
+
+	/* `.cotton` too: Modifiers follows it directly and was sitting on its outline. */
+	.group + .group,
+	.cotton + .group {
 		margin-top: clamp(var(--space-6), 4vw, var(--space-8));
 	}
 
@@ -973,20 +982,48 @@
 	/*
 		The transition, and there is no animation in it — scrolling IS the animation.
 
-		`--dawn` is built in `brand/tokens.ts` by interpolating in OKLCH between two real tokens: dark's
-		`background_darkest` and light's page. Fifteen stops rather than five, because the earlier version
-		hopped between four widely spaced shades in sRGB and banded — sRGB also puts a dead grey at the
-		midpoint of that journey, where OKLCH warms through it.
+		TWO layers, because the light half needs the same continuous descent the dark half has:
+
+		  `--dawn`  the sunrise, built in `brand/tokens.ts` from dark's last shade through the LIGHT primary
+		            onto the light page. Sized to exactly `--ramp` and pinned to the top, so it stops being
+		            painted past the transition instead of extending its final stop forever.
+		  the rest  the light shade ladder, `background` down to `background_darkest`, over the whole
+		            region. Written with the same `var(--brand-*)` names and the same stop positions as
+		            `body`'s gradient in `app.css`: this element carries `data-theme="light"`, so those
+		            names resolve to the light seven and one authored ramp serves both modes.
+
+		The seam is free: the dawn ends on `background` and the layer under it is flat `background` for its
+		first 22%, which is well past where the dawn stops.
+
+		Which is also why the descent is region-mapped and NOT `background-attachment: fixed` like `body`'s.
+		A fixed layer is viewport-mapped, so the shade immediately under the dawn would be whatever the
+		viewport ramp happened to be at that scroll offset — a seam under the sunrise that moves as you
+		scroll. Region-mapped, the ramp starts where the region does and the two meet on the same colour.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
-		child ramp would sit on cream rather than on the dark page above. A gradient extends its final stop,
-		so past `--ramp` this is flat page colour with no second layer to keep in step.
+		child ramp would sit on cream rather than on the dark page above.
 
 		`:global` because the element belongs to `ThemeScope`. The id also gives it the specificity to beat
 		the flat `[data-theme='light']` ground, whichever order they land in.
 	*/
 	:global(#light-region) {
-		background: var(--dawn);
+		background-image:
+			var(--dawn),
+			linear-gradient(
+				180deg,
+				var(--brand-background) 0%,
+				var(--brand-background) 22%,
+				var(--brand-background_dark) 52%,
+				var(--brand-background_darker) 78%,
+				var(--brand-background_darkest) 100%
+			);
+		background-repeat: no-repeat, no-repeat;
+		background-size:
+			100% var(--ramp),
+			100% 100%;
+		background-position:
+			top center,
+			top center;
 	}
 
 	/* Holds the content clear of the gradient. The ramp itself is the region's background. */
@@ -1017,11 +1054,15 @@
 	}
 
 	/* ── the seed / maths ── */
+	/*
+		`start`, not `center`. The copy is three lines and the ladder is seven rows, so centring left the
+		heading floating in the middle of the panel with nothing beside its first line.
+	*/
 	.seed {
 		display: grid;
 		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
 		gap: clamp(var(--space-5), 4vw, var(--space-8));
-		align-items: center;
+		align-items: start;
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
 		margin-bottom: clamp(var(--space-6), 5vw, var(--space-8));
 		background: var(--surface-well);
@@ -1086,16 +1127,15 @@
 	}
 
 	/*
-		The one loud cottontail fill on the page. 13.66:1 against the shade behind it, and `background`
-		as its text is 13.66 the other way. Never `foreground` on it (1.97), and never on a brand
-		ground — it is 1.88–2.09 against everything at L 0.745.
-	*/
-	/*
 		A rule, not an action.
 
 		This was a filled cottontail pill, which read as a button — and on a phone it wrapped to two lines
 		inside a rounded shape and looked broken. A rule on the left edge says "this is the point" without
 		pretending to be pressable, and it wraps like the prose it is.
+
+		In primary rather than cottontail. Cottontail is the loudest thing in the palette and a UI token —
+		using it for a line of body copy on the darkest panel made the sentence shout, and it is a rule, not
+		an alert. Primary is the brand voice and clears 7.06:1 on this shade.
 	*/
 	.idea-rule {
 		max-width: 46ch;
@@ -1104,8 +1144,8 @@
 		font-size: var(--text-lg) !important;
 		font-weight: 600;
 		line-height: 1.5;
-		color: var(--brand-cottontail);
-		border-left: 2px solid var(--brand-cottontail);
+		color: var(--brand-primary);
+		border-left: 2px solid var(--brand-primary);
 	}
 
 	.steps li {
@@ -1155,15 +1195,17 @@
 	}
 
 	/*
-		The caption is now the whole card body — mark, title and note. It has to carry the height itself,
-		or the figure's `space-between` has one child to distribute and the note floats up under the title.
+		The caption is the whole card body — mark, title and note, stacked. It has to carry the height
+		itself, or the figure's `space-between` has one child to distribute and nothing lands where it
+		should. `margin-top: auto` on the note pins it to the foot so the pair reads at the top of every
+		card in the row regardless of how long its note is.
 	*/
 	.combos figcaption {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: var(--space-4);
-		justify-content: space-between;
+		gap: var(--space-3);
+		align-items: flex-start;
 		width: 100%;
 	}
 
@@ -1181,6 +1223,7 @@
 
 	.combo-note {
 		max-width: 34ch;
+		margin-top: auto;
 		font-size: var(--text-sm);
 		opacity: 0.85;
 	}
@@ -1211,13 +1254,21 @@
 		color: var(--fg-muted);
 	}
 
-	/* ── size ladder ── */
+	/*
+		── size ladder ──
+
+		`fit-content`, because five marks topping out at 64px in a full-width panel is mostly empty panel.
+		It hugs the rungs instead, which also stops it competing with the swatch grids above it for
+		attention it does not need.
+	*/
 	.ladder {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-5);
 		align-items: flex-end;
-		padding: var(--space-5);
+		width: fit-content;
+		max-width: 100%;
+		padding: var(--space-5) var(--space-6);
 		margin-top: var(--space-5);
 		background: var(--surface-well);
 		border: 1px solid var(--hairline);
@@ -1472,12 +1523,10 @@
 
 		/* Both of these were two-column at every width, including 360px. */
 		.seed,
-		.cotton,
 		.idea {
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.cotton-art,
 		.idea-art {
 			justify-self: start;
 		}
@@ -1512,19 +1561,16 @@
 			margin-bottom: var(--space-3);
 		}
 
-		/* Centre the two panels that are mostly one object plus a line of text. */
-		.cotton,
+		/* The one panel that is mostly one object plus a line of text. */
 		.idea {
 			justify-items: center;
 			text-align: center;
 		}
 
-		.cotton-art,
 		.idea-art {
 			justify-self: center;
 		}
 
-		.cotton-copy p,
 		.idea-copy p {
 			margin-inline: auto;
 		}
@@ -1607,7 +1653,7 @@
 
 	.chain li {
 		display: grid;
-		grid-template-columns: 1fr auto auto;
+		grid-template-columns: 1fr auto;
 		gap: var(--space-3) var(--space-4);
 		align-items: baseline;
 		padding: var(--space-3) var(--space-4);
@@ -1620,7 +1666,6 @@
 		font-weight: 700;
 	}
 
-	.chain-hex,
 	.chain-formula {
 		font-family: var(--font-mono);
 		font-size: var(--text-xs);
@@ -1683,13 +1728,23 @@
 
 	/* ── cottontail, one panel for both modes ── */
 
+	/*
+		The outline is the point, not decoration: this is the ring-plus-offset pattern at panel scale, so
+		the panel demonstrates its own subject before you read a word of it. `outline` rather than `border`
+		because only outline can sit OUTSIDE the box with a gap of page shade between — which is the half of
+		the technique that makes a 1.94:1 ring legal.
+
+		The margin below carries the outline plus its offset clear of whatever follows.
+	*/
 	.cotton {
 		display: grid;
-		gap: clamp(var(--space-5), 4vw, var(--space-6));
+		gap: clamp(var(--space-4), 3vw, var(--space-5));
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+		margin-block: clamp(var(--space-6), 5vw, var(--space-8));
 		background: var(--surface-well);
 		border-radius: var(--radius-lg);
+		outline: 2px solid var(--brand-cottontail);
+		outline-offset: 4px;
 	}
 
 	.cotton h3 {
@@ -1701,33 +1756,40 @@
 	}
 
 	.cotton-what {
-		max-width: 56ch;
+		max-width: 60ch;
 		margin: var(--space-2) 0 0;
 		font-size: var(--text-base);
 		color: var(--fg-muted);
 	}
 
-	.cotton-hex {
-		margin: var(--space-3) 0 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
 	.cotton-jobs {
 		display: grid;
-		gap: var(--space-3);
+		gap: 0;
 		padding: 0;
 		margin: 0;
 		list-style: none;
 	}
 
+	/*
+		Two halves, alternating. Every demo used to live in a 7rem gutter, which capped all three at chip
+		size — the thing being shown was the smallest thing in the row. At half the panel each one can be
+		the size it is actually used at, and swapping sides row to row keeps three of them from reading as
+		a table.
+	*/
 	.cotton-jobs li {
 		display: grid;
-		grid-template-columns: 7rem 1fr auto;
-		gap: var(--space-4);
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: clamp(var(--space-4), 4vw, var(--space-6));
 		align-items: center;
-		padding-block: var(--space-2);
+		padding-block: clamp(var(--space-4), 3vw, var(--space-5));
+	}
+
+	.cotton-jobs li + li {
+		border-top: 1px solid var(--hairline);
+	}
+
+	.cotton-jobs li:nth-child(even) .job-demo {
+		order: 2;
 	}
 
 	/* A job the light twin cannot do. Struck through AND labelled, never colour alone. */
@@ -1739,35 +1801,42 @@
 		text-decoration: line-through;
 	}
 
+	/*
+		Each demo gets a plate of the page shade, so it reads as the thing in situ rather than floating on
+		the panel — and the ring's offset gap has a real surface to be.
+	*/
 	.job-demo {
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
+		display: grid;
+		place-items: center;
+		min-height: 8rem;
+		padding: var(--space-5);
+		background: var(--surface-page);
+		border-radius: var(--radius-md);
 	}
 
-	/* The ring-plus-offset pattern, live: ring, page-shade gap, then the component. */
+	/* The ring-plus-offset pattern, live, on something button-sized. */
 	.demo-ring {
-		padding: var(--space-2) var(--space-3);
-		font-size: var(--text-xs);
-		font-weight: 700;
+		padding: var(--space-3) var(--space-5);
+		font-size: var(--text-base);
+		font-weight: 600;
+		background: var(--surface-raised);
 		border-radius: var(--radius-sm);
 		outline: 2px solid var(--brand-cottontail);
-		outline-offset: 2px;
-		box-shadow: 0 0 0 2px var(--surface-well);
+		outline-offset: 3px;
 	}
 
 	.demo-badge {
 		display: grid;
 		place-items: center;
-		width: 2.75rem;
-		height: 2.75rem;
+		width: 5rem;
+		height: 5rem;
 		background: var(--brand-primary);
 		border-radius: 50%;
 	}
 
 	.demo-pop {
-		padding: var(--space-1) var(--space-3);
-		font-size: var(--text-xs);
+		padding: var(--space-2) var(--space-5);
+		font-size: var(--text-lg);
 		font-weight: 700;
 		color: var(--brand-background);
 		background: var(--brand-cottontail);
@@ -1776,12 +1845,13 @@
 
 	.job-copy {
 		display: grid;
-		gap: 0.15rem;
+		gap: var(--space-2);
+		justify-items: start;
 	}
 
 	.job-label {
-		font-size: var(--text-sm);
-		font-weight: 600;
+		font-size: var(--text-lg);
+		font-weight: 700;
 	}
 
 	.job-detail {
@@ -1976,17 +2046,9 @@
 
 	/* ── shared bits ── */
 
-	/* Mark and title on one top edge. The nudge cancels the label's line-box leading. */
-	.combo-head {
-		display: flex;
-		gap: var(--space-4);
-		align-items: flex-start;
-	}
-
 	.combo-id {
 		display: grid;
 		gap: 0.15rem;
-		margin-top: -0.15em;
 	}
 
 	.closing {
@@ -1998,12 +2060,9 @@
 	}
 
 	@media (max-width: 720px) {
+		/* The formula gets its own line rather than being squeezed beside the name. */
 		.chain li {
-			grid-template-columns: 1fr auto;
-		}
-
-		.chain-formula {
-			grid-column: 1 / -1;
+			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.mods li {
@@ -2011,9 +2070,14 @@
 			gap: var(--space-3);
 		}
 
+		/* One column, and the demo always leads — the alternating sides have nothing left to alternate. */
 		.cotton-jobs li {
-			grid-template-columns: 1fr;
-			gap: var(--space-3);
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-4);
+		}
+
+		.cotton-jobs li:nth-child(even) .job-demo {
+			order: 0;
 		}
 
 		.move {

@@ -12,7 +12,14 @@
  * and no JS; light sits on a bare `[data-theme='light']` so ANY element can scope it, which is how a
  * light section renders inside a page whose root is dark.
  */
-import { Color, colorNotations, contrastRatio, mixOver, type ColorNotation } from '$lib/color';
+import {
+	colorNotations,
+	colorPath,
+	contrastRatio,
+	mixOver,
+	type Color,
+	type ColorNotation
+} from '$lib/color';
 import {
 	dark,
 	displayName,
@@ -61,8 +68,15 @@ export function labelFor(name: string): SwatchName {
 	return isShade(name) ? 'foreground' : 'background';
 }
 
-/** The notations shown as buttons on the face. Everything else lives behind "More". */
-export const PRIMARY_NOTATIONS = ['hex', 'oklch', 'rgb', 'hsl'] as const;
+/**
+ * The notations that get a button of their own on the card.
+ *
+ * `hex` is the card's own big label and the click target for the whole face, so the row itself is two
+ * buttons — the two functional forms anyone hand-writes. `rgb` was the third and it earned nothing: it
+ * is the one form every tool in the chain can produce from a hex. It still lives in the sheet with the
+ * other eighteen.
+ */
+export const PRIMARY_NOTATIONS = ['hex', 'oklch', 'hsl'] as const;
 
 /* ────────────────────────────── the stylesheet ────────────────────────────── */
 
@@ -108,7 +122,7 @@ export function brandStyleSheet(): string {
 		':root {',
 		`\t${varName(markEars.name)}: ${markEars.hex};`,
 		'',
-		'\t/* The dawn, interpolated in OKLCH between two real tokens. */',
+		'\t/* The dawn: dark’s last shade, through the light primary, onto the light page. */',
 		`\t--ramp: ${RAMP_HEIGHT};`,
 		`\t--dawn: ${dawnGradient()};`,
 		'',
@@ -127,45 +141,35 @@ export function brandStyleSheet(): string {
 export const RAMP_HEIGHT = 'clamp(15rem, 42vh, 24rem)';
 
 /**
- * The gradient that carries the page from the dark half into the light region.
+ * The gradient that carries the page from the dark half into the light region: a sunrise.
  *
- * Interpolated in OKLCH between two real tokens — dark's `background_darkest` and light's page — so
- * the path is perceptually even and every stop is derived rather than picked. sRGB would put a dead
- * grey at the midpoint (`#7e7c77`); the OKLCH path goes through `#69756d` and warms as it climbs.
+ * Three real tokens, no picked colours — dark's `background_darkest`, then **light's primary**, then
+ * light's page. Going straight from the blue-black to the cream is what produced the green: the two
+ * ends are 150° of hue apart, and every path between them — in OKLCH by angle, or in OKLab through a
+ * near-neutral — spends the whole middle of the ramp somewhere nobody chose. Routing it through a
+ * colour that IS in the palette makes the middle deliberate, and the light primary is the right one:
+ * it is the ink of the page the ramp is arriving at, so the descent reads as that page's own dawn.
  *
- * Fifteen stops rather than four. The earlier version hopped between widely spaced shades and banded
- * visibly; short hops leave nothing for the browser's sRGB interpolation to get wrong.
+ * Dark's primary is deliberately NOT a waypoint. It is the green.
  *
  * Positioned in fractions of the ramp length rather than in percentages, because the element it paints
  * is the whole light region — percentages would stretch the dawn over the entire section. A gradient
  * extends its final stop, so past the ramp it is flat page colour.
- *
- * Hue takes the short way round: a naive difference would send 230° to 80° the long way, 210° through
- * green instead of 150° through blue.
  */
-export function dawnGradient(steps = 14): string {
-	const from = themes.dark.background_darkest;
-	const to = themes.light.background;
+export function dawnGradient(steps = 18): string {
+	const path = colorPath(
+		[themes.dark.background_darkest, themes.light.primary, themes.light.background],
+		steps
+	);
 
-	let turn = to.h - from.h;
-	if (turn > 180) turn -= 360;
-	if (turn < -180) turn += 360;
-
-	const stops = Array.from({ length: steps + 1 }, (_, i) => {
-		const t = i / steps;
-		const step = new Color(
-			'dawn',
-			from.l + (to.l - from.l) * t,
-			from.c + (to.c - from.c) * t,
-			(from.h + turn * t + 360) % 360
-		);
+	const stops = path.map((step, i) => {
 		/*
 			The ramp length is inlined rather than referenced as `var(--ramp)`. A custom property's value
 			is substituted at computed-value time, so a `--dawn` declared on `:root` that referenced a
 			`--ramp` defined further down the tree would resolve to the guaranteed-invalid value and the
 			gradient would simply not paint.
 		*/
-		return `${step.hex} calc(${RAMP_HEIGHT} * ${t.toFixed(4)})`;
+		return `${step.hex} calc(${RAMP_HEIGHT} * ${(i / steps).toFixed(4)})`;
 	});
 
 	return `linear-gradient(180deg, ${stops.join(', ')})`;
@@ -289,12 +293,10 @@ export interface SwatchView {
 	rgb: string;
 	cssVar: string;
 	formula?: string;
-	/** Every notation culori can produce, CSS-valid first. */
+	/** Every notation culori can produce, CSS-valid first. The sheet shows all of them. */
 	notations: ColorNotation[];
-	/** The four shown as buttons. */
+	/** The ones with a button on the card face. */
 	primary: ColorNotation[];
-	/** The rest, behind "More". */
-	extra: ColorNotation[];
 	/** `foreground` for a shade, `background` for everything else. */
 	labelVar: string;
 	/** Contrast of that label against the plate. */
@@ -343,7 +345,6 @@ function toView(name: SwatchName, theme: ThemeName): SwatchView {
 		formula: color.description,
 		notations,
 		primary,
-		extra: notations.filter((n) => !(PRIMARY_NOTATIONS as readonly string[]).includes(n.id)),
 		labelVar: varName(ink),
 		labelRatio: contrastRatio(palette[ink], color),
 		outOfGamut: perceptiblyOutOfGamut(color)
