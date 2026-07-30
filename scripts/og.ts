@@ -14,9 +14,8 @@
  * resvg cannot read woff2, so the two faces are converted to ttf into a temp dir first. Nothing is
  * written to the repo except the PNG.
  *
- * Hack comes from the fonts the site actually serves. Inter does not: `InterVariable.woff2` loses its
- * family name in the woff2→ttf conversion and resvg then cannot select it, so this reads a static
- * `Inter-Regular.woff2` that lives beside this script and is never shipped to the browser.
+ * Only Hack, and only bold: the card is the mark plus the name, and the name is set in Hack like every
+ * other wordmark candidate on the page. Inter used to be here for a tagline line that is now gone.
  */
 import { Resvg } from '@resvg/resvg-js';
 import { Font, woff2 } from 'fonteditor-core';
@@ -35,19 +34,34 @@ await woff2.init();
 
 const fontDir = mkdtempSync(join(tmpdir(), 'brand-og-'));
 
-for (const [src, out] of [
-	['src/lib/brand/fonts/hack-bold.woff2', 'Hack-Bold.ttf'],
-	['scripts/fonts/Inter-Regular.woff2', 'Inter-Regular.ttf']
-] as const) {
-	const font = Font.create(readFileSync(`${ROOT}${src}`), { type: 'woff2' });
-	writeFileSync(join(fontDir, out), Buffer.from(font.write({ type: 'ttf' }) as ArrayBuffer));
-}
+const hack = Font.create(readFileSync(`${ROOT}src/lib/brand/fonts/hack-bold.woff2`), {
+	type: 'woff2'
+});
+writeFileSync(
+	join(fontDir, 'Hack-Bold.ttf'),
+	Buffer.from(hack.write({ type: 'ttf' }) as ArrayBuffer)
+);
 
 /* ── the plate ───────────────────────────────────────────────────────────── */
 
 const W = 1200;
 const H = 630;
-const MARK = 300;
+const MARK = 320;
+
+/*
+	`background + primary`, which is the first combination in `logo-combos.ts` and the one the guide says
+	you want almost every time. The card advertising the brand should be the default usage of it, not a
+	special case: the page shade as the ground and the mark in primary, with the name in the same ink.
+
+	`background_darkest` was the previous ground. It is a legal shade but it is the bottom of the ladder,
+	so the card was darker than any first screen of the site it links to.
+
+	The art letterboxes inside its box: the viewBox is 199.28 × 174.10, so at MARK wide the drawing is
+	MARK × 0.874 tall and sits centred in the square. The y below accounts for that, which is why the
+	mark looks lower in the numbers than it does on the card.
+*/
+const MARK_Y = 97;
+const NAME_BASELINE = 487;
 
 const raw = readFileSync(`${ROOT}src/lib/brand/logos/lilbunnyrabbit.mark.v6.wip.svg`, 'utf8');
 const viewBox = raw.match(/viewBox="([^"]+)"/)?.[1];
@@ -63,10 +77,9 @@ const inner = raw
 	.replace(/fill:#ffffff/g, `fill:${dark.primary.hex}`);
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-	<rect width="${W}" height="${H}" fill="${dark.background_darkest.hex}"/>
-	<svg x="${(W - MARK) / 2}" y="118" width="${MARK}" height="${MARK}" viewBox="${viewBox}" fill="${dark.primary.hex}">${inner}</svg>
-	<text x="${W / 2}" y="492" text-anchor="middle" font-family="Hack" font-weight="700" font-size="62" fill="${dark.foreground.hex}">${meta.name}</text>
-	<text x="${W / 2}" y="546" text-anchor="middle" font-family="Inter" font-size="28" fill="${dark.primary.hex}">${meta.tagline}</text>
+	<rect width="${W}" height="${H}" fill="${dark.background.hex}"/>
+	<svg x="${(W - MARK) / 2}" y="${MARK_Y}" width="${MARK}" height="${MARK}" viewBox="${viewBox}" fill="${dark.primary.hex}">${inner}</svg>
+	<text x="${W / 2}" y="${NAME_BASELINE}" text-anchor="middle" font-family="Hack" font-weight="700" font-size="64" fill="${dark.primary.hex}">${meta.name}</text>
 </svg>`;
 
 const png = new Resvg(svg, {

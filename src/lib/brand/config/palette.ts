@@ -41,7 +41,7 @@ export const markEars = new Color(
 	0.945,
 	0.1033,
 	122.47,
-	'Fixed. Identical in both modes — only the disc themes.'
+	'Fixed. Identical in both modes. Only the disc themes.'
 );
 
 /* ── Structure — shared by both modes ───────────────────────────────────── */

@@ -157,7 +157,7 @@ export function exportCss(): string {
 	return [
 		cssBlock(":root,\n[data-theme='dark']", themes.dark, 'dark'),
 		cssBlock("[data-theme='light']", themes.light, 'light'),
-		`/* Fixed asset colour — identical in both modes. */\n:root {\n\t${varName(markEars.name)}: ${markEars.hex};\n}\n`
+		`/* Fixed asset colour. Identical in both modes. */\n:root {\n\t${varName(markEars.name)}: ${markEars.hex};\n}\n`
 	].join('\n');
 }
 
