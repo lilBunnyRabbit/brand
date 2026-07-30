@@ -53,21 +53,21 @@ export interface HueMove {
 export const hueMoves: readonly HueMove[] = [
 	{
 		id: 'accent',
-		token: 'light_accent',
+		token: 'accent',
 		rule: 'primary − 72°',
 		kept: true,
 		outcome: 'Dark’s own offset, still legal here.'
 	},
 	{
 		id: 'tertiary',
-		token: 'light_tertiary',
+		token: 'tertiary',
 		rule: 'primary − 120°',
 		kept: true,
 		outcome: 'Dark’s own offset, still legal here.'
 	},
 	{
 		id: 'secondary',
-		token: 'light_secondary',
+		token: 'secondary',
 		rule: 'primary + 180°',
 		kept: false,
 		outcome:
@@ -75,7 +75,7 @@ export const hueMoves: readonly HueMove[] = [
 	},
 	{
 		id: 'warning',
-		token: 'light_warning',
+		token: 'warning',
 		rule: 'hue 70°',
 		kept: false,
 		outcome:

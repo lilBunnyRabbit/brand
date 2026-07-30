@@ -20,7 +20,9 @@
  *   wcagColor        level -> the swatch color used to render that verdict
  *   simulateVision   Color -> Color under a vision-deficiency or condition filter
  *   visionSimulations  the ready-made option list for a <select>
+ *   colorNotations   Color -> every notation it can be written in, CSS-valid ones first
  */
+import { converter, formatCss, formatHex, formatRgb, round, type Mode } from 'culori';
 import { OKLCH } from './oklch';
 
 export {
@@ -68,4 +70,97 @@ export function mixOver(fg: Color, bg: Color, alpha: number): Color {
 			.join(' ')})`,
 		`${fg.name}/${Math.round(alpha * 100)}`
 	);
+}
+
+/* ────────────────────────────── notations ────────────────────────────── */
+
+export interface ColorNotation {
+	id: string;
+	label: string;
+	value: string;
+	/** A browser can parse it. The rest are culori-only and marked as such in the UI. */
+	css: boolean;
+}
+
+/**
+ * Every notation a colour can be written in — conversion done entirely by culori, never by hand.
+ *
+ * `css: true` is the set a browser will actually parse: the four legacy/modern functions, the three
+ * perceptual ones, and the `color()` spaces. Everything below that line is culori's own space
+ * (`--okhsl`, `--jzazbz`, …), valid to the library and to nothing else, which is why it is flagged
+ * rather than mixed in.
+ *
+ * Two notes on the two library calls that are NOT `formatCss`:
+ *   hex   `formatHex`, because `formatCss` on an rgb value emits `color(srgb …)` rather than a hex.
+ *   rgb   `formatRgb`, for the same reason — `rgb(164, 180, 131)` is what people expect to copy.
+ */
+const NOTATIONS: { id: string; label: string; mode: Mode; css: boolean }[] = [
+	{ id: 'oklch', label: 'OKLCH', mode: 'oklch', css: true },
+	{ id: 'hsl', label: 'HSL', mode: 'hsl', css: true },
+	{ id: 'hwb', label: 'HWB', mode: 'hwb', css: true },
+	{ id: 'lab', label: 'LAB', mode: 'lab', css: true },
+	{ id: 'lch', label: 'LCH', mode: 'lch', css: true },
+	{ id: 'oklab', label: 'OKLAB', mode: 'oklab', css: true },
+	{ id: 'p3', label: 'Display P3', mode: 'p3', css: true },
+	{ id: 'lrgb', label: 'sRGB linear', mode: 'lrgb', css: true },
+	{ id: 'rec2020', label: 'Rec. 2020', mode: 'rec2020', css: true },
+	{ id: 'a98', label: 'A98 RGB', mode: 'a98', css: true },
+	{ id: 'prophoto', label: 'ProPhoto RGB', mode: 'prophoto', css: true },
+	{ id: 'xyz65', label: 'XYZ D65', mode: 'xyz65', css: true },
+	{ id: 'xyz50', label: 'XYZ D50', mode: 'xyz50', css: true },
+	{ id: 'okhsl', label: 'OKHSL', mode: 'okhsl', css: false },
+	{ id: 'okhsv', label: 'OKHSV', mode: 'okhsv', css: false },
+	{ id: 'hsv', label: 'HSV', mode: 'hsv', css: false },
+	{ id: 'lchuv', label: 'LCHuv', mode: 'lchuv', css: false },
+	{ id: 'jch', label: 'JzCzHz', mode: 'jch', css: false }
+];
+
+/*
+	Four decimals, applied to culori's converted channels before formatting.
+
+	Unrounded output runs to seventeen significant figures, which nothing can usefully paste. Rounding
+	the fractional channels to four gives percentages to two places, which is the precision a hand-written
+	stylesheet uses anyway.
+*/
+const trim = round(4);
+
+/*
+	Rounding the channels is not enough on its own: `formatCss` renders saturation and lightness as
+	percentages, and multiplying an already-rounded fraction by 100 puts the float error back —
+	`0.6092 * 100` prints as `60.919999999999995%`. So the formatted string gets a second pass.
+
+	Done on the output rather than per colour space because every percentage-bearing space has the same
+	problem, and one rule beats five special cases.
+*/
+const tidy = (css: string) =>
+	css.replace(/-?\d+\.\d{5,}/g, (n) => String(Number(Number(n).toFixed(4))));
+
+/**
+ * Every notation for a colour, CSS-valid ones first.
+ *
+ * Achromatic colours are special-cased for ONE reason: pure white converts to sRGB a hair off (1,1,1),
+ * so the hue-bearing spaces divide by a vanishing chroma and culori reports `hsl(300 50% 100%)` for
+ * white. The source's own chroma is the reliable test — it is exactly 0 by construction — so the hue is
+ * zeroed rather than recomputed. No colour maths, just refusing to print a meaningless angle.
+ */
+export function colorNotations(color: Color): ColorNotation[] {
+	const achromatic = color.c === 0;
+
+	const notations = NOTATIONS.map(({ id, label, mode, css }) => {
+		const converted = converter(mode)(color.culori) as unknown as Record<string, unknown>;
+		const cleaned = Object.fromEntries(
+			Object.entries(converted).map(([channel, value]) => {
+				if (typeof value !== 'number') return [channel, value];
+				const zeroed = achromatic && (channel === 'h' || channel === 's');
+				return [channel, zeroed ? 0 : trim(value)];
+			})
+		);
+		return { id, label, value: tidy(formatCss(cleaned as never) ?? ''), css };
+	});
+
+	return [
+		{ id: 'hex', label: 'HEX', value: formatHex(color.culori) ?? '', css: true },
+		{ id: 'rgb', label: 'RGB', value: formatRgb(color.culori) ?? '', css: true },
+		...notations
+	];
 }

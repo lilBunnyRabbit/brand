@@ -78,11 +78,34 @@ export function isShade(name: string): name is ShadeName {
 }
 
 /**
- * The token name as the scheme writes it. The code keys both modes identically so nothing rebinds,
- * but the page has to show the vocabulary people will actually type.
+ * The token name as the scheme writes it, for exports and copyable code.
+ *
+ * The page itself uses `displayName` instead — a swatch card is read, not typed.
  */
 export function tokenName(name: string, theme: ThemeName): string {
 	return theme === 'light' ? `light_${name}` : name;
+}
+
+/**
+ * What a swatch is CALLED, as opposed to what it is keyed by.
+ *
+ * Within the Surfaces group the seven shades read as a ladder — Lightest through Darkest — rather than
+ * repeating the word "background" seven times. And there is no `light_` here: a card sitting on cream
+ * inside a light section does not need to announce which mode it is in.
+ *
+ * The machine name is still one click away, on the swatch's own copy buttons.
+ */
+const DISPLAY: Partial<Record<SwatchName, string>> = {
+	background_lightest: 'Lightest',
+	background_lighter: 'Lighter',
+	background_light: 'Light',
+	background_dark: 'Dark',
+	background_darker: 'Darker',
+	background_darkest: 'Darkest'
+};
+
+export function displayName(name: SwatchName): string {
+	return DISPLAY[name] ?? name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 export interface PaletteGroup {

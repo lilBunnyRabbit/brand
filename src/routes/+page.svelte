@@ -14,8 +14,8 @@
 
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
-	import { dark, light, markEars, themes } from '$lib/brand/config/palette';
-	import { logoCombos, markVariants, plainInks } from '$lib/brand/config/logo-combos';
+	import { dark, light, modifiers, themes, type ThemeName } from '$lib/brand/config/palette';
+	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
 	import { hueEvidence, hueMoves, lightUsage } from '$lib/brand/config/light-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
@@ -28,7 +28,7 @@
 		modifierRatio,
 		varName
 	} from '$lib/brand/tokens';
-	import { contrastRatio, simulateVision } from '$lib/color';
+	import { contrastRatio } from '$lib/color';
 
 	const variants = logos.variants.filter((v) => !v.hidden);
 	const hero = variants[0];
@@ -41,21 +41,71 @@
 	// The sizes the brief says to check, because thin ear strokes at a 1.94:1 margin are the risk.
 	const sizes = [16, 24, 32, 48, 64];
 
-	// Ratios measured from the palette rather than written down, so they cannot drift.
-	const combos = logoCombos.map((combo) => ({
-		...combo,
-		groundVar: `var(${varName(combo.ground)})`,
-		inkVar: `var(${varName(combo.ink)})`,
-		ratio: contrastRatio(dark[combo.ink], dark[combo.ground])
-	}));
+	/*
+		The derivation, as seven rows: what it is called, what it is, and the move that produced it.
+
+		`C × 1` on its own was not enough — every brand colour is a chroma multiple AND a hue turn, and
+		showing only the first half made the rows look interchangeable. Hexes are read off the palette so
+		a row cannot claim a colour the palette does not have.
+	*/
+	const chain = (
+		[
+			{ name: 'background', on: 'background', ink: 'foreground', op: 'the seed' },
+			{ name: 'foreground', on: 'foreground', ink: 'background', op: '1 − L · C ÷ 3 · H + 180°' },
+			{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H − 120°' },
+			{ name: 'secondary', on: 'secondary', ink: 'background', op: 'C × 2 · H + 180°' },
+			{ name: 'primary', on: 'primary', ink: 'background', op: 'C × 3 · H + 72°' },
+			{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' },
+			{ name: '4 states', on: 'error', ink: 'background', op: 'C × 6 · fixed hues' }
+		] as const
+	).map((row) => ({ ...row, hex: dark[row.on].hex }));
+
+	/*
+		Ratios measured from the palette rather than written down, so they cannot drift.
+
+		Built per mode from the SAME combo list, which is what makes the light section show
+		`light_primary + light_cottontail` without a second config: the combo names a role, and the
+		palette in scope decides what that role is.
+	*/
+	const comboViews = (theme: ThemeName) =>
+		logoCombos.map((combo) => ({
+			...combo,
+			key: `${theme}-${combo.id}`,
+			groundVar: `var(${varName(combo.ground)})`,
+			inkVar: `var(${varName(combo.ink)})`,
+			ratio: contrastRatio(themes[theme][combo.ink], themes[theme][combo.ground])
+		}));
+
+	const combos = comboViews('dark');
+	const lightCombos = comboViews('light');
+
+	type ComboView = (typeof combos)[number];
 
 	const inks = plainInks.map((entry) => ({
 		...entry,
 		inkVar: `var(${varName(entry.ink)})`
 	}));
 
-	const mutedOnPage = modifierRatio('foreground', 'background', 'muted');
-	const mutedOnLightest = modifierRatio('foreground', 'background_lightest', 'muted');
+	/*
+		The modifiers as things you can see: a bar and a line of text at each alpha, with the measured
+		ratio on the page beside it. A five-row table of percentages said nothing about what turning a
+		colour down actually costs.
+	*/
+	const modifierSteps = (
+		[
+			['hover', 'a pointer resting on it'],
+			['active', 'held down'],
+			['muted', 'captions and metadata — nothing you need to read'],
+			['disabled', 'exempt from contrast, so never informational'],
+			['border', 'the lowest alpha still clearing 3:1 on every shade']
+		] as const
+	).map(([id, note]) => ({
+		id,
+		alpha: modifiers[id],
+		pct: Math.round(modifiers[id] * 100),
+		ratio: modifierRatio('foreground', 'background', id),
+		note
+	}));
 
 	let format = $state(exportFormats[0].id);
 	const active = $derived(exportFormats.find((f) => f.id === format) ?? exportFormats[0]);
@@ -66,30 +116,34 @@
 	const lightContract = measureContract('light');
 	const darkBody = contrastRatio(dark.foreground, dark.background);
 	const lightBody = contrastRatio(light.foreground, light.background);
-	const darkCottontail = cottontailOnShades('dark');
-	const lightCottontail = cottontailOnShades('light');
 
 	/*
-		The four discs with their ratios measured rather than transcribed.
-
-		`ears: null` is the fixed asset colour, which is the whole reason the light brand mark works —
-		so it resolves to `markEars` here rather than to anything in the palette.
+		How `cottontail` is actually used, per mode, so the panel can demonstrate the jobs rather than
+		describe them. The dark one does all three; the light one only the first.
 	*/
-	const grey = (color: typeof markEars) => simulateVision(color, 'grayscale');
-
-	const markRows = markVariants.map((variant) => {
-		const palette = themes[variant.theme];
-		const disc = palette[variant.disc];
-		const ears = variant.ears ? palette[variant.ears] : markEars;
-		return {
-			...variant,
-			earsOnDisc: contrastRatio(ears, disc),
-			grey: contrastRatio(grey(ears), grey(disc)),
-			discOnPage: contrastRatio(disc, palette.background)
-		};
-	});
-
-	const markById = Object.fromEntries(markRows.map((row) => [row.id, row]));
+	const cottontailJobs = (theme: ThemeName) => {
+		const ring = cottontailOnShades(theme);
+		return [
+			{
+				id: 'ring',
+				label: 'Focus ring',
+				detail: `${ring.min.toFixed(2)}–${ring.max.toFixed(2)} on the seven shades`,
+				ok: true
+			},
+			{
+				id: 'badge',
+				label: 'The mark on a primary badge',
+				detail: `${contrastRatio(themes[theme].cottontail, themes[theme].primary).toFixed(2)} — a logotype allowance, never text`,
+				ok: theme === 'dark'
+			},
+			{
+				id: 'pop',
+				label: 'A loud callout, sparingly',
+				detail: `${contrastRatio(themes[theme].background, themes[theme].cottontail).toFixed(2)} with the page shade as its text`,
+				ok: theme === 'dark'
+			}
+		];
+	};
 </script>
 
 <svelte:head>
@@ -100,6 +154,89 @@
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
+
+<!--
+	One logo card, used by both modes.
+
+	A snippet rather than duplicated markup, because the two sections drifted into different designs the
+	last time they were written out twice. The whole card is the ground and the mark sits in it — no
+	disc, because the card IS the colour, which is the only way a pair like "primary + background" reads
+	as a pair. Mark and title share a top edge so the card reads as one label rather than two.
+-->
+{#snippet comboCard(combo: ComboView)}
+	<figure
+		style="background: {combo.groundVar}; color: var(--brand-{combo.ground === 'background'
+			? 'foreground'
+			: 'background'});"
+	>
+		<figcaption>
+			<span class="combo-head">
+				<Mark variant={hero} size="3.25rem" ink={combo.inkVar} key="combo-{combo.key}" />
+				<span class="combo-id">
+					<span class="combo-label">{combo.label}</span>
+					<span class="combo-ratio">
+						{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
+					</span>
+				</span>
+			</span>
+			<span class="combo-note">{combo.note}</span>
+		</figcaption>
+	</figure>
+{/snippet}
+
+<!--
+	`cottontail`, in whichever mode is asking. One design for both, because it is one token with one
+	story — the light half of the page previously restated it in a completely different panel.
+
+	It DEMONSTRATES rather than describes: an actual focus ring, an actual badge, an actual callout, each
+	with the measured number underneath. The jobs the light twin cannot do are shown struck out, which is
+	the whole point of the section — same token, fewer jobs on paper.
+-->
+{#snippet cottontailPanel(theme: ThemeName)}
+	<div class="cotton">
+		<div class="cotton-head">
+			<h3>cottontail</h3>
+			<p class="cotton-what">
+				{theme === 'dark'
+					? 'The brightest thing in the system, named after the flash of a rabbit’s tail.'
+					: 'The same token on paper — and the only one that lost jobs on the way over.'}
+			</p>
+			<p class="cotton-hex">
+				<code>{themes[theme].cottontail.hex}</code>
+			</p>
+		</div>
+
+		<ul class="cotton-jobs">
+			{#each cottontailJobs(theme) as job (job.id)}
+				<li class:is-off={!job.ok}>
+					<span class="job-demo">
+						{#if job.id === 'ring'}
+							<!-- The real thing: ring, page-shade gap, then the component. -->
+							<span class="demo-ring">Focused</span>
+						{:else if job.id === 'badge'}
+							<span class="demo-badge">
+								<Mark variant={hero} size="1.5rem" ink="var(--brand-cottontail)" key="ct-{theme}" />
+							</span>
+						{:else}
+							<span class="demo-pop">New</span>
+						{/if}
+					</span>
+					<span class="job-copy">
+						<span class="job-label">{job.label}</span>
+						<span class="job-detail">{job.detail}</span>
+					</span>
+					{#if !job.ok}<span class="job-no">not on paper</span>{/if}
+				</li>
+			{/each}
+		</ul>
+
+		<p class="cotton-rule">
+			{theme === 'dark'
+				? 'Never text. On a primary fill it is a logotype allowance and nothing more.'
+				: 'A UI colour only. Never text, and never the mark.'}
+		</p>
+	</div>
+{/snippet}
 
 <!--
 	The dark guide. Wrapped in its own `.measure` because the light region below has to run edge to
@@ -134,58 +271,23 @@
 	>
 		<div class="seed">
 			<div class="seed-copy">
-				<p class="seed-eyebrow">One number in, seventeen out</p>
-				<h3>
-					Everything here comes out of
-					<code>oklch(0.255 0.0233 230.47)</code>
-				</h3>
+				<h3>Everything here comes out of <code>oklch(0.255 0.0233 230.47)</code></h3>
 				<p>
-					Not a mood board. Every other colour is a formula against that one — invert its lightness
-					for text, multiply its chroma by three for primary, by six for the states, step its
-					lightness up and down for the seven backgrounds. Change the seed and all seventeen move
-					together, still in tune.
-				</p>
-				<p class="seed-proof" class:bad={!contract.holds}>
-					{#if contract.holds}
-						And they stay readable: {contract.count} colour-on-background combinations, the closest still
-						comfortable at {contract.worst.ratio.toFixed(2)}:1. Pick whatever feels right.
-					{:else}
-						{contract.worst.on} on {contract.worst.shade} is down to {contract.worst.ratio.toFixed(
-							2
-						)}:1 — the seed has moved and the shades need re-solving.
-					{/if}
+					Every other colour is a formula against that one. Change the seed and all seventeen move
+					together, still in tune — and they stay readable: {contract.count} colour-on-background combinations,
+					the closest still comfortable at {contract.worst.ratio.toFixed(2)}:1.
 				</p>
 			</div>
 
+			<!-- Name, value, formula. Hexes come from the palette, so the rows cannot drift from it. -->
 			<ol class="chain">
-				<li style="background: var(--brand-background); color: var(--brand-foreground);">
-					<span class="chain-name">background</span>
-					<span class="chain-formula">the seed</span>
-				</li>
-				<li style="background: var(--brand-foreground); color: var(--brand-background);">
-					<span class="chain-name">foreground</span>
-					<span class="chain-formula">1 − L, C ÷ 3, H + 180</span>
-				</li>
-				<li style="background: var(--brand-tertiary); color: var(--brand-background);">
-					<span class="chain-name">tertiary</span>
-					<span class="chain-formula">C × 1</span>
-				</li>
-				<li style="background: var(--brand-secondary); color: var(--brand-background);">
-					<span class="chain-name">secondary</span>
-					<span class="chain-formula">C × 2</span>
-				</li>
-				<li style="background: var(--brand-primary); color: var(--brand-background);">
-					<span class="chain-name">primary</span>
-					<span class="chain-formula">C × 3</span>
-				</li>
-				<li style="background: var(--brand-accent); color: var(--brand-background);">
-					<span class="chain-name">accent</span>
-					<span class="chain-formula">C × 4</span>
-				</li>
-				<li style="background: var(--brand-error); color: var(--brand-background);">
-					<span class="chain-name">states</span>
-					<span class="chain-formula">C × 6</span>
-				</li>
+				{#each chain as row (row.name)}
+					<li style="background: var(--brand-{row.on}); color: var(--brand-{row.ink});">
+						<span class="chain-name">{row.name}</span>
+						<span class="chain-hex">{row.hex}</span>
+						<span class="chain-formula">{row.op}</span>
+					</li>
+				{/each}
 			</ol>
 		</div>
 
@@ -203,27 +305,7 @@
 			</div>
 		{/each}
 
-		<!-- The one colour with a single job, on the one ground it is allowed on. -->
-		<div class="cotton">
-			<div class="cotton-art">
-				<Lockup variant={hero} size="7rem" key="cotton" />
-			</div>
-			<div class="cotton-copy">
-				<p class="cotton-eyebrow">The special one</p>
-				<h3>cottontail</h3>
-				<p>
-					The brightest thing in the system, named after the flash of a rabbit's tail. It has
-					exactly one job — the mark on a primary badge — and it is never text. On primary it
-					measures 1.94:1, which is fine for a logo and nothing else.
-				</p>
-				<ul class="cotton-jobs">
-					<li>The focus ring — 9.56 to 16.98 on every shade.</li>
-					<li>A loud badge or callout, sparingly, with <code>background</code> as its text.</li>
-					<li>The ink of the logo badge, on primary.</li>
-				</ul>
-				<p class="cotton-hex"><code>#e0f9ab</code> · <code>oklch(0.945 0.10332 122.47)</code></p>
-			</div>
-		</div>
+		{@render cottontailPanel('dark')}
 
 		<div class="group">
 			<div class="group-head">
@@ -233,19 +315,31 @@
 					a new colour.
 				</p>
 			</div>
+			<!--
+				Shown rather than listed. Each step renders the actual composite — a bar at that alpha and a
+				line of text at it — so you can read where `muted` starts costing you and why `disabled` is
+				not allowed to carry information. The percentages come from `modifiers`, so the demo cannot
+				drift from the token.
+			-->
 			<ul class="mods">
-				<li><code>hover</code> 85%</li>
-				<li><code>active</code> 70%</li>
-				<li>
-					<code>muted</code> 65% — {mutedOnPage.toFixed(2)}:1 here, {mutedOnLightest.toFixed(2)}:1
-					on the lightest shade
-				</li>
-				<li><code>disabled</code> 38%</li>
-				<li><code>border</code> 67% — the lowest alpha clearing 3:1 on every shade</li>
+				{#each modifierSteps as step (step.id)}
+					<li>
+						<span
+							class="mod-bar"
+							style="background: color-mix(in srgb, var(--brand-foreground) {step.pct}%, transparent);"
+						></span>
+						<span class="mod-sample" style="opacity: {step.alpha};">Aa</span>
+						<span class="mod-meta">
+							<code>{step.id}</code>
+							<span class="mod-pct">{step.pct}%</span>
+							<span class="mod-note">{step.note}</span>
+						</span>
+					</li>
+				{/each}
 			</ul>
 			<p class="warn">
-				Muted text is the one place the contract does not hold: AA-large at best. Captions and
-				metadata only, and keep it off the lightest two shades.
+				Muted is the one place the contract does not hold: AA-large at best, so captions and
+				metadata only — and keep it off the lightest two shades.
 			</p>
 		</div>
 	</Section>
@@ -269,6 +363,7 @@
 						The Y of a rabbit's philtrum is the whole logic. Reduce it, mirror it, thicken it into
 						an inner curve, then let a lower curl carry the whisker pad.
 					</p>
+					<!-- A rule, not an action. It was a filled pill, which read as a button nobody could press. -->
 					<p class="idea-rule">{logoStory.rule}</p>
 				</div>
 			</div>
@@ -313,26 +408,7 @@
 
 					<div class="combos">
 						{#each combos as combo (combo.id)}
-							<!--
-							The whole card is the ground and the mark sits in it. No disc — the card IS the
-							colour, which is the only way a pair like "primary + background" reads as a pair.
-							Label colour follows the binary rule: foreground on a shade, background otherwise.
-						-->
-							<figure
-								style="background: {combo.groundVar}; color: var(--brand-{combo.ground ===
-								'background'
-									? 'foreground'
-									: 'background'});"
-							>
-								<Mark variant={hero} size="3.5rem" ink={combo.inkVar} key="combo-{combo.id}" />
-								<figcaption>
-									<span class="combo-label">{combo.label}</span>
-									<span class="combo-ratio">
-										{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
-									</span>
-									<span class="combo-note">{combo.note}</span>
-								</figcaption>
-							</figure>
+							{@render comboCard(combo)}
 						{/each}
 					</div>
 
@@ -529,8 +605,8 @@
 -->
 <div class="threshold">
 	<div class="measure">
-		<p class="end">You’ve reached the end.</p>
-		<p class="still">You’re still in the dark.</p>
+		<p class="end">You’ve reached the end,</p>
+		<p class="still">but you’re still in the dark.</p>
 		<a class="onward" href="#light">Keep going <span aria-hidden="true">↓</span></a>
 	</div>
 </div>
@@ -554,35 +630,25 @@
 		>
 			<div class="statement">
 				<p>
-					Every dark token has a twin here — same name, same job, same position. Switching modes
-					swaps a prefix and nothing else moves: no role rebinds, no component gets a variant. The
-					contract holds on both sides, so a light product surface is as safe to build on as a dark
-					one.
-				</p>
-				<p>
-					<strong>That does not make them interchangeable.</strong> Dark is the brand. Light is what you
-					reach for when a product surface needs it — and nowhere else. If someone will recognise the
-					mark from it, it should be dark.
+					Every dark token has a twin here — same name, same job, same position. Nothing rebinds and
+					no component gets a variant. <strong>That does not make them interchangeable.</strong> Dark
+					is the brand; light is what you reach for when a product surface needs it. If someone will recognise
+					the mark from it, it should be dark.
 				</p>
 			</div>
 
-			<div class="uses">
-				<div class="use">
-					<h3>Use it for</h3>
-					<ul>
-						{#each lightUsage.yes as line (line)}
-							<li>{line}</li>
-						{/each}
-					</ul>
-				</div>
-				<div class="use is-no">
-					<h3>Never for</h3>
-					<ul>
-						{#each lightUsage.no as line (line)}
-							<li>{line}</li>
-						{/each}
-					</ul>
-				</div>
+			<!-- Same marker treatment as the dark "Don't" list — one design for one idea. -->
+			<div class="verdicts">
+				<ul class="verdict-list">
+					{#each lightUsage.yes as line (line)}
+						<li class="is-yes"><span class="tick" aria-hidden="true">✓</span>{line}</li>
+					{/each}
+				</ul>
+				<ul class="verdict-list">
+					{#each lightUsage.no as line (line)}
+						<li class="is-no"><span class="tick" aria-hidden="true">✕</span>{line}</li>
+					{/each}
+				</ul>
 			</div>
 		</Section>
 
@@ -595,18 +661,12 @@
 			title="Seventeen twins"
 			lede="Same names, same groups, same order. Laid out like the dark palette so the mapping is visible by position."
 		>
-			<div class="proof">
-				<p>
-					<span class="big">{lightContract.worst.ratio.toFixed(2)}</span>
-					<span>worst of {lightContract.count} pairs — the same number dark lands on.</span>
-				</p>
-				<p>
-					<span class="big">{lightBody.toFixed(2)}</span>
-					<span
-						>body text, against {darkBody.toFixed(2)} in dark. Solved to match, not to pass.</span
-					>
-				</p>
-			</div>
+			<p class="closing">
+				Same guarantee as the dark half: {lightContract.count} colour-on-background combinations, the
+				closest still comfortable at {lightContract.worst.ratio.toFixed(2)}:1. Body text lands on
+				{lightBody.toFixed(2)} against {darkBody.toFixed(2)} in dark — solved to match, so neither side
+				reads harsher.
+			</p>
 
 			{#each groupViews('light') as group (group.id)}
 				<div class="group" id="light-{group.id}">
@@ -622,20 +682,7 @@
 				</div>
 			{/each}
 
-			<div class="caveat">
-				<h3>The one token that changed job</h3>
-				<p>
-					<code>cottontail</code> is the brightest thing in the dark palette — it does the badge,
-					the pop and the focus ring. Its light twin cannot: at
-					{lightCottontail.min.toFixed(2)}–{lightCottontail.max.toFixed(2)} across the seven shades it
-					clears the 3:1 a focus ring needs and nothing beyond it, where the dark one runs
-					{darkCottontail.min.toFixed(2)}–{darkCottontail.max.toFixed(2)}.
-				</p>
-				<p>
-					So <code>light_cottontail</code> is a UI colour only — a ring, a marker, a highlight on a chart.
-					Never text, and never the mark.
-				</p>
-			</div>
+			{@render cottontailPanel('light')}
 		</Section>
 
 		<!-- ─── The hue that moved ─────────────────────────────────────────── -->
@@ -647,36 +694,48 @@
 			title="The orange one"
 			lede="Everything else is a twin. The primary changed hue — and that was measured, not chosen."
 		>
-			<div class="evidence">
-				<div class="probe">
-					<span class="lm-chip" style="background: {dark.primary.hex};"></span>
-					<p class="delta">{hueEvidence.green} {hueEvidence.unit}</p>
-					<p class="what">Dark’s green, on the warm page</p>
-				</div>
-				<div class="probe is-win">
-					<span class="lm-chip" style="background: {light.primary.hex};"></span>
-					<p class="delta">{hueEvidence.orange} {hueEvidence.unit}</p>
-					<p class="what">Orange, same position</p>
-				</div>
-				<p class="lm-why">{hueEvidence.note}</p>
+			<!--
+				The comparison, on the ground it was decided on: both candidates set as text and as a fill on
+				the actual light page. Two identical plates, so the only difference on screen is the thing
+				being tested — which is what makes the number underneath mean something.
+			-->
+			<div class="tryout">
+				{#each [{ id: 'green', hex: dark.primary.hex, delta: hueEvidence.green, verdict: 'Dark’s green — sinks into the paper', reject: true }, { id: 'orange', hex: light.primary.hex, delta: hueEvidence.orange, verdict: 'Orange — sits on it', reject: false }] as probe (probe.id)}
+					<figure class="try" class:is-reject={probe.reject}>
+						<div class="try-plate">
+							<span class="try-text" style="color: {probe.hex};">Aa the quick brown fox</span>
+							<span class="try-fill" style="background: {probe.hex};"></span>
+						</div>
+						<figcaption>
+							<span class="try-delta">{probe.delta} {hueEvidence.unit}</span>
+							<span class="try-verdict">{probe.verdict}</span>
+						</figcaption>
+					</figure>
+				{/each}
 			</div>
 
-			<p class="lead-in">
-				Reusing the green would have left it reading as a shade of the paper rather than a colour on
-				it. So the light mode is fitted to its own ground. Three of dark’s four brand relationships
-				came along unchanged; two could not.
+			<p class="lm-why">{hueEvidence.note}</p>
+
+			<p class="closing">
+				So the light mode is fitted to its own ground rather than inheriting dark's wheel. Two of
+				dark's four brand relationships came along unchanged. Two could not.
 			</p>
 
-			<ul class="moves">
+			<div class="moves">
 				{#each hueMoves as move (move.id)}
-					<li class:is-broken={!move.kept}>
-						<p class="tok"><code>{move.token}</code></p>
-						<p class="lm-rule">{move.rule}</p>
-						<p class="verdict">{move.kept ? 'Kept' : 'Broke'}</p>
-						<p class="outcome">{move.outcome}</p>
-					</li>
+					<div class="move" class:is-broken={!move.kept}>
+						<span class="move-chip" style="background: var(--brand-{move.id});"></span>
+						<div class="move-body">
+							<p class="move-head">
+								<strong>{move.token}</strong>
+								<code>{move.rule}</code>
+								<span class="move-tag">{move.kept ? 'kept' : 'moved'}</span>
+							</p>
+							<p class="move-out">{move.outcome}</p>
+						</div>
+					</div>
 				{/each}
-			</ul>
+			</div>
 		</Section>
 
 		<!-- ─── The mark ───────────────────────────────────────────────────── -->
@@ -685,83 +744,26 @@
 			id="light-logo"
 			index="10"
 			accent="tertiary"
-			title="The mark, both ways"
-			lede="Four discs — brand and neutral, dark and light. The ears never change."
+			title="The mark on paper"
+			lede="The same five combinations, in the light palette."
 		>
-			<div class="marks">
-				{#each markRows as row (row.id)}
-					<ThemeScope theme={row.theme}>
-						<figure class="mark-tile">
-							<div class="plate">
-								<Lockup
-									variant={hero}
-									size="7rem"
-									disc="var(--brand-{row.disc})"
-									ink={row.ears ? `var(--brand-${row.ears})` : 'var(--brand-mark_ears)'}
-									key={row.id}
-								/>
-							</div>
-							<figcaption>
-								<p class="mt">{row.label}</p>
-								<p class="mn">{row.note}</p>
-							</figcaption>
-						</figure>
-					</ThemeScope>
+			<!--
+				Identical cards to the dark section — same snippet, same rules. Only the palette in scope
+				differs, so `primary + cottontail` here IS `light_primary + light_cottontail`.
+			-->
+			<div class="combos">
+				{#each lightCombos as combo (combo.id)}
+					{@render comboCard(combo)}
 				{/each}
 			</div>
 
-			<div class="table-scroll">
-				<table class="ratios">
-					<caption>Measured from the palette, not written down.</caption>
-					<thead>
-						<tr>
-							<th scope="col">Variant</th>
-							<th scope="col">Ears on disc</th>
-							<th scope="col">Greyscale</th>
-							<th scope="col">Disc on its page</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each markRows as row (row.id)}
-							<tr>
-								<th scope="row">{row.label}</th>
-								<td>{row.earsOnDisc.toFixed(2)}</td>
-								<td>{row.grey.toFixed(2)}</td>
-								<td>{row.discOnPage.toFixed(2)}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-
-			<div class="findings">
-				<div class="finding">
-					<h3>The light brand mark is the most legible of the four</h3>
-					<p>
-						{markById['light-brand'].earsOnDisc.toFixed(2)} against
-						{markById['dark-brand'].earsOnDisc.toFixed(2)}. The dark mark survives on the logotype
-						exemption; the light one clears AAA outright. It is still not the one to use for
-						recognition — that is a brand decision, and the numbers do not get a vote.
-					</p>
-				</div>
-				<div class="finding">
-					<h3>The ears are a fixed asset colour</h3>
-					<p>
-						<code>mark_ears</code> is <code>{markEars.hex}</code> in both modes. Only the disc
-						themes. Deriving light ears from <code>light_primary</code> the way dark derives its own
-						gives 2.68 on the disc against {markById['light-brand'].earsOnDisc.toFixed(2)} for the fixed
-						colour, and they vanish in greyscale.
-					</p>
-				</div>
-				<div class="finding">
-					<h3>The neutral pair is the one-colour fallback</h3>
-					<p>
-						No brand colour at all — the same two colours as body text. This is what goes on a fax,
-						an embroidery file, a single-colour print, or anywhere the brand colour cannot be
-						trusted. It belongs next to the brand mark in both modes.
-					</p>
-				</div>
-			</div>
+			<p class="closing">
+				One thing to know before you use the bright badge on paper: it measures
+				{lightCombos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 here against
+				{combos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 in dark, and it
+				loses more than that in greyscale. Still a logotype, still exempt — but the neutral pair is
+				the safer one when you cannot control the reproduction.
+			</p>
 		</Section>
 	</div>
 
@@ -879,30 +881,6 @@
 		margin-top: var(--space-5);
 	}
 
-	.mods {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-		gap: var(--space-1) var(--space-6);
-		padding: 0;
-		margin: var(--space-5) 0 0;
-		font-size: var(--text-base);
-		list-style: none;
-	}
-
-	.mods li {
-		display: grid;
-		grid-template-columns: 6.5rem minmax(0, 1fr);
-		gap: var(--space-3);
-		align-items: baseline;
-		padding: var(--space-2) 0;
-		border-top: 1px solid var(--hairline);
-	}
-
-	.mods code {
-		font-weight: 700;
-		color: var(--brand-secondary);
-	}
-
 	.warn {
 		max-width: 68ch;
 		margin: var(--space-4) 0 0;
@@ -939,10 +917,23 @@
 		The last of the dark half. Sits on the darkest shade because the page's own descent has already
 		arrived there — this is the bottom, and then it gets light.
 	*/
+	/*
+		Fades IN from transparent rather than sitting on a flat shade.
+
+		The page gradient is `background-attachment: fixed`, so a solid block here had a visible seam along
+		its top edge wherever the fixed ramp happened to be a different shade. Fading out of whatever is
+		behind removes that edge, and the block still lands on exactly `background_darkest` at its foot —
+		which is where the dawn picks up, so there is no seam at the bottom either.
+	*/
 	.threshold {
 		padding-block: clamp(var(--space-8), 12vw, 8rem);
 		text-align: center;
-		background: var(--brand-background_darkest);
+		background: linear-gradient(
+			180deg,
+			transparent 0%,
+			var(--brand-background_darkest) 62%,
+			var(--brand-background_darkest) 100%
+		);
 	}
 
 	.threshold .end {
@@ -982,32 +973,20 @@
 	/*
 		The transition, and there is no animation in it — scrolling IS the animation.
 
-		Stops from the light ladder, read bottom-up: the ladder the section below documents, used as the
-		way into it. Every stop is a `var()`, so changing a token changes the dawn.
+		`--dawn` is built in `brand/tokens.ts` by interpolating in OKLCH between two real tokens: dark's
+		`background_darkest` and light's page. Fifteen stops rather than five, because the earlier version
+		hopped between four widely spaced shades in sRGB and banded — sRGB also puts a dead grey at the
+		midpoint of that journey, where OKLCH warms through it.
 
-		It has to be the REGION's own background, not a child's. The scope paints itself opaque cream, so
-		a child ramp starting at `transparent` would reveal that cream rather than the dark page and the
-		dawn would never happen. One gradient on the region instead: its last stop extends to the foot, so
-		the ramp resolves into flat cream for the rest of the section with no second layer to keep in step.
-
-		Starting at `transparent` is deliberate. The page gradient is `background-attachment: fixed`, so
-		what sits behind the top of this region depends on where you have scrolled to — there is no single
-		colour to match. Fading out of whatever is there is always seamless.
+		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
+		child ramp would sit on cream rather than on the dark page above. A gradient extends its final stop,
+		so past `--ramp` this is flat page colour with no second layer to keep in step.
 
 		`:global` because the element belongs to `ThemeScope`. The id also gives it the specificity to beat
 		the flat `[data-theme='light']` ground, whichever order they land in.
 	*/
 	:global(#light-region) {
-		--ramp: clamp(15rem, 42vh, 24rem);
-
-		background: linear-gradient(
-			180deg,
-			transparent 0,
-			var(--brand-background_darkest) calc(var(--ramp) * 0.4),
-			var(--brand-background_darker) calc(var(--ramp) * 0.56),
-			var(--brand-background_dark) calc(var(--ramp) * 0.72),
-			var(--brand-background) calc(var(--ramp) * 0.88)
-		);
+		background: var(--dawn);
 	}
 
 	/* Holds the content clear of the gradient. The ramp itself is the region's background. */
@@ -1026,327 +1005,6 @@
 
 	.statement strong {
 		color: var(--brand-primary);
-	}
-
-	.uses {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-		gap: var(--space-4);
-		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
-	}
-
-	.use {
-		padding: var(--space-5);
-		background: var(--surface-raised);
-		border-radius: var(--radius-md);
-	}
-
-	/* The forbidden list is the one people misread, so it carries the loud colour. */
-	.use.is-no {
-		background: var(--brand-primary);
-		color: var(--on-brand);
-	}
-
-	.use h3 {
-		margin: 0 0 var(--space-3);
-		font-size: var(--text-sm);
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
-
-	.use ul {
-		display: grid;
-		gap: var(--space-2);
-		padding: 0;
-		margin: 0;
-		list-style: none;
-	}
-
-	.use li {
-		font-size: var(--text-sm);
-		line-height: 1.5;
-	}
-
-	/* ── light: the proof, and the caveat ── */
-
-	.proof {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-		gap: var(--space-4);
-		margin-bottom: clamp(var(--space-6), 5vw, var(--space-8));
-	}
-
-	.proof p {
-		display: flex;
-		gap: var(--space-4);
-		align-items: baseline;
-		margin: 0;
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
-	.proof .big {
-		font-family: var(--font-mono);
-		font-size: var(--text-2xl);
-		font-weight: 700;
-		color: var(--brand-primary);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.caveat {
-		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-		border: 1px solid var(--fg-border);
-		border-radius: var(--radius-md);
-	}
-
-	.caveat h3 {
-		margin: 0 0 var(--space-3);
-		font-size: var(--text-lg);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-	}
-
-	.caveat p {
-		max-width: 62ch;
-		margin: 0 0 var(--space-3);
-		font-size: var(--text-base);
-	}
-
-	.caveat p:last-child {
-		margin-bottom: 0;
-	}
-
-	/* ── light: the hue that moved ── */
-
-	.evidence {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
-		gap: var(--space-4);
-		align-items: end;
-	}
-
-	.probe {
-		padding: var(--space-4);
-		background: var(--surface-raised);
-		border-radius: var(--radius-md);
-	}
-
-	.probe.is-win {
-		background: var(--brand-primary);
-		color: var(--on-brand);
-	}
-
-	.lm-chip {
-		display: block;
-		height: 2.5rem;
-		border-radius: var(--radius-sm);
-	}
-
-	.delta {
-		margin: var(--space-3) 0 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xl);
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.what {
-		margin: var(--space-1) 0 0;
-		font-size: var(--text-sm);
-	}
-
-	.lm-why {
-		grid-column: 1 / -1;
-		max-width: 62ch;
-		margin: 0;
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
-	.lead-in {
-		max-width: 62ch;
-		margin: clamp(var(--space-5), 4vw, var(--space-6)) 0 0;
-		font-size: var(--text-lg);
-		line-height: 1.6;
-	}
-
-	.moves {
-		display: grid;
-		gap: var(--space-3);
-		padding: 0;
-		margin: clamp(var(--space-5), 4vw, var(--space-6)) 0 0;
-		list-style: none;
-	}
-
-	.moves li {
-		display: grid;
-		grid-template-columns: 12rem 8rem 5rem 1fr;
-		gap: var(--space-4);
-		align-items: baseline;
-		padding: var(--space-4);
-		background: var(--surface-raised);
-		border-left: 3px solid var(--brand-secondary);
-		border-radius: var(--radius-sm);
-	}
-
-	/* The two that could not come along are the interesting half. */
-	.moves li.is-broken {
-		border-left-color: var(--brand-accent);
-	}
-
-	.moves p {
-		margin: 0;
-	}
-
-	.tok code,
-	.lm-rule {
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-	}
-
-	.lm-rule {
-		color: var(--fg-muted);
-	}
-
-	.verdict {
-		font-size: var(--text-sm);
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--brand-secondary);
-	}
-
-	.is-broken .verdict {
-		color: var(--brand-accent);
-	}
-
-	.outcome {
-		font-size: var(--text-sm);
-		line-height: 1.5;
-	}
-
-	/* ── light: the mark, both ways ── */
-
-	.marks {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-		gap: var(--space-4);
-	}
-
-	.mark-tile {
-		height: 100%;
-		margin: 0;
-		overflow: hidden;
-		border-radius: var(--radius-md);
-	}
-
-	/*
-		Each tile is its own scope, so the plate paints in ITS mode rather than the section's. That is the
-		whole demonstration — four discs, two grounds, one set of rules.
-	*/
-	.plate {
-		display: grid;
-		place-items: center;
-		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		background: var(--brand-background);
-	}
-
-	.mark-tile figcaption {
-		padding: var(--space-4);
-		background: var(--surface-raised);
-	}
-
-	.mt {
-		margin: 0;
-		font-size: var(--text-sm);
-		font-weight: 700;
-	}
-
-	.mn {
-		margin: var(--space-2) 0 0;
-		font-size: var(--text-xs);
-		line-height: 1.5;
-		color: var(--fg-muted);
-	}
-
-	.table-scroll {
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-		overflow-x: auto;
-	}
-
-	.ratios {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.ratios caption {
-		margin-bottom: var(--space-3);
-		font-size: var(--text-xs);
-		color: var(--fg-muted);
-		text-align: left;
-	}
-
-	.ratios th,
-	.ratios td {
-		padding: var(--space-3) var(--space-4);
-		font-size: var(--text-sm);
-		text-align: left;
-		white-space: nowrap;
-		border-bottom: 1px solid var(--hairline);
-	}
-
-	.ratios thead th {
-		font-weight: 700;
-		color: var(--fg-muted);
-	}
-
-	.ratios tbody th {
-		font-weight: 600;
-	}
-
-	.ratios td {
-		font-family: var(--font-mono);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.findings {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-		gap: var(--space-4);
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-	}
-
-	.finding h3 {
-		margin: 0 0 var(--space-2);
-		font-size: var(--text-base);
-		font-weight: 700;
-		line-height: 1.3;
-		color: var(--brand-primary);
-	}
-
-	.finding p {
-		margin: 0;
-		font-size: var(--text-sm);
-		line-height: 1.6;
-	}
-
-	@media (max-width: 720px) {
-		.moves li {
-			grid-template-columns: 1fr;
-			gap: var(--space-2);
-		}
-
-		.evidence {
-			text-align: center;
-		}
-
-		.ratios th,
-		.ratios td {
-			padding: var(--space-2) var(--space-3);
-			font-size: var(--text-xs);
-		}
 	}
 
 	.stash-hint {
@@ -1371,15 +1029,6 @@
 		border-radius: var(--radius-lg);
 	}
 
-	.seed-eyebrow {
-		margin: 0 0 var(--space-2);
-		font-size: var(--text-xs);
-		font-weight: 700;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		color: var(--brand-secondary);
-	}
-
 	.seed h3 {
 		margin: 0;
 		font-size: var(--text-xl);
@@ -1399,122 +1048,6 @@
 		margin: var(--space-3) 0 0;
 		font-size: var(--text-sm);
 		color: var(--fg-muted);
-	}
-
-	.seed-proof {
-		color: var(--brand-primary) !important;
-	}
-
-	.seed-proof.bad {
-		color: var(--brand-error) !important;
-	}
-
-	/*
-		Gaps, not a solid stack. tertiary, secondary, primary and accent are all the same lightness, so
-		butted together their edges vanish — the page shade between them is what makes this readable at
-		all. It is the rule this very section is explaining.
-	*/
-	.chain {
-		display: grid;
-		gap: var(--space-2);
-		padding: 0;
-		margin: 0;
-		list-style: none;
-	}
-
-	.chain li {
-		border-radius: var(--radius-sm);
-	}
-
-	.chain li {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1) var(--space-3);
-		align-items: baseline;
-		justify-content: space-between;
-		padding: var(--space-2) var(--space-3);
-		font-size: var(--text-sm);
-	}
-
-	.chain-name {
-		font-family: var(--font-mono);
-		font-weight: 700;
-	}
-
-	.chain-formula {
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		opacity: 0.85;
-	}
-
-	/* ── cottontail feature ── */
-	/* Followed by a .group, which only spaces itself after another .group. */
-	.cotton + .group {
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-	}
-
-	.cotton {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: clamp(var(--space-5), 4vw, var(--space-6));
-		align-items: center;
-		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
-		background: var(--brand-background_lighter);
-		border: 1px solid var(--hairline);
-		border-radius: var(--radius-lg);
-	}
-
-	.cotton-eyebrow {
-		margin: 0 0 var(--space-2);
-		font-size: var(--text-xs);
-		font-weight: 700;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		color: var(--brand-accent);
-	}
-
-	.cotton h3 {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-2xl);
-		font-weight: 700;
-		color: var(--brand-cottontail);
-	}
-
-	.cotton-copy p {
-		max-width: 62ch;
-		margin: var(--space-3) 0 0;
-		font-size: var(--text-base);
-		color: var(--fg-muted);
-	}
-
-	.cotton-jobs {
-		display: grid;
-		gap: var(--space-1);
-		padding: 0;
-		margin: var(--space-4) 0 0;
-		font-size: var(--text-base);
-		color: var(--fg-muted);
-		list-style: none;
-	}
-
-	.cotton-jobs li {
-		padding-left: var(--space-4);
-		text-indent: calc(var(--space-4) * -1);
-	}
-
-	.cotton-jobs li::before {
-		content: '— ';
-		color: var(--brand-cottontail);
-	}
-
-	.cotton-hex {
-		font-size: var(--text-sm) !important;
-	}
-
-	.cotton-hex code {
-		font-family: var(--font-mono);
 	}
 
 	/* ── the idea ── */
@@ -1557,15 +1090,22 @@
 		as its text is 13.66 the other way. Never `foreground` on it (1.97), and never on a brand
 		ground — it is 1.88–2.09 against everything at L 0.745.
 	*/
+	/*
+		A rule, not an action.
+
+		This was a filled cottontail pill, which read as a button — and on a phone it wrapped to two lines
+		inside a rounded shape and looked broken. A rule on the left edge says "this is the point" without
+		pretending to be pressable, and it wraps like the prose it is.
+	*/
 	.idea-rule {
-		display: inline-block;
-		padding: var(--space-2) var(--space-4) !important;
-		margin: var(--space-4) 0 0 !important;
-		font-size: var(--text-base) !important;
+		max-width: 46ch;
+		padding-left: var(--space-4) !important;
+		margin: var(--space-5) 0 0 !important;
+		font-size: var(--text-lg) !important;
 		font-weight: 600;
-		color: var(--on-brand);
-		background: var(--brand-cottontail);
-		border-radius: var(--radius-pill);
+		line-height: 1.5;
+		color: var(--brand-cottontail);
+		border-left: 2px solid var(--brand-cottontail);
 	}
 
 	.steps li {
@@ -1614,10 +1154,17 @@
 		border-radius: var(--radius-lg);
 	}
 
+	/*
+		The caption is now the whole card body — mark, title and note. It has to carry the height itself,
+		or the figure's `space-between` has one child to distribute and the note floats up under the title.
+	*/
 	.combos figcaption {
 		display: flex;
+		flex: 1;
 		flex-direction: column;
-		gap: 0.2rem;
+		gap: var(--space-4);
+		justify-content: space-between;
+		width: 100%;
 	}
 
 	.combo-label {
@@ -1634,7 +1181,6 @@
 
 	.combo-note {
 		max-width: 34ch;
-		margin-top: var(--space-2);
 		font-size: var(--text-sm);
 		opacity: 0.85;
 	}
@@ -1983,22 +1529,8 @@
 			margin-inline: auto;
 		}
 
-		.cotton-jobs {
-			text-align: left;
-		}
-
 		.seed {
 			gap: var(--space-5);
-		}
-
-		/* One column each, so a label never shares a line with a value it does not fit beside. */
-		.mods li {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 0;
-		}
-
-		.chain li {
-			padding: var(--space-2) var(--space-3);
 		}
 
 		.ladder,
@@ -2061,6 +1593,431 @@
 
 		pre {
 			font-size: var(--text-xs);
+		}
+	}
+	/* ── the derivation chain ── */
+
+	.chain {
+		display: grid;
+		gap: var(--space-2);
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.chain li {
+		display: grid;
+		grid-template-columns: 1fr auto auto;
+		gap: var(--space-3) var(--space-4);
+		align-items: baseline;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-sm);
+	}
+
+	.chain-name {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.chain-hex,
+	.chain-formula {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		opacity: 0.75;
+	}
+
+	/* ── modifiers, demonstrated ── */
+
+	.mods {
+		display: grid;
+		gap: var(--space-2);
+		padding: 0;
+		margin: var(--space-5) 0 var(--space-5);
+		list-style: none;
+	}
+
+	.mods li {
+		display: grid;
+		grid-template-columns: 4rem 2.5rem 1fr;
+		gap: var(--space-4);
+		align-items: center;
+		padding: var(--space-3) 0;
+		border-bottom: 1px solid var(--hairline);
+	}
+
+	/* The alpha, as an actual composite rather than a number. */
+	.mod-bar {
+		height: 1.25rem;
+		border-radius: var(--radius-sm);
+	}
+
+	.mod-sample {
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	.mod-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-3);
+		align-items: baseline;
+	}
+
+	.mod-meta code {
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.mod-pct {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		font-variant-numeric: tabular-nums;
+		color: var(--brand-secondary);
+	}
+
+	.mod-note {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	/* ── cottontail, one panel for both modes ── */
+
+	.cotton {
+		display: grid;
+		gap: clamp(var(--space-5), 4vw, var(--space-6));
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+		background: var(--surface-well);
+		border-radius: var(--radius-lg);
+	}
+
+	.cotton h3 {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-xl);
+		font-weight: 700;
+		color: var(--brand-cottontail);
+	}
+
+	.cotton-what {
+		max-width: 56ch;
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-base);
+		color: var(--fg-muted);
+	}
+
+	.cotton-hex {
+		margin: var(--space-3) 0 0;
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.cotton-jobs {
+		display: grid;
+		gap: var(--space-3);
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.cotton-jobs li {
+		display: grid;
+		grid-template-columns: 7rem 1fr auto;
+		gap: var(--space-4);
+		align-items: center;
+		padding-block: var(--space-2);
+	}
+
+	/* A job the light twin cannot do. Struck through AND labelled, never colour alone. */
+	.cotton-jobs li.is-off {
+		opacity: 0.55;
+	}
+
+	.cotton-jobs li.is-off .job-label {
+		text-decoration: line-through;
+	}
+
+	.job-demo {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+	}
+
+	/* The ring-plus-offset pattern, live: ring, page-shade gap, then the component. */
+	.demo-ring {
+		padding: var(--space-2) var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		border-radius: var(--radius-sm);
+		outline: 2px solid var(--brand-cottontail);
+		outline-offset: 2px;
+		box-shadow: 0 0 0 2px var(--surface-well);
+	}
+
+	.demo-badge {
+		display: grid;
+		place-items: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		background: var(--brand-primary);
+		border-radius: 50%;
+	}
+
+	.demo-pop {
+		padding: var(--space-1) var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		color: var(--brand-background);
+		background: var(--brand-cottontail);
+		border-radius: var(--radius-pill);
+	}
+
+	.job-copy {
+		display: grid;
+		gap: 0.15rem;
+	}
+
+	.job-label {
+		font-size: var(--text-sm);
+		font-weight: 600;
+	}
+
+	.job-detail {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	.job-no {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--brand-warning);
+	}
+
+	.cotton-rule {
+		max-width: 56ch;
+		margin: 0;
+		font-size: var(--text-sm);
+		font-weight: 600;
+	}
+
+	/* ── do / never, one design ── */
+
+	.verdicts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+		gap: var(--space-4) clamp(var(--space-5), 4vw, var(--space-8));
+		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
+	}
+
+	.verdict-list {
+		display: grid;
+		gap: var(--space-3);
+		align-content: start;
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.verdict-list li {
+		display: grid;
+		grid-template-columns: 1.25rem 1fr;
+		gap: var(--space-3);
+		align-items: baseline;
+		font-size: var(--text-base);
+		line-height: 1.5;
+	}
+
+	.tick {
+		font-weight: 700;
+	}
+
+	.verdict-list li.is-yes .tick {
+		color: var(--brand-success);
+	}
+
+	.verdict-list li.is-no .tick {
+		color: var(--brand-error);
+	}
+
+	.verdict-list li.is-no {
+		color: var(--fg-muted);
+	}
+
+	/* ── the orange one ── */
+
+	.tryout {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+		gap: var(--space-4);
+	}
+
+	.try {
+		margin: 0;
+	}
+
+	/*
+		Both plates are the actual page colour, so the only difference on screen is the candidate. That is
+		what makes the number underneath mean anything.
+	*/
+	.try-plate {
+		display: grid;
+		gap: var(--space-4);
+		padding: clamp(var(--space-4), 3vw, var(--space-5));
+		background: var(--brand-background);
+		border: 1px solid var(--fg-border);
+		border-radius: var(--radius-md);
+	}
+
+	.try-text {
+		font-size: var(--text-xl);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+
+	.try-fill {
+		height: 2.25rem;
+		border-radius: var(--radius-sm);
+	}
+
+	.try figcaption {
+		display: grid;
+		gap: 0.15rem;
+		padding-top: var(--space-3);
+	}
+
+	.try-delta {
+		font-family: var(--font-mono);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.try-verdict {
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.try.is-reject .try-delta,
+	.try.is-reject .try-verdict {
+		opacity: 0.65;
+	}
+
+	.lm-why {
+		max-width: 62ch;
+		margin: var(--space-4) 0 0;
+		font-size: var(--text-sm);
+		color: var(--fg-muted);
+	}
+
+	.moves {
+		display: grid;
+		gap: var(--space-3);
+		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
+	}
+
+	.move {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: var(--space-4);
+		align-items: start;
+		padding: var(--space-4);
+		background: var(--surface-raised);
+		border-radius: var(--radius-md);
+	}
+
+	.move-chip {
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: var(--radius-sm);
+	}
+
+	.move-head {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-3);
+		align-items: baseline;
+		margin: 0;
+	}
+
+	.move-head strong {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+	}
+
+	.move-head code {
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+	}
+
+	.move-tag {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--brand-secondary);
+	}
+
+	.move.is-broken .move-tag {
+		color: var(--brand-accent);
+	}
+
+	.move-out {
+		max-width: 70ch;
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-sm);
+		line-height: 1.5;
+		color: var(--fg-muted);
+	}
+
+	/* ── shared bits ── */
+
+	/* Mark and title on one top edge. The nudge cancels the label's line-box leading. */
+	.combo-head {
+		display: flex;
+		gap: var(--space-4);
+		align-items: flex-start;
+	}
+
+	.combo-id {
+		display: grid;
+		gap: 0.15rem;
+		margin-top: -0.15em;
+	}
+
+	.closing {
+		max-width: 66ch;
+		margin: clamp(var(--space-5), 4vw, var(--space-6)) 0 0;
+		font-size: var(--text-base);
+		line-height: 1.6;
+		color: var(--fg-muted);
+	}
+
+	@media (max-width: 720px) {
+		.chain li {
+			grid-template-columns: 1fr auto;
+		}
+
+		.chain-formula {
+			grid-column: 1 / -1;
+		}
+
+		.mods li {
+			grid-template-columns: 3rem 2rem 1fr;
+			gap: var(--space-3);
+		}
+
+		.cotton-jobs li {
+			grid-template-columns: 1fr;
+			gap: var(--space-3);
+		}
+
+		.move {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

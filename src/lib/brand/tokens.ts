@@ -12,9 +12,10 @@
  * and no JS; light sits on a bare `[data-theme='light']` so ANY element can scope it, which is how a
  * light section renders inside a page whose root is dark.
  */
-import { contrastRatio, mixOver, type Color } from '$lib/color';
+import { Color, colorNotations, contrastRatio, mixOver, type ColorNotation } from '$lib/color';
 import {
 	dark,
+	displayName,
 	groupsFor,
 	isShade,
 	markEars,
@@ -60,21 +61,8 @@ export function labelFor(name: string): SwatchName {
 	return isShade(name) ? 'foreground' : 'background';
 }
 
-export interface CopyFormat {
-	id: string;
-	label: string;
-	value: string;
-}
-
-/** Everything a swatch can be copied as, in the order the UI shows them. */
-export function copyFormats(name: string, color: Color): CopyFormat[] {
-	return [
-		{ id: 'hex', label: 'HEX', value: color.hex },
-		{ id: 'oklch', label: 'OKLCH', value: formatOklch(color) },
-		{ id: 'rgb', label: 'RGB', value: formatRgb(color) },
-		{ id: 'var', label: 'CSS var', value: `var(${varName(name)})` }
-	];
-}
+/** The notations shown as buttons on the face. Everything else lives behind "More". */
+export const PRIMARY_NOTATIONS = ['hex', 'oklch', 'rgb', 'hsl'] as const;
 
 /* ────────────────────────────── the stylesheet ────────────────────────────── */
 
@@ -120,6 +108,10 @@ export function brandStyleSheet(): string {
 		':root {',
 		`\t${varName(markEars.name)}: ${markEars.hex};`,
 		'',
+		'\t/* The dawn, interpolated in OKLCH between two real tokens. */',
+		`\t--ramp: ${RAMP_HEIGHT};`,
+		`\t--dawn: ${dawnGradient()};`,
+		'',
 		...alphas,
 		'}',
 		'',
@@ -127,6 +119,56 @@ export function brandStyleSheet(): string {
 		...mixes,
 		'}'
 	].join('\n');
+}
+
+/* ────────────────────────────── the dawn ────────────────────────────── */
+
+/** How far the transition runs. Also the height of the spacer that keeps content off it. */
+export const RAMP_HEIGHT = 'clamp(15rem, 42vh, 24rem)';
+
+/**
+ * The gradient that carries the page from the dark half into the light region.
+ *
+ * Interpolated in OKLCH between two real tokens — dark's `background_darkest` and light's page — so
+ * the path is perceptually even and every stop is derived rather than picked. sRGB would put a dead
+ * grey at the midpoint (`#7e7c77`); the OKLCH path goes through `#69756d` and warms as it climbs.
+ *
+ * Fifteen stops rather than four. The earlier version hopped between widely spaced shades and banded
+ * visibly; short hops leave nothing for the browser's sRGB interpolation to get wrong.
+ *
+ * Positioned in fractions of the ramp length rather than in percentages, because the element it paints
+ * is the whole light region — percentages would stretch the dawn over the entire section. A gradient
+ * extends its final stop, so past the ramp it is flat page colour.
+ *
+ * Hue takes the short way round: a naive difference would send 230° to 80° the long way, 210° through
+ * green instead of 150° through blue.
+ */
+export function dawnGradient(steps = 14): string {
+	const from = themes.dark.background_darkest;
+	const to = themes.light.background;
+
+	let turn = to.h - from.h;
+	if (turn > 180) turn -= 360;
+	if (turn < -180) turn += 360;
+
+	const stops = Array.from({ length: steps + 1 }, (_, i) => {
+		const t = i / steps;
+		const step = new Color(
+			'dawn',
+			from.l + (to.l - from.l) * t,
+			from.c + (to.c - from.c) * t,
+			(from.h + turn * t + 360) % 360
+		);
+		/*
+			The ramp length is inlined rather than referenced as `var(--ramp)`. A custom property's value
+			is substituted at computed-value time, so a `--dawn` declared on `:root` that referenced a
+			`--ramp` defined further down the tree would resolve to the guaranteed-invalid value and the
+			gradient would simply not paint.
+		*/
+		return `${step.hex} calc(${RAMP_HEIGHT} * ${t.toFixed(4)})`;
+	});
+
+	return `linear-gradient(180deg, ${stops.join(', ')})`;
 }
 
 /* ────────────────────────────── export formats ────────────────────────────── */
@@ -237,7 +279,9 @@ export const exportFormats: ExportFormat[] = [
 
 export interface SwatchView {
 	name: SwatchName;
-	/** The name as the scheme writes it — `light_primary` in light, `primary` in dark. */
+	/** What the card calls it — "Lightest", "Primary". No mode prefix. */
+	label: string;
+	/** The name as the scheme writes it — `light_primary` in light. For exports, not for the card. */
 	token: string;
 	color: Color;
 	hex: string;
@@ -245,7 +289,12 @@ export interface SwatchView {
 	rgb: string;
 	cssVar: string;
 	formula?: string;
-	formats: CopyFormat[];
+	/** Every notation culori can produce, CSS-valid first. */
+	notations: ColorNotation[];
+	/** The four shown as buttons. */
+	primary: ColorNotation[];
+	/** The rest, behind "More". */
+	extra: ColorNotation[];
 	/** `foreground` for a shade, `background` for everything else. */
 	labelVar: string;
 	/** Contrast of that label against the plate. */
@@ -278,9 +327,13 @@ export interface GroupView {
 function toView(name: SwatchName, theme: ThemeName): SwatchView {
 	const palette = themes[theme];
 	const color = palette[name];
-	const label = labelFor(name);
+	const ink = labelFor(name);
+	const notations = colorNotations(color);
+	const primary = PRIMARY_NOTATIONS.map((id) => notations.find((n) => n.id === id)!);
+
 	return {
 		name,
+		label: displayName(name),
 		token: tokenName(name, theme),
 		color,
 		hex: color.hex,
@@ -288,9 +341,11 @@ function toView(name: SwatchName, theme: ThemeName): SwatchView {
 		rgb: formatRgb(color),
 		cssVar: varName(name),
 		formula: color.description,
-		formats: copyFormats(name, color),
-		labelVar: varName(label),
-		labelRatio: contrastRatio(palette[label], color),
+		notations,
+		primary,
+		extra: notations.filter((n) => !(PRIMARY_NOTATIONS as readonly string[]).includes(n.id)),
+		labelVar: varName(ink),
+		labelRatio: contrastRatio(palette[ink], color),
 		outOfGamut: perceptiblyOutOfGamut(color)
 	};
 }
