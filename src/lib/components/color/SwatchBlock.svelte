@@ -290,14 +290,19 @@
 		border: 0;
 		border-radius: var(--radius-lg);
 		/*
-			`outline`, not `border`, and that is what makes it work on all 34: an outline is painted OUTSIDE
-			the box, on the scrim, so it reads even on the cottontail swatch itself — where a border would
-			have been cottontail on cottontail and simply disappeared.
+			The ring-plus-offset pattern, same as the cottontail panel wears: 2px of cottontail with a real
+			gap of scrim between it and the sheet. An outline flush to the edge is indistinguishable from a
+			border, and this is not a border — it is the focus-ring treatment, so it should look like one.
 
-			`--brand-cottontail` resolves per scope, so a sheet opened in the light region is outlined in
-			light's cottontail without a second rule.
+			Offset also fixes the one swatch a border could never work on. The outline sits on the scrim
+			rather than on the plate, so it reads even on the cottontail card itself, where cottontail on
+			cottontail would have disappeared.
+
+			`--brand-cottontail` resolves per scope, so a sheet opened in the light region rings itself in
+			light's cottontail with no second rule.
 		*/
 		outline: 2px solid var(--brand-cottontail);
+		outline-offset: 4px;
 	}
 
 	dialog::backdrop {
