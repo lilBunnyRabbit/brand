@@ -188,6 +188,90 @@ export const wall = {
 /** Proof for the tests and the caption: every shade sits at the same fraction of the gamut. */
 export const ladderGamutFractions = ladder.map((n) => Number(n.gamutUse.toFixed(4)));
 
+/* ── the recipe: who comes from whom ──────────────────────────────────── */
+
+export interface Step {
+	name: SwatchName;
+	/** What it was derived from. Null only for the seed. */
+	parent: SwatchName | null;
+	/** The move, in as few characters as possible. */
+	op: string;
+	/** Chroma in whole seeds, when it is a whole number — drawn as pips. */
+	pips: number | null;
+	/** Which generation: 0 seed, 1 first move, and so on. */
+	gen: number;
+}
+
+/**
+ * The derivation as a list of moves rather than as coordinates.
+ *
+ * A scatter of these 17 colours wastes most of its canvas — they cluster into a ladder low down and
+ * a rail across the middle, so seven shades end up squeezed into a fifth of the height while two
+ * thirds of the plot sits empty. Reading order beats coordinate fidelity here: what people actually
+ * want to know is what came from what, and that is a list.
+ */
+export const recipe: Step[] = [
+	{ name: 'background', parent: null, op: 'the seed', pips: 1, gen: 0 },
+
+	{ name: 'bg_lightest', parent: 'background', op: 'L + span', pips: null, gen: 1 },
+	{ name: 'bg_lighter', parent: 'background', op: 'L + ⅔ span', pips: null, gen: 1 },
+	{ name: 'bg_light', parent: 'background', op: 'L + ⅓ span', pips: null, gen: 1 },
+	{ name: 'bg_dark', parent: 'background', op: 'L − ⅓ span', pips: null, gen: 1 },
+	{ name: 'bg_darker', parent: 'background', op: 'L − ⅔ span', pips: null, gen: 1 },
+	{ name: 'bg_darkest', parent: 'background', op: 'L − span', pips: null, gen: 1 },
+
+	{ name: 'foreground', parent: 'background', op: '1 − L · C ÷ 3 · H + 180°', pips: null, gen: 1 },
+
+	{ name: 'primary', parent: 'foreground', op: 'C × 3 · H + 72°', pips: 3, gen: 2 },
+
+	{ name: 'tertiary', parent: 'primary', op: 'C × 1 · H − 120°', pips: 1, gen: 3 },
+	{ name: 'secondary', parent: 'primary', op: 'C × 2 · H + 180°', pips: 2, gen: 3 },
+	{ name: 'accent', parent: 'primary', op: "C × 4 · H = foreground's", pips: 4, gen: 3 },
+	{ name: 'cottontail', parent: 'primary', op: 'L + 2 span · 60% of gamut', pips: null, gen: 3 },
+
+	{ name: 'success', parent: 'primary', op: 'C × 6 · H 140°', pips: 6, gen: 3 },
+	{ name: 'warning', parent: 'primary', op: 'C × 6 · H 70°', pips: 6, gen: 3 },
+	{ name: 'error', parent: 'primary', op: 'C × 6 · H 30°', pips: 6, gen: 3 },
+	{ name: 'info', parent: 'primary', op: 'C × 6 · H 240°', pips: 6, gen: 3 }
+];
+
+/** Grouped for display, with a heading per generation. */
+export const generations: { gen: number; title: string; blurb: string; steps: Step[] }[] = [
+	{
+		gen: 0,
+		title: 'The seed',
+		blurb: 'One colour, picked once. Everything below is a formula against it.',
+		steps: recipe.filter((s) => s.gen === 0)
+	},
+	{
+		gen: 1,
+		title: 'Step it, or turn it inside out',
+		blurb:
+			'Six shades by moving lightness up and down, chroma following in proportion. Then one ' +
+			'inversion for text.',
+		steps: recipe.filter((s) => s.gen === 1)
+	},
+	{
+		gen: 2,
+		title: 'Then one turn',
+		blurb: "Foreground's lightness, three seeds of chroma, 72° round. This is the hub.",
+		steps: recipe.filter((s) => s.gen === 2)
+	},
+	{
+		gen: 3,
+		title: 'Everything else is a rotation off it',
+		blurb:
+			'Same lightness, different hue, and chroma in whole multiples of the seed — 1, 2, 4, then 6 ' +
+			'for the states. Nothing sits at 5.',
+		steps: recipe.filter((s) => s.gen === 3)
+	}
+];
+
+/** The chroma ranks that exist, for the pip legend. 5 is deliberately absent. */
+export const pipRanks = [
+	...new Set(recipe.map((s) => s.pips).filter((p): p is number => p !== null))
+].sort((a, b) => a - b);
+
 /** The tightest colour on the rail — the one that sized the ladder. */
 export const hardestOnRail = railNames
 	.map((n) => ({ name: n, ratio: contrastRatio(swatches[n], swatches.bg_lightest) }))

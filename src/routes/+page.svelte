@@ -6,7 +6,7 @@
 	import Mark from '$lib/components/logo/Mark.svelte';
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
-	import DerivationPlot from '$lib/components/color/DerivationPlot.svelte';
+	import DerivationTree from '$lib/components/color/DerivationTree.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
 	import { logos } from '$lib/brand/discover';
@@ -421,7 +421,7 @@
 			<span class="stash-hint">unfinished</span>
 		</summary>
 		<div class="stash-body">
-			<DerivationPlot />
+			<DerivationTree />
 		</div>
 	</details>
 {/if}
