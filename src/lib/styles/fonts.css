@@ -1,0 +1,42 @@
+/*
+	Hack, self-hosted. The site's one loaded webfont.
+
+	Every value on this page is mono — hexes, `oklch()` literals, token names, px sizes, ratios — so the
+	mono face is not a detail here, it is most of the type. It ships as a real font rather than a name in
+	a stack: `--font-mono` used to start at 'JetBrains Mono' and fall through to `ui-monospace`, which
+	means the page rendered in whatever the visitor happened to have and looked different per machine.
+
+	Two faces, not four. 400 and 700 are the only weights the page asks for; CSS font matching maps a
+	requested 500 down to 400 and a 600 up to 700, which is the normal behaviour of any two-weight
+	family. There is no italic mono anywhere in the tree, so both italics are left out — they would have
+	cost 225 kB to render nothing.
+
+	The FULL faces, not the `-subset` ones that ship in the same archive. The subset is 23 kB against
+	106 kB and covers 386 codepoints, but U+2212 MINUS and U+2192 ARROW are not among them — and the
+	derivation formulas are written `1 − L · C ÷ 3 · H + 180°` with a real minus sign. A missing glyph
+	falls back per-character, so the subset would have set two thirds of every formula in Hack and the
+	minus in something else.
+
+	Relative `url()`, and the files live under `src/lib/brand/` rather than in `static/`: Vite rewrites
+	and hashes them, which is what applies the base path. A hand-written `/fonts/…` would 404 under
+	`/brand/`.
+
+	Licence: MIT (plus the Bitstream Vera licence for the inherited DejaVu work). Full text is vendored
+	beside the woff2s in `HACK-LICENSE.md`.
+*/
+@font-face {
+	font-family: Hack;
+	font-style: normal;
+	font-weight: 400;
+	/* `swap`: show the fallback immediately and repaint. A page of numbers must not start invisible. */
+	font-display: swap;
+	src: url('../brand/fonts/hack-regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: Hack;
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('../brand/fonts/hack-bold.woff2') format('woff2');
+}

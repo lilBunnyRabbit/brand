@@ -1,5 +1,12 @@
 <script lang="ts">
 	import '$lib/styles/app.css';
+	/*
+		Imported for its URL rather than written out as a path, so Vite hashes it and applies the base path.
+		The preload is worth the line: `--font-mono` sets nearly every value on the page — 34 hex labels, the
+		formulas, every ratio — and the face is only discovered when the CSS that references it is parsed.
+		Bold is not preloaded; it is a fraction of the mono on screen.
+	*/
+	import hackRegular from '$lib/brand/fonts/hack-regular.woff2?url';
 
 	import Announcer from '$lib/components/Announcer.svelte';
 	import Mark from '$lib/components/logo/Mark.svelte';
@@ -72,6 +79,7 @@
 
 <svelte:head>
 	{@html tokenStyle}
+	<link rel="preload" href={hackRegular} as="font" type="font/woff2" crossorigin="anonymous" />
 	<!--
 		Matches the page shade under the browser chrome, so it extends the page rather than framing it.
 		Follows the scroll into the light region — a dark bar over cream reads as a bug.

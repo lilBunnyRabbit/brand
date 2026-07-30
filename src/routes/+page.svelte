@@ -23,6 +23,7 @@
 	import {
 		cottontailOnShades,
 		exportFormats,
+		formatOklch,
 		groupViews,
 		measureContract,
 		modifierRatio,
@@ -281,7 +282,15 @@
 	>
 		<div class="seed">
 			<div class="seed-copy">
-				<h3>Everything here comes out of <code>oklch(0.255 0.0233 230.47)</code></h3>
+				<!--
+					The value on its own line, and read off the palette rather than typed out — it was a literal
+					in the markup that happened to agree with `background`, which is exactly the kind of pair
+					that stops agreeing.
+				-->
+				<h3>
+					Everything here comes out of
+					<code>{formatOklch(dark.background)}</code>
+				</h3>
 				<p>
 					Every other colour is a formula against that one. Change the seed and all seventeen move
 					together, still in tune — and they stay readable: {contract.count} colour-on-background combinations,
@@ -937,7 +946,21 @@
 		behind removes that edge, and the block still lands on exactly `background_darkest` at its foot —
 		which is where the dawn picks up, so there is no seam at the bottom either.
 	*/
+	/*
+		A full screen of it. The line is the whole point of the section — it is the last thing in the dark
+		half and it should be the only thing on screen when you reach it, with nothing of the light half
+		showing until you scroll past.
+
+		`dvh`, not `vh`: on mobile `vh` is the tallest form of the viewport, so with the toolbar showing the
+		block overflows by its height and the sentence sits off-centre.
+
+		`align-content` rather than `place-items`, so the row centres vertically while the `.measure` inside
+		still spans the column instead of shrinking to its text.
+	*/
 	.threshold {
+		display: grid;
+		align-content: center;
+		min-height: 100dvh;
 		padding-block: clamp(var(--space-8), 12vw, 8rem);
 		text-align: center;
 		background: linear-gradient(
@@ -1008,11 +1031,11 @@
 	}
 
 	/*
-		The cut. Two brand lines and nothing between them: dark's primary above, light's below.
+		The cut. One line of dark's primary, and nothing graded on either side of it.
 
-		See `seamGradient()` in `brand/tokens.ts` for why every graded version of this transition was
-		doomed rather than merely badly tuned — the short version is that the two grounds are 150° of hue
-		apart, so the middle of any ramp between them is a colour that is in neither palette.
+		See `seamColor()` in `brand/tokens.ts` for why every graded version of this transition was doomed
+		rather than merely badly tuned — the short version is that the two grounds are 150° of hue apart, so
+		the middle of any ramp between them is a colour that is in neither palette.
 	*/
 	.seam {
 		height: var(--seam-h);
@@ -1066,9 +1089,21 @@
 		letter-spacing: -0.02em;
 	}
 
+	/*
+		Its own line, in primary, a step up in size and tracked out a little.
+
+		Inline it competed with the sentence for the same line and wrapped mid-literal on a phone —
+		`oklch(0.255 0.0233` / `230.47)`. On its own line it reads as the thing being named, which is what it
+		is: everything else on the page is a formula against it.
+	*/
 	.seed h3 code {
+		display: block;
+		margin-top: var(--space-3);
+		font-size: var(--text-2xl);
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.01em;
 		color: var(--brand-primary);
-		/* The oklch() literal is longer than a phone is wide. */
+		/* Still longer than a narrow phone. */
 		overflow-wrap: anywhere;
 	}
 

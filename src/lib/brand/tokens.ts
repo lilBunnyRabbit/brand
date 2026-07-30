@@ -115,8 +115,8 @@ export function brandStyleSheet(): string {
 		':root {',
 		`\t${varName(markEars.name)}: ${markEars.hex};`,
 		'',
-		'\t/* The cut between the halves. Both modes’ primary at once, so neither is --brand-primary. */',
-		`\t--seam: ${seamGradient()};`,
+		'\t/* The cut between the halves. Dark’s primary, drawn inside the light scope. */',
+		`\t--seam: ${seamColor()};`,
 		`\t--seam-h: ${SEAM_HEIGHT};`,
 		'',
 		...alphas,
@@ -130,11 +130,11 @@ export function brandStyleSheet(): string {
 
 /* ────────────────────────────── the seam ────────────────────────────── */
 
-/** How thick the cut is. Two halves, so each line is half of this. */
-export const SEAM_HEIGHT = '0.5rem';
+/** How thick the cut is. */
+export const SEAM_HEIGHT = '0.25rem';
 
 /**
- * The cut between the dark half and the light region: two hard lines, no blend.
+ * The cut between the dark half and the light region: one hard line, no blend.
  *
  * Every graded version of this transition failed, and it failed for a structural reason rather than a
  * tuning one. The two grounds are 150° of hue apart, so a ramp between them has to spend its whole
@@ -142,17 +142,13 @@ export const SEAM_HEIGHT = '0.5rem';
  * grey in OKLab, through sepia when routed via the light primary. There is no path that is on-brand in
  * the middle, because the middle is not a brand colour.
  *
- * So there is no middle. The dark half ends, two brand lines mark the join, and the light half begins.
- * Top line is dark's primary, bottom is light's — each side of the cut is announced by the colour of
- * the mode it belongs to.
+ * So there is no middle. The dark half ends on its own primary and the light half begins.
  *
- * Both hexes are read off the palettes, so a seed change moves the seam too. Neither can be
- * `--brand-primary`: this is the one element on the page that has to be in both modes at once.
+ * It cannot be `--brand-primary`: the line is drawn inside the light scope, where that name resolves to
+ * the light primary. This is dark's, read off the dark palette, so a seed change moves the seam too.
  */
-export function seamGradient(): string {
-	const above = themes.dark.primary.hex;
-	const below = themes.light.primary.hex;
-	return `linear-gradient(180deg, ${above} 0 50%, ${below} 50% 100%)`;
+export function seamColor(): string {
+	return themes.dark.primary.hex;
 }
 
 /* ────────────────────────────── export formats ────────────────────────────── */

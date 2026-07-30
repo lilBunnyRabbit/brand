@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './fonts.css';
 
 /*
 	DARK IS THE BRAND. Light is a scope inside it.
@@ -88,7 +89,11 @@
 	--radius-pill: 999px;
 
 	--font-sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-	--font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+	/*
+		Hack is loaded in `fonts.css`, so this is the face that renders rather than a wish. The stack behind
+		it is what shows during `font-display: swap` and if the woff2 ever fails.
+	*/
+	--font-mono: Hack, ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
 
 	--ease: cubic-bezier(0.32, 0.72, 0, 1);
 	--ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
