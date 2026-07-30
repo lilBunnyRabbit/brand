@@ -6,20 +6,21 @@
  * browser morphs position, size and colour between them when the slot changes. Two live copies with
  * the same name is an error, and nothing animates.
  *
- * Three slots:
- *   hero    the big one, in primary, while it is still on screen
- *   header  small, in foreground, beside the wordmark
- *   perch   small, in foreground, top-left corner while the bar is hidden
+ * Two slots:
+ *   hero   the big one, in primary, while it is still on screen
+ *   perch  small, in foreground, top-left corner once it is not
+ *
+ * There is no header slot: the bar is only ever visible at the very top of the page, and at the top
+ * the mark is in the hero — so a mark beside the wordmark could never actually be reached.
  */
 import { flushSync } from 'svelte';
 
-export type MarkSlot = 'hero' | 'header' | 'perch';
+export type MarkSlot = 'hero' | 'perch';
 
 let heroOnScreen = $state(true);
-let barHidden = $state(false);
 
 /** The slot the mark belongs in, given where we are. */
-const resolve = (): MarkSlot => (heroOnScreen ? 'hero' : barHidden ? 'perch' : 'header');
+const resolve = (): MarkSlot => (heroOnScreen ? 'hero' : 'perch');
 
 let slot = $state<MarkSlot>('hero');
 
@@ -60,11 +61,6 @@ export const markSlot = {
 	/** Called by the hero as it enters and leaves the viewport. */
 	setHeroOnScreen(value: boolean) {
 		heroOnScreen = value;
-		moveTo(resolve());
-	},
-	/** Called by the layout as the bar hides and shows. */
-	setBarHidden(value: boolean) {
-		barHidden = value;
 		moveTo(resolve());
 	}
 };

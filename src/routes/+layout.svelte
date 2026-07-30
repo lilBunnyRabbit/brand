@@ -28,29 +28,24 @@
 	const mark = logos.variants.find((v) => !v.hidden);
 
 	/*
-		Hide the bar on the way down, bring it back on the way up, and pin the mark to the corner while
-		it is away — so the brand never actually leaves the screen.
+		The bar belongs to the top of the page. It leaves as soon as you move off it and only comes back
+		when you return — not on any upward flick, which made it pop in and out constantly mid-page.
 
-		Thresholds rather than raw direction: TOP keeps the bar down over the hero regardless, and STEP
-		ignores sub-pixel and rubber-band jitter that would otherwise flicker the header on iOS.
+		Two thresholds rather than one so the boundary cannot oscillate: it hides past SHOW and only
+		reappears below HIDE, giving 40px of hysteresis where nothing changes.
 	*/
-	const TOP = 90;
-	const STEP = 6;
+	const SHOW = 40;
+	const HIDE = 80;
 
 	let hidden = $state(false);
 	let scrolled = $state(false);
-	let lastY = 0;
 
 	function onScroll() {
 		const y = window.scrollY;
 		scrolled = y > 8;
 
-		if (y < TOP) hidden = false;
-		else if (y > lastY + STEP) hidden = true;
-		else if (y < lastY - STEP) hidden = false;
-
-		lastY = y;
-		markSlot.setBarHidden(hidden);
+		if (y > HIDE) hidden = true;
+		else if (y < SHOW) hidden = false;
 	}
 </script>
 
@@ -81,12 +76,6 @@
 <header class="bar" class:is-hidden={hidden} class:is-scrolled={scrolled}>
 	<div class="inner">
 		<a class="brand" href={home()}>
-			{#if mark && markSlot.current === 'header'}
-				<!-- Chrome: the bare mark in `foreground`, sitting next to the wordmark. -->
-				<span class="flyer"
-					><Mark variant={mark} size="1.4rem" ink="var(--brand-foreground)" key="header" /></span
-				>
-			{/if}
 			<span class="wordmark">{meta.name}</span>
 		</a>
 		<nav aria-label="Sections">
