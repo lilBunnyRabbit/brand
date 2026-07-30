@@ -175,6 +175,11 @@
 		bar's geometry instead: the same top padding, the same gutter, and a row the height of the
 		wordmark's line box with the mark centred in it.
 	*/
+	/*
+		`background: none` is load-bearing. The perch carries `data-theme="light"` over the light region so
+		its ink re-resolves, and `app.css` gives every light scope a ground as well as an ink — which put a
+		cream tile behind a 1.35rem mark. It wants half of that rule: the ink, not the paper.
+	*/
 	.perch {
 		position: fixed;
 		top: var(--space-3);
@@ -183,6 +188,7 @@
 		display: grid;
 		place-items: center;
 		height: calc(1rem * 1.55);
+		background: none;
 		opacity: 0;
 		transform: scale(0.55);
 		transform-origin: 0 50%;

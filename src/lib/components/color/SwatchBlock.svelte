@@ -73,8 +73,8 @@
 		{/each}
 
 		<!--
-			Not styled like its neighbours on purpose. The two beside it copy; this one opens something, so
-			it drops the fill and sits quieter until you go looking for it.
+			Same fill and same width as the two beside it — it is one of three buttons in a row, and being
+			the odd one out just read as unfinished. It says what it does instead.
 		-->
 		<button
 			type="button"
@@ -83,14 +83,30 @@
 			aria-label="All {swatch.notations.length} notations for {swatch.token}"
 			onclick={() => sheet.showModal()}
 		>
-			More
+			More <span aria-hidden="true">→</span>
 		</button>
 	</div>
 
-	<dialog bind:this={sheet} aria-label="{swatch.label} — every notation">
-		<div class="sheet-head">
-			<span class="sheet-chip" style="background: {swatch.hex};" aria-hidden="true"></span>
-			<strong>{swatch.label}</strong>
+	<!--
+		Backdrop clicks: a click on `::backdrop` targets the dialog element itself, so comparing the target
+		against the element is the whole test. Escape and focus containment are already the platform's.
+	-->
+	<dialog
+		bind:this={sheet}
+		aria-label="{swatch.label} — every notation"
+		onclick={(event) => {
+			if (event.target === sheet) sheet.close();
+		}}
+	>
+		<!-- The head IS the swatch, same as the card face: the colour, the mark on it, the binary label. -->
+		<div class="sheet-head" style="background: {swatch.hex}; color: var({swatch.labelVar});">
+			{#if variant}
+				<Mark {variant} size="1.6rem" ink="currentColor" key="sh-{swatch.token}" />
+			{/if}
+			<span class="sheet-id">
+				<strong>{swatch.label}</strong>
+				<span class="sheet-hex">{swatch.hex}</span>
+			</span>
 			<button type="button" class="x" aria-label="Close" onclick={() => sheet.close()}>✕</button>
 		</div>
 
@@ -211,36 +227,26 @@
 		border: 0;
 	}
 
-	/* The two that copy. A wash of the label colour rather than a border — same hue, no extra line. */
-	.more button:not(.pick) {
+	/* A wash of the label colour rather than a border — same hue, no extra line. */
+	.more button {
 		flex: 1;
 		background: color-mix(in srgb, currentColor 12%, transparent);
 	}
 
-	.more button:not(.pick):hover,
+	.more button:hover,
 	.more button.is-copied {
 		background: color-mix(in srgb, currentColor 26%, transparent);
 	}
 
-	/* Quieter than the two it sits beside, and no fill: it opens rather than copies. */
-	.pick {
-		padding-inline: var(--space-4);
-		font-weight: 500;
-		opacity: 0.7;
+	.pick span {
+		display: inline-block;
+		transition: transform var(--dur-fast) var(--ease);
 	}
 
-	.pick:hover {
-		background: color-mix(in srgb, currentColor 12%, transparent);
-		opacity: 1;
+	.pick:hover span {
+		transform: translateX(2px);
 	}
 
-	/*
-		The sheet stops inheriting the plate.
-
-		It is a child of the coloured card, so without these it would render as text-on-swatch — every
-		colour in the palette as a different dialog. It is a document surface, so it uses the document's
-		own tokens, and inside a light region those resolve light.
-	*/
 	/*
 		`display` goes on `dialog[open]`, NEVER on `dialog`.
 
@@ -254,51 +260,73 @@
 		flex-direction: column;
 	}
 
+	/*
+		`margin: auto` is not redundant here.
+
+		A modal is centred by the UA's `dialog:modal { inset: 0 }` plus `dialog { margin: auto }` — and
+		Tailwind's preflight zeroes the margin on every element, which leaves the sheet pinned to the top
+		of the viewport instead.
+
+		The rest stops the sheet inheriting the plate: it is a child of the coloured card, so it would
+		otherwise render as text-on-swatch, a different dialog for every colour. The body is a document
+		surface and uses the document's own tokens; only the head is the colour.
+	*/
 	dialog {
 		width: min(30rem, calc(100vw - 2 * var(--space-4)));
 		max-height: min(32rem, calc(100vh - 2 * var(--space-6)));
+		margin: auto;
 		padding: 0;
 		overflow: hidden;
 		color: var(--brand-foreground);
 		background: var(--surface-raised);
-		border: 1px solid var(--hairline);
+		border: 0;
 		border-radius: var(--radius-lg);
 	}
 
 	dialog::backdrop {
-		background: color-mix(in srgb, #000 62%, transparent);
+		background: color-mix(in srgb, #000 66%, transparent);
 	}
 
+	/* The card face again, at the top of its own sheet: the colour, the mark on it, the binary label. */
 	.sheet-head {
 		display: flex;
-		gap: var(--space-3);
+		gap: var(--space-4);
 		align-items: center;
 		padding: var(--space-4);
-		border-bottom: 1px solid var(--hairline);
 	}
 
-	.sheet-chip {
-		width: 2rem;
-		height: 2rem;
-		border-radius: var(--radius-sm);
-	}
-
-	.sheet-head strong {
+	.sheet-id {
+		display: grid;
 		flex: 1;
+		gap: 0.1rem;
+	}
+
+	.sheet-id strong {
+		font-size: var(--text-base);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+
+	.sheet-hex {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		text-transform: uppercase;
+		opacity: 0.75;
 	}
 
 	.x {
 		padding: var(--space-1) var(--space-2);
 		font: inherit;
 		font-size: var(--text-sm);
-		color: var(--fg-muted);
+		color: inherit;
 		cursor: pointer;
 		background: none;
 		border: 0;
+		opacity: 0.7;
 	}
 
 	.x:hover {
-		color: var(--brand-foreground);
+		opacity: 1;
 	}
 
 	/* `min-height: 0` so the flex child is allowed to be shorter than its content and scroll. */

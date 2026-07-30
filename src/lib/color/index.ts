@@ -21,18 +21,8 @@
  *   simulateVision   Color -> Color under a vision-deficiency or condition filter
  *   visionSimulations  the ready-made option list for a <select>
  *   colorNotations   Color -> every notation it can be written in, CSS-valid ones first
- *   colorPath        an even perceptual path through a list of Colors
  */
-import {
-	converter,
-	formatCss,
-	formatHex,
-	formatRgb,
-	interpolate,
-	round,
-	samples,
-	type Mode
-} from 'culori';
+import { converter, formatCss, formatHex, formatRgb, round, type Mode } from 'culori';
 import { OKLCH } from './oklch';
 
 export {
@@ -80,29 +70,6 @@ export function mixOver(fg: Color, bg: Color, alpha: number): Color {
 			.join(' ')})`,
 		`${fg.name}/${Math.round(alpha * 100)}`
 	);
-}
-
-/**
- * An even perceptual path through `stops` — `steps + 1` colours, both ends included.
- *
- * **OKLab, not OKLCH, and that is the whole point.** OKLCH interpolates the hue ANGLE, so a path from
- * a blue-black (H 230) to a warm cream (H 80) sweeps 150° of hue and everything in the middle is a
- * green-grey that appears at neither end. OKLab moves through the a/b plane instead: it passes close
- * to neutral and never invents a hue. Same space `color-mix(in oklab, …)` uses.
- *
- * Wrapped here rather than called at the use site because this is colour maths, and the seam owns all
- * of it — a replacement implementation has to provide this too.
- */
-export function colorPath(stops: readonly Color[], steps: number): Color[] {
-	const along = interpolate(
-		stops.map((c) => c.culori),
-		'oklab'
-	);
-	const toOklch = converter('oklch');
-	return samples(steps + 1).map((t, i) => {
-		const step = toOklch(along(t));
-		return new OKLCH(`path-${i}`, step.l, step.c, step.h ?? 0);
-	});
 }
 
 /* ────────────────────────────── notations ────────────────────────────── */

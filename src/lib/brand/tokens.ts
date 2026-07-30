@@ -12,14 +12,7 @@
  * and no JS; light sits on a bare `[data-theme='light']` so ANY element can scope it, which is how a
  * light section renders inside a page whose root is dark.
  */
-import {
-	colorNotations,
-	colorPath,
-	contrastRatio,
-	mixOver,
-	type Color,
-	type ColorNotation
-} from '$lib/color';
+import { colorNotations, contrastRatio, mixOver, type Color, type ColorNotation } from '$lib/color';
 import {
 	dark,
 	displayName,
@@ -122,9 +115,9 @@ export function brandStyleSheet(): string {
 		':root {',
 		`\t${varName(markEars.name)}: ${markEars.hex};`,
 		'',
-		'\t/* The dawn: dark’s last shade, through the light primary, onto the light page. */',
-		`\t--ramp: ${RAMP_HEIGHT};`,
-		`\t--dawn: ${dawnGradient()};`,
+		'\t/* The cut between the halves. Both modes’ primary at once, so neither is --brand-primary. */',
+		`\t--seam: ${seamGradient()};`,
+		`\t--seam-h: ${SEAM_HEIGHT};`,
 		'',
 		...alphas,
 		'}',
@@ -135,44 +128,31 @@ export function brandStyleSheet(): string {
 	].join('\n');
 }
 
-/* ────────────────────────────── the dawn ────────────────────────────── */
+/* ────────────────────────────── the seam ────────────────────────────── */
 
-/** How far the transition runs. Also the height of the spacer that keeps content off it. */
-export const RAMP_HEIGHT = 'clamp(15rem, 42vh, 24rem)';
+/** How thick the cut is. Two halves, so each line is half of this. */
+export const SEAM_HEIGHT = '0.5rem';
 
 /**
- * The gradient that carries the page from the dark half into the light region: a sunrise.
+ * The cut between the dark half and the light region: two hard lines, no blend.
  *
- * Three real tokens, no picked colours — dark's `background_darkest`, then **light's primary**, then
- * light's page. Going straight from the blue-black to the cream is what produced the green: the two
- * ends are 150° of hue apart, and every path between them — in OKLCH by angle, or in OKLab through a
- * near-neutral — spends the whole middle of the ramp somewhere nobody chose. Routing it through a
- * colour that IS in the palette makes the middle deliberate, and the light primary is the right one:
- * it is the ink of the page the ramp is arriving at, so the descent reads as that page's own dawn.
+ * Every graded version of this transition failed, and it failed for a structural reason rather than a
+ * tuning one. The two grounds are 150° of hue apart, so a ramp between them has to spend its whole
+ * length somewhere that is in neither palette — through green in OKLCH by hue angle, through a dead
+ * grey in OKLab, through sepia when routed via the light primary. There is no path that is on-brand in
+ * the middle, because the middle is not a brand colour.
  *
- * Dark's primary is deliberately NOT a waypoint. It is the green.
+ * So there is no middle. The dark half ends, two brand lines mark the join, and the light half begins.
+ * Top line is dark's primary, bottom is light's — each side of the cut is announced by the colour of
+ * the mode it belongs to.
  *
- * Positioned in fractions of the ramp length rather than in percentages, because the element it paints
- * is the whole light region — percentages would stretch the dawn over the entire section. A gradient
- * extends its final stop, so past the ramp it is flat page colour.
+ * Both hexes are read off the palettes, so a seed change moves the seam too. Neither can be
+ * `--brand-primary`: this is the one element on the page that has to be in both modes at once.
  */
-export function dawnGradient(steps = 18): string {
-	const path = colorPath(
-		[themes.dark.background_darkest, themes.light.primary, themes.light.background],
-		steps
-	);
-
-	const stops = path.map((step, i) => {
-		/*
-			The ramp length is inlined rather than referenced as `var(--ramp)`. A custom property's value
-			is substituted at computed-value time, so a `--dawn` declared on `:root` that referenced a
-			`--ramp` defined further down the tree would resolve to the guaranteed-invalid value and the
-			gradient would simply not paint.
-		*/
-		return `${step.hex} calc(${RAMP_HEIGHT} * ${(i / steps).toFixed(4)})`;
-	});
-
-	return `linear-gradient(180deg, ${stops.join(', ')})`;
+export function seamGradient(): string {
+	const above = themes.dark.primary.hex;
+	const below = themes.light.primary.hex;
+	return `linear-gradient(180deg, ${above} 0 50%, ${below} 50% 100%)`;
 }
 
 /* ────────────────────────────── export formats ────────────────────────────── */

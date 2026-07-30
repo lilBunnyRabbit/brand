@@ -50,6 +50,10 @@
 
 		`C × 1` on its own was not enough either: every brand colour is a chroma multiple AND a hue turn,
 		and showing only the first half made the rows look interchangeable.
+
+		No states row. Every other row is one named colour rendered in itself; "4 states" was four colours
+		standing in one row wearing `error`, which is the only row you could not read literally. The four
+		have their own group in the palette below, formula included.
 	*/
 	const chain = [
 		{ name: 'background', on: 'background', ink: 'foreground', op: 'the seed' },
@@ -57,8 +61,7 @@
 		{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H − 120°' },
 		{ name: 'secondary', on: 'secondary', ink: 'background', op: 'C × 2 · H + 180°' },
 		{ name: 'primary', on: 'primary', ink: 'background', op: 'C × 3 · H + 72°' },
-		{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' },
-		{ name: '4 states', on: 'error', ink: 'background', op: 'C × 6 · fixed hues' }
+		{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' }
 	] as const;
 
 	/*
@@ -162,8 +165,10 @@
 	disc, because the card IS the colour, which is the only way a pair like "primary + background" reads
 	as a pair.
 
-	Mark, then title, then note — one column, in that order. Putting the title beside the mark to share a
-	top edge left a two-word label crammed into whatever was left of a 15rem card and wrapping mid-pair.
+	Two children, and only two: the mark, and the caption. The figure's `space-between` puts the mark at
+	the top and the whole caption at the foot, and the caption's three lines stay tight together as one
+	block. Every attempt to be cleverer than that — the title beside the mark, or the note pinned to the
+	bottom on its own — broke either the label or the spacing.
 -->
 {#snippet comboCard(combo: ComboView)}
 	<figure
@@ -171,13 +176,11 @@
 			? 'foreground'
 			: 'background'});"
 	>
+		<Mark variant={hero} size="3.5rem" ink={combo.inkVar} key="combo-{combo.key}" />
 		<figcaption>
-			<Mark variant={hero} size="3.25rem" ink={combo.inkVar} key="combo-{combo.key}" />
-			<span class="combo-id">
-				<span class="combo-label">{combo.label}</span>
-				<span class="combo-ratio">
-					{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
-				</span>
+			<span class="combo-label">{combo.label}</span>
+			<span class="combo-ratio">
+				{combo.ratio.toFixed(2)}:1{combo.exempt ? ' · logo only' : ''}
 			</span>
 			<span class="combo-note">{combo.note}</span>
 		</figcaption>
@@ -624,7 +627,7 @@
 	variant, because both palettes carry the same 17 keys.
 -->
 <ThemeScope theme="light" id="light-region">
-	<div class="ramp" aria-hidden="true"></div>
+	<div class="seam" aria-hidden="true"></div>
 
 	<div class="measure">
 		<Section
@@ -980,55 +983,40 @@
 	}
 
 	/*
-		The transition, and there is no animation in it — scrolling IS the animation.
+		The light half's own descent — the same shade ladder `body` runs in the dark half, at the same stop
+		positions, written with the same `var(--brand-*)` names. This element carries `data-theme="light"`,
+		so those names resolve to the light seven: one authored ramp, both modes.
 
-		TWO layers, because the light half needs the same continuous descent the dark half has:
-
-		  `--dawn`  the sunrise, built in `brand/tokens.ts` from dark's last shade through the LIGHT primary
-		            onto the light page. Sized to exactly `--ramp` and pinned to the top, so it stops being
-		            painted past the transition instead of extending its final stop forever.
-		  the rest  the light shade ladder, `background` down to `background_darkest`, over the whole
-		            region. Written with the same `var(--brand-*)` names and the same stop positions as
-		            `body`'s gradient in `app.css`: this element carries `data-theme="light"`, so those
-		            names resolve to the light seven and one authored ramp serves both modes.
-
-		The seam is free: the dawn ends on `background` and the layer under it is flat `background` for its
-		first 22%, which is well past where the dawn stops.
-
-		Which is also why the descent is region-mapped and NOT `background-attachment: fixed` like `body`'s.
-		A fixed layer is viewport-mapped, so the shade immediately under the dawn would be whatever the
-		viewport ramp happened to be at that scroll offset — a seam under the sunrise that moves as you
-		scroll. Region-mapped, the ramp starts where the region does and the two meet on the same colour.
+		Region-mapped rather than `background-attachment: fixed` like `body`'s, because it belongs to this
+		band rather than to the viewport — it starts on cream exactly where the cut is.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
-		child ramp would sit on cream rather than on the dark page above.
+		child would sit on cream rather than on the page.
 
 		`:global` because the element belongs to `ThemeScope`. The id also gives it the specificity to beat
 		the flat `[data-theme='light']` ground, whichever order they land in.
 	*/
 	:global(#light-region) {
-		background-image:
-			var(--dawn),
-			linear-gradient(
-				180deg,
-				var(--brand-background) 0%,
-				var(--brand-background) 22%,
-				var(--brand-background_dark) 52%,
-				var(--brand-background_darker) 78%,
-				var(--brand-background_darkest) 100%
-			);
-		background-repeat: no-repeat, no-repeat;
-		background-size:
-			100% var(--ramp),
-			100% 100%;
-		background-position:
-			top center,
-			top center;
+		background-image: linear-gradient(
+			180deg,
+			var(--brand-background) 0%,
+			var(--brand-background) 22%,
+			var(--brand-background_dark) 52%,
+			var(--brand-background_darker) 78%,
+			var(--brand-background_darkest) 100%
+		);
 	}
 
-	/* Holds the content clear of the gradient. The ramp itself is the region's background. */
-	.ramp {
-		height: var(--ramp);
+	/*
+		The cut. Two brand lines and nothing between them: dark's primary above, light's below.
+
+		See `seamGradient()` in `brand/tokens.ts` for why every graded version of this transition was
+		doomed rather than merely badly tuned — the short version is that the two grounds are 150° of hue
+		apart, so the middle of any ramp between them is a colour that is in neither palette.
+	*/
+	.seam {
+		height: var(--seam-h);
+		background: var(--seam);
 	}
 
 	/* ── light: the statement ── */
@@ -1194,19 +1182,11 @@
 		border-radius: var(--radius-lg);
 	}
 
-	/*
-		The caption is the whole card body — mark, title and note, stacked. It has to carry the height
-		itself, or the figure's `space-between` has one child to distribute and nothing lands where it
-		should. `margin-top: auto` on the note pins it to the foot so the pair reads at the top of every
-		card in the row regardless of how long its note is.
-	*/
+	/* One tight block at the foot of the card. The figure's `space-between` does the placing. */
 	.combos figcaption {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		gap: var(--space-3);
-		align-items: flex-start;
-		width: 100%;
+		gap: 0.2rem;
 	}
 
 	.combo-label {
@@ -1223,7 +1203,7 @@
 
 	.combo-note {
 		max-width: 34ch;
-		margin-top: auto;
+		margin-top: var(--space-2);
 		font-size: var(--text-sm);
 		opacity: 0.85;
 	}
@@ -2045,11 +2025,6 @@
 	}
 
 	/* ── shared bits ── */
-
-	.combo-id {
-		display: grid;
-		gap: 0.15rem;
-	}
 
 	.closing {
 		max-width: 66ch;
