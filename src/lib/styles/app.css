@@ -1,28 +1,36 @@
 @import 'tailwindcss';
 
 /*
-	DARK ONLY.
+	DARK IS THE BRAND. Light is a scope inside it.
 
-	There is no light mode and no toggle. `color-scheme: dark` is declared, not negotiated, and no
-	`prefers-color-scheme` block exists anywhere in this file — a light mode is designed but not
-	built, so there is nothing to fall back to.
+	There is no toggle and no theme state. The page is dark, and the light section past the assets
+	block carries `data-theme="light"` — so light mode is a REGION of one document, deep-linkable and
+	working with JavaScript off. No `prefers-color-scheme` block exists anywhere in this file: which
+	mode you are looking at is a position on the page, not a system preference.
 
-	The page surface IS the palette. Unlike the earlier light draft, there is no separate `--page-*`
-	vocabulary to keep in step: `--surface-*` below points straight at shades, and every one of them
-	is a legal section background because the contract holds for all seven. That is the point of the
-	ladder — a section can change shade without anything needing re-checking.
+	The page surface IS the palette. There is no separate `--page-*` vocabulary to keep in step:
+	`--surface-*` below points straight at shades, and every one of them is a legal section background
+	because the contract holds for all seven, in both modes. That is the point of the ladder — a
+	section can change shade without anything needing re-checking.
 
-	The 17 colours themselves are emitted from `brand/tokens.ts` into <svelte:head> at prerender.
+	The 34 colours themselves are emitted from `brand/tokens.ts` into <svelte:head> at prerender.
 */
 
-:root {
-	color-scheme: dark;
+/*
+	Everything here reads `--brand-*`, so it MUST be declared where a scope can recompute it.
 
+	A custom property's computed value has its `var()` references already substituted. Declared on
+	`:root` alone, `--hairline` would compute once against the dark foreground and then inherit that
+	dark value into the light scope — correct-looking CSS, wrong colour. Matching `[data-theme]`
+	itself forces the recompute on the scoping element.
+*/
+:root,
+[data-theme] {
 	/* Section backgrounds. Three per viewport is the ceiling — adjacent shades are ~1.1:1. */
 	--surface-page: var(--brand-background);
-	--surface-raised: var(--brand-bg_light);
-	--surface-well: var(--brand-bg_darker);
-	--surface-edge: var(--brand-bg_lightest);
+	--surface-raised: var(--brand-background_light);
+	--surface-well: var(--brand-background_darker);
+	--surface-edge: var(--brand-background_lightest);
 
 	/*
 		The hairline. A fraction of `foreground` rather than a solid shade: the page is a gradient, so
@@ -31,9 +39,24 @@
 	*/
 	--hairline: color-mix(in srgb, var(--brand-foreground) 14%, transparent);
 
-	/* Text on any brand fill is always the page shade. Never white — white on primary is 2.23:1. */
+	/*
+		Text on any brand fill is always the page shade. Never white — white on dark primary is 2.23:1.
+		Correct in both modes without a special case: light's brand fills are dark, and light's page
+		shade is the cream that sits on them.
+	*/
 	--on-brand: var(--brand-background);
+}
 
+:root,
+[data-theme='dark'] {
+	color-scheme: dark;
+}
+
+[data-theme='light'] {
+	color-scheme: light;
+}
+
+:root {
 	/*
 		text(15, 1.25) from the scheme's token block: 15px base, 1.25 ratio.
 		Display sizes are fluid; the body ladder is not, so measure stays stable.
@@ -90,13 +113,13 @@
 	too. One line per colour; this list only changes when the palette gains or loses a colour.
 */
 @theme inline {
-	--color-bg_lightest: var(--brand-bg_lightest);
-	--color-bg_lighter: var(--brand-bg_lighter);
-	--color-bg_light: var(--brand-bg_light);
+	--color-background_lightest: var(--brand-background_lightest);
+	--color-background_lighter: var(--brand-background_lighter);
+	--color-background_light: var(--brand-background_light);
 	--color-background: var(--brand-background);
-	--color-bg_dark: var(--brand-bg_dark);
-	--color-bg_darker: var(--brand-bg_darker);
-	--color-bg_darkest: var(--brand-bg_darkest);
+	--color-background_dark: var(--brand-background_dark);
+	--color-background_darker: var(--brand-background_darker);
+	--color-background_darkest: var(--brand-background_darkest);
 	--color-foreground: var(--brand-foreground);
 	--color-tertiary: var(--brand-tertiary);
 	--color-secondary: var(--brand-secondary);
@@ -107,9 +130,40 @@
 	--color-warning: var(--brand-warning);
 	--color-error: var(--brand-error);
 	--color-info: var(--brand-info);
+	/* The one colour that does not theme. */
+	--color-mark_ears: var(--brand-mark_ears);
 
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
+}
+
+/*
+	Every light scope paints itself.
+
+	`body`'s gradient is `background-attachment: fixed` — viewport-mapped and static by design — so it
+	cannot reach a light zone at the foot of a long document. A light scope is opaque instead and carries
+	its own ground and ink.
+
+	Deliberately minimal, because this rule hits every light scope including the small islands (each of
+	the four logo tiles is one). The page's light REGION overrides it with the dawn gradient.
+*/
+[data-theme='light'] {
+	background: var(--brand-background);
+	color: var(--brand-foreground);
+}
+
+/*
+	The content column.
+
+	This used to live on `main`, which meant nothing inside `main` could ever run edge to edge. The
+	light region has to: its ground spans the viewport while its text stays on the same column as every
+	dark section above it. So the constraint moved down one level — `main` is now a plain block and each
+	band brings its own `.measure`.
+*/
+.measure {
+	max-width: var(--measure);
+	padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
+	margin-inline: auto;
 }
 
 /*
@@ -148,7 +202,7 @@
 	The ladder as one continuous surface.
 
 	Starts at the seed so the first screen is `background`, then descends through the dark half to
-	`bg_darkest` at the foot of the page. Fixed, so the ramp reads the same however long the page gets.
+	`background_darkest` at the foot of the page. Fixed, so the ramp reads the same however long the page gets.
 
 	This does not break the three-shades-per-viewport rule: that rule exists because *stacking*
 	adjacent shades as discrete blocks reads as noise at ~1.1:1. A gradient has no edges to read, so
@@ -166,9 +220,9 @@ body {
 			180deg,
 			var(--brand-background) 0%,
 			var(--brand-background) 22%,
-			var(--brand-bg_dark) 52%,
-			var(--brand-bg_darker) 78%,
-			var(--brand-bg_darkest) 100%
+			var(--brand-background_dark) 52%,
+			var(--brand-background_darker) 78%,
+			var(--brand-background_darkest) 100%
 		)
 		no-repeat;
 	background-attachment: fixed;

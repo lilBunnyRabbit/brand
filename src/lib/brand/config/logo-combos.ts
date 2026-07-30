@@ -2,12 +2,12 @@
  * The sanctioned logo colour combinations. EDIT HERE.
  *
  * Most of the time the logo is just the mark, one colour, straight onto whatever it sits on — no
- * disc, no ground of its own. The two disc combos are for places that need a self-contained badge.
+ * disc, no ground of its own. The disc combos are for places that need a self-contained badge.
  *
  * Ratios are measured from the palette at render time, not written down here, so they cannot drift
  * from the colours.
  */
-import type { SwatchName } from './palette';
+import type { SwatchName, ThemeName } from './palette';
 
 export interface LogoCombo {
 	id: string;
@@ -48,6 +48,27 @@ export const logoCombos: readonly LogoCombo[] = [
 		ink: 'cottontail',
 		note: 'The bright one, for when the badge should catch the eye. Lower contrast by design — fine for a logotype, never for text.',
 		exempt: true
+	},
+	/*
+		The neutral pair. No brand colour in it at all, which is the point: this is the one that goes on
+		a fax, an embroidery file, a single-colour print, or anywhere the brand colour cannot be trusted.
+		It was missing from the guide even though the navigation bar has always used it.
+	*/
+	{
+		id: 'fg-bg',
+		label: 'foreground + background',
+		kind: 'disc',
+		ground: 'foreground',
+		ink: 'background',
+		note: 'The one-colour fallback. Same two colours as body text, so it needs nothing the page does not already have.'
+	},
+	{
+		id: 'bg-fg',
+		label: 'background + foreground',
+		kind: 'disc',
+		ground: 'background',
+		ink: 'foreground',
+		note: 'The same pair the other way round. On the page itself the disc IS the page, so only the ears show — a knockout, not a badge.'
 	}
 ];
 
@@ -61,5 +82,64 @@ export const plainInks: readonly { id: string; ink: SwatchName; note: string }[]
 		id: 'light',
 		ink: 'background',
 		note: 'On a light or white ground, where primary would vanish.'
+	}
+];
+
+/* ── the four disc variants, across both modes ──────────────────────────── */
+
+export interface MarkVariant {
+	id: string;
+	label: string;
+	theme: ThemeName;
+	/** The disc fill. */
+	disc: SwatchName;
+	/** The ears. `null` means the fixed asset colour, which does not theme. */
+	ears: SwatchName | null;
+	note: string;
+}
+
+/**
+ * The mark, in every combination worth shipping: brand and neutral, dark and light.
+ *
+ * `ears: null` is `mark_ears` — pinned, identical in both modes. Only the disc themes, and that is
+ * the whole reason the light brand mark works: keeping the pale ears fixed gives 7.36 on the light
+ * disc, where deriving them from `light_primary` the way dark derives its own would give 2.68 and
+ * disappear entirely in greyscale.
+ *
+ * The surprise, which the page should say out loud: the LIGHT brand mark is more legible than the
+ * dark one. Dark's 1.94 survives on the logotype exemption; light's 7.36 clears AAA outright.
+ */
+export const markVariants: readonly MarkVariant[] = [
+	{
+		id: 'dark-brand',
+		label: 'Dark, brand',
+		theme: 'dark',
+		disc: 'primary',
+		ears: null,
+		note: 'The one people will recognise. This is the mark.'
+	},
+	{
+		id: 'dark-neutral',
+		label: 'Dark, neutral',
+		theme: 'dark',
+		disc: 'foreground',
+		ears: 'background',
+		note: 'No brand colour. For one-colour printing and anywhere the green cannot be trusted.'
+	},
+	{
+		id: 'light-brand',
+		label: 'Light, brand',
+		theme: 'light',
+		disc: 'primary',
+		ears: null,
+		note: 'Same ears, orange disc. The most legible of the four — and still not the one to use for recognition.'
+	},
+	{
+		id: 'light-neutral',
+		label: 'Light, neutral',
+		theme: 'light',
+		disc: 'foreground',
+		ears: 'background',
+		note: 'The neutral pair on paper. Same job as its dark twin.'
 	}
 ];

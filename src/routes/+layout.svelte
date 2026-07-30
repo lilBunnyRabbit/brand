@@ -7,6 +7,7 @@
 	import { home, sections } from '$lib/brand/nav';
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
+	import { dark, light } from '$lib/brand/config/palette';
 
 	let { children } = $props();
 
@@ -39,19 +40,43 @@
 	let hidden = $state(false);
 	let scrolled = $state(false);
 
+	/*
+		The corner mark is `position: fixed`, so it sits OUTSIDE the light region and CSS cannot reach it
+		— scroll far enough and a pale grey mark ends up on cream. The fix is to make the perch its own
+		scope: carrying `data-theme="light"` re-resolves `--brand-foreground` for that one element, so the
+		ink follows the palette instead of being hardcoded twice.
+
+		Detected by geometry rather than an IntersectionObserver, because what matters is not whether the
+		light region is on screen but whether it is under the mark specifically — and the scroll handler
+		is already reading layout, so this costs one rect.
+	*/
+	const PERCH_BOTTOM = 56;
+
+	let onLight = $state(false);
+	let region: Element | null = null;
+
 	function onScroll() {
 		const y = window.scrollY;
 		scrolled = y > 8;
 
 		if (y > HIDE) hidden = true;
 		else if (y < SHOW) hidden = false;
+
+		region ??= document.getElementById('light-region');
+		if (region) {
+			const box = region.getBoundingClientRect();
+			onLight = box.top < PERCH_BOTTOM && box.bottom > 0;
+		}
 	}
 </script>
 
 <svelte:head>
 	{@html tokenStyle}
-	<!-- Matches the page shade, so mobile browser chrome extends the page rather than framing it. -->
-	<meta name="theme-color" content="#17252c" />
+	<!--
+		Matches the page shade under the browser chrome, so it extends the page rather than framing it.
+		Follows the scroll into the light region — a dark bar over cream reads as a bug.
+	-->
+	<meta name="theme-color" content={onLight ? light.background.hex : dark.background.hex} />
 </svelte:head>
 
 <svelte:window onscroll={onScroll} />
@@ -69,7 +94,14 @@
 		Always in the DOM and toggled by a class, not created and destroyed — a CSS transition cannot
 		run on an element that did not exist a frame ago.
 	-->
-	<a class="perch" class:is-shown={hidden} href={home()} tabindex="-1" aria-hidden="true">
+	<a
+		class="perch"
+		class:is-shown={hidden}
+		data-theme={onLight ? 'light' : undefined}
+		href={home()}
+		tabindex="-1"
+		aria-hidden="true"
+	>
 		<Mark variant={mark} size="1.35rem" ink="var(--brand-foreground)" key="perch" />
 	</a>
 {/if}
@@ -94,17 +126,6 @@
 <main>
 	{@render children()}
 </main>
-
-<footer>
-	<div class="inner">
-		<p>{meta.name} — {meta.tagline} Dark only; a light mode is designed but not built.</p>
-		<nav aria-label="Elsewhere">
-			{#each meta.links as link (link.href)}
-				<a href={link.href}>{link.label}</a>
-			{/each}
-		</nav>
-	</div>
-</footer>
 
 <style>
 	.skip {
@@ -259,11 +280,6 @@
 			padding-inline: var(--space-2);
 			white-space: nowrap;
 		}
-
-		footer .inner {
-			flex-direction: column;
-			align-items: flex-start;
-		}
 	}
 
 	nav a {
@@ -280,26 +296,10 @@
 		background: var(--surface-raised);
 	}
 
-	main {
-		max-width: var(--measure);
-		padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
-		margin-inline: auto;
-	}
-
-	footer {
-		margin-top: clamp(var(--space-6), 6vw, 4rem);
-	}
-
-	footer p {
-		max-width: 60ch;
-		margin: 0;
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
-	footer .inner {
-		padding-block: var(--space-6);
-	}
+	/*
+		No measure here. The light region has to run edge to edge, which nothing inside a constrained
+		`main` can do — so the content column is `.measure` in `app.css`, applied per band.
+	*/
 
 	/*
 		The bar still hides — that is behaviour, not decoration — it just snaps instead of sliding. The

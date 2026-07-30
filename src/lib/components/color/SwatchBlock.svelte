@@ -31,16 +31,16 @@
 	<button
 		type="button"
 		class="face"
-		aria-label="Copy {swatch.name} hex {swatch.hex}"
-		onclick={() => copy(hex.id, hex.value, `${swatch.name} hex`)}
+		aria-label="Copy {swatch.token} hex {swatch.hex}"
+		onclick={() => copy(hex.id, hex.value, `${swatch.token} hex`)}
 	>
 		{#if variant}
 			<span class="art"
-				><Mark {variant} size="1.6rem" ink="currentColor" key="sw-{swatch.name}" /></span
+				><Mark {variant} size="1.6rem" ink="currentColor" key="sw-{swatch.token}" /></span
 			>
 		{/if}
 		<span class="meta">
-			<span class="name">{swatch.name}</span>
+			<span class="name">{swatch.token}</span>
 			<span class="hex">{swatch.hex}</span>
 		</span>
 		<span class="said" aria-hidden="true">{copied === hex.id ? 'Copied' : 'Copy'}</span>
@@ -51,8 +51,8 @@
 			<button
 				type="button"
 				class:is-copied={copied === format.id}
-				aria-label="Copy {swatch.name} as {format.label}: {format.value}"
-				onclick={() => copy(format.id, format.value, `${swatch.name} ${format.label}`)}
+				aria-label="Copy {swatch.token} as {format.label}: {format.value}"
+				onclick={() => copy(format.id, format.value, `${swatch.token} ${format.label}`)}
 			>
 				{copied === format.id ? '✓' : format.label}
 			</button>

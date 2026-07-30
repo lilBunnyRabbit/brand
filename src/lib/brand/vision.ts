@@ -11,7 +11,7 @@
  * variation across conditions) holds either way, in fact slightly tighter here.
  */
 import { contrastRatio, simulateVision, type VisionSimulation } from '$lib/color';
-import { swatches } from './config/palette';
+import { dark } from './config/palette';
 
 export interface VisionCheck {
 	id: VisionSimulation;
@@ -34,8 +34,8 @@ const CONDITIONS: { id: VisionSimulation; label: string }[] = [
 ];
 
 function ratioUnder(sim: VisionSimulation) {
-	const ink = simulateVision(swatches.cottontail, sim);
-	const disc = simulateVision(swatches.primary, sim);
+	const ink = simulateVision(dark.cottontail, sim);
+	const disc = simulateVision(dark.primary, sim);
 	return { ink, disc, ratio: contrastRatio(ink, disc) };
 }
 

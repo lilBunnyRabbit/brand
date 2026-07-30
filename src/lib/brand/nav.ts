@@ -18,13 +18,19 @@ export interface SectionLink {
 	label: string;
 }
 
+/**
+ * One entry for the whole light region, not one per light section. The strip already carries six on a
+ * 360px screen; four more would turn it into a scroller nobody reads to the end of. The light region
+ * has its own internal headings for anyone who lands mid-way.
+ */
 const SECTIONS = [
 	{ id: 'colours', label: 'Colour' },
 	{ id: 'idea', label: 'Idea' },
 	{ id: 'logo', label: 'Logo' },
 	{ id: 'card', label: 'Card' },
 	{ id: 'rules', label: "Don't" },
-	{ id: 'assets', label: 'Assets' }
+	{ id: 'assets', label: 'Assets' },
+	{ id: 'light', label: 'Light' }
 ] as const;
 
 export type SectionId = (typeof SECTIONS)[number]['id'];

@@ -12,9 +12,9 @@
  * Padding of 0.3 seeds and 0.02 lightness keeps a focused node's ring inside the clipped panel.
  */
 import { contrastRatio } from '$lib/color';
-import { onShadeNames, shadeNames, swatches, type SwatchName } from './config/palette';
+import { onShadeNames, shadeNames, dark, type SwatchName } from './config/palette';
 
-const SEED = swatches.background.c;
+const SEED = dark.background.c;
 
 const X_MIN = -0.3;
 const X_MAX = 7;
@@ -58,12 +58,12 @@ export interface PlotNode {
 
 const HOW: Record<SwatchName, string> = {
 	background: 'The seed. Everything else is a formula against this one.',
-	bg_lightest: 'A full span up. Chroma rises with it, in proportion.',
-	bg_lighter: 'Two thirds of a span up.',
-	bg_light: 'One third of a span up.',
-	bg_dark: 'One third of a span down.',
-	bg_darker: 'Two thirds of a span down.',
-	bg_darkest: 'A full span down. Chroma falls with it.',
+	background_lightest: 'A full span up. Chroma rises with it, in proportion.',
+	background_lighter: 'Two thirds of a span up.',
+	background_light: 'One third of a span up.',
+	background_dark: 'One third of a span down.',
+	background_darker: 'Two thirds of a span down.',
+	background_darkest: 'A full span down. Chroma falls with it.',
 	foreground:
 		'The seed, inside out. Lightness flipped, chroma cut to a third, hue turned right around.',
 	tertiary: 'One seed of chroma — exactly what the background carries. The quiet one.',
@@ -78,11 +78,11 @@ const HOW: Record<SwatchName, string> = {
 	info: 'Six seeds. At this hue that is almost everything sRGB has — the reason there is no 7c.'
 };
 
-const ALL = Object.keys(swatches) as SwatchName[];
+const ALL = Object.keys(dark) as SwatchName[];
 const near = (a: number, b: number, tol = 1e-4) => Math.abs(a - b) < tol;
 
 function toNode(name: SwatchName): PlotNode {
-	const c = swatches[name];
+	const c = dark[name];
 	const boundary = c.atLightness(c.l).maxChroma;
 	return {
 		name,
@@ -92,9 +92,9 @@ function toNode(name: SwatchName): PlotNode {
 		seeds: Number((c.c / SEED).toFixed(4)),
 		hue: c.h,
 		lightness: c.l,
-		sameLightness: ALL.filter((n) => n !== name && near(swatches[n].l, c.l)).length,
-		sameHue: ALL.filter((n) => n !== name && near(swatches[n].h, c.h, 0.01)),
-		sameChroma: ALL.filter((n) => n !== name && near(swatches[n].c, c.c, 1e-5)),
+		sameLightness: ALL.filter((n) => n !== name && near(dark[n].l, c.l)).length,
+		sameHue: ALL.filter((n) => n !== name && near(dark[n].h, c.h, 0.01)),
+		sameChroma: ALL.filter((n) => n !== name && near(dark[n].c, c.c, 1e-5)),
 		how: HOW[name],
 		gamutUse: boundary > 0 ? c.c / boundary : 0
 	};
@@ -180,7 +180,7 @@ export const vacancy = { x: xOf(SEED * 5), label: '5c — empty on purpose.' };
  */
 const infoNode = byName.get('info')!;
 export const wall = {
-	x: xOf(swatches.info.atLightness(swatches.info.l).maxChroma),
+	x: xOf(dark.info.atLightness(dark.info.l).maxChroma),
 	/** What share of the available chroma 6c already spends, at that hue. */
 	use: infoNode.gamutUse
 };
@@ -213,12 +213,12 @@ export interface Step {
 export const recipe: Step[] = [
 	{ name: 'background', parent: null, op: 'the seed', pips: 1, gen: 0 },
 
-	{ name: 'bg_lightest', parent: 'background', op: 'L + span', pips: null, gen: 1 },
-	{ name: 'bg_lighter', parent: 'background', op: 'L + ⅔ span', pips: null, gen: 1 },
-	{ name: 'bg_light', parent: 'background', op: 'L + ⅓ span', pips: null, gen: 1 },
-	{ name: 'bg_dark', parent: 'background', op: 'L − ⅓ span', pips: null, gen: 1 },
-	{ name: 'bg_darker', parent: 'background', op: 'L − ⅔ span', pips: null, gen: 1 },
-	{ name: 'bg_darkest', parent: 'background', op: 'L − span', pips: null, gen: 1 },
+	{ name: 'background_lightest', parent: 'background', op: 'L + span', pips: null, gen: 1 },
+	{ name: 'background_lighter', parent: 'background', op: 'L + ⅔ span', pips: null, gen: 1 },
+	{ name: 'background_light', parent: 'background', op: 'L + ⅓ span', pips: null, gen: 1 },
+	{ name: 'background_dark', parent: 'background', op: 'L − ⅓ span', pips: null, gen: 1 },
+	{ name: 'background_darker', parent: 'background', op: 'L − ⅔ span', pips: null, gen: 1 },
+	{ name: 'background_darkest', parent: 'background', op: 'L − span', pips: null, gen: 1 },
 
 	{ name: 'foreground', parent: 'background', op: '1 − L · C ÷ 3 · H + 180°', pips: null, gen: 1 },
 
@@ -293,7 +293,7 @@ export const growSteps: GrowStep[] = (() => {
 	return recipe.map((step) => {
 		const seen = orderInGen.get(step.gen) ?? 0;
 		orderInGen.set(step.gen, seen + 1);
-		const colour = swatches[step.name];
+		const colour = dark[step.name];
 		return {
 			...step,
 			l: colour.l,
@@ -348,5 +348,5 @@ export const pipRanks = [
 
 /** The tightest colour on the rail — the one that sized the ladder. */
 export const hardestOnRail = railNames
-	.map((n) => ({ name: n, ratio: contrastRatio(swatches[n], swatches.bg_lightest) }))
+	.map((n) => ({ name: n, ratio: contrastRatio(dark[n], dark.background_lightest) }))
 	.reduce((a, b) => (b.ratio < a.ratio ? b : a));

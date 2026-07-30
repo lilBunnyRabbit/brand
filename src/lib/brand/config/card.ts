@@ -48,7 +48,7 @@ export const card: CardSpec = {
 			label: 'Stock',
 			ground: 'primary',
 			ink: 'background',
-			quiet: 'bg_dark'
+			quiet: 'background_dark'
 		},
 		{
 			id: 'brand',
@@ -56,13 +56,13 @@ export const card: CardSpec = {
 			label: 'Brand',
 			ground: '#ffffff',
 			ink: 'background',
-			quiet: 'bg_light'
+			quiet: 'background_light'
 		},
 		{
 			id: 'reverse',
 			code: 'CW 3',
 			label: 'Reverse',
-			ground: 'bg_darkest',
+			ground: 'background_darkest',
 			ink: 'primary',
 			quiet: 'foreground'
 		}

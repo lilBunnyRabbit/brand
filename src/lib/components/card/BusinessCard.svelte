@@ -1,14 +1,14 @@
 <script lang="ts">
 	import Mark from '$lib/components/logo/Mark.svelte';
 	import { card } from '$lib/brand/config/card';
-	import { swatches } from '$lib/brand/config/palette';
+	import { dark } from '$lib/brand/config/palette';
 	import { varName } from '$lib/brand/tokens';
 	import type { LogoVariant } from '$lib/brand/types';
 
 	let { variant }: { variant: LogoVariant } = $props();
 
 	/** A ground may be a palette swatch or raw stock (white), which is not in the palette. */
-	const resolve = (value: string) => (value in swatches ? `var(${varName(value)})` : value);
+	const resolve = (value: string) => (value in dark ? `var(${varName(value)})` : value);
 
 	const rows = card.variants.map((v) => ({
 		...v,

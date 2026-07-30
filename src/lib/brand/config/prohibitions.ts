@@ -17,15 +17,15 @@ export interface Rule {
 
 export const prohibitions: readonly Rule[] = [
 	{
-		id: 'no-light-mode',
-		rule: 'No light mode.',
-		why: 'Designed, but not built yet. Please do not invent one by inverting things.',
+		id: 'light-is-ui-only',
+		rule: 'Light mode is UI only.',
+		why: 'Use it when a product surface needs it. Never for brand recognition, marketing, the app icon or social cards — those are always dark.',
 		severity: 'never'
 	},
 	{
 		id: 'nothing-on-white',
 		rule: 'Nothing brand-coloured on white.',
-		why: 'They vanish. On white, primary is 2.23:1 and cottontail is 1.15:1. Use background instead.',
+		why: 'The light ground is #f5ecdc, a cream — not white. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff.',
 		severity: 'never'
 	},
 	{

@@ -220,7 +220,7 @@
 		height: 4px;
 		padding: 0;
 		cursor: pointer;
-		background: var(--brand-bg_lightest);
+		background: var(--brand-background_lightest);
 		border: 0;
 		border-radius: var(--radius-pill);
 		transition: background var(--dur-fast) var(--ease);

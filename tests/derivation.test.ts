@@ -12,7 +12,7 @@ import {
 	recipe,
 	wall
 } from '../src/lib/brand/derivation';
-import { swatches } from '../src/lib/brand/config/palette';
+import { dark } from '../src/lib/brand/config/palette';
 
 /**
  * The plot claims things visually. These assert the geometry actually says them, so the figure
@@ -75,9 +75,7 @@ describe('the derivation plot', () => {
 		expect(wall.use).toBeGreaterThan(0.9);
 		expect(wall.use).toBeLessThan(1);
 		// A seventh seed would not fit.
-		expect(swatches.background.c * 7).toBeGreaterThan(
-			swatches.info.atLightness(swatches.info.l).maxChroma
-		);
+		expect(dark.background.c * 7).toBeGreaterThan(dark.info.atLightness(dark.info.l).maxChroma);
 	});
 
 	it('every node carries a one-line explanation', () => {
@@ -91,7 +89,7 @@ describe('the derivation plot', () => {
 describe('the grow animation', () => {
 	it('every chip has a channel target matching its swatch', () => {
 		for (const step of growSteps) {
-			const c = swatches[step.name];
+			const c = dark[step.name];
 			expect(step.l).toBeCloseTo(c.l, 9);
 			expect(step.c).toBeCloseTo(c.c, 9);
 			expect(step.h).toBeCloseTo(c.h, 9);
@@ -135,8 +133,8 @@ describe('the grow animation', () => {
 		const seed = growSteps.find((s) => s.name === 'background')!;
 		expect(seed.gen).toBe(0);
 		expect(seed.delay).toBe(0);
-		expect(seed.l).toBeCloseTo(swatches.background.l, 9);
-		expect(seed.c).toBeCloseTo(swatches.background.c, 9);
-		expect(seed.h).toBeCloseTo(swatches.background.h, 9);
+		expect(seed.l).toBeCloseTo(dark.background.l, 9);
+		expect(seed.c).toBeCloseTo(dark.background.c, 9);
+		expect(seed.h).toBeCloseTo(dark.background.h, 9);
 	});
 });
