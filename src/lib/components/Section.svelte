@@ -102,4 +102,16 @@
 		flex-wrap: wrap;
 		gap: var(--space-2);
 	}
+
+	@media (max-width: 720px) {
+		header {
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--space-4);
+		}
+
+		.lede {
+			max-width: none;
+		}
+	}
 </style>

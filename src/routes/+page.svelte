@@ -1220,11 +1220,6 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.hero-mark {
-			order: -1;
-			justify-items: start;
-		}
-
 		/* Both of these were two-column at every width, including 360px. */
 		.seed,
 		.cotton,
@@ -1232,24 +1227,136 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		.cotton-art {
+		.cotton-art,
+		.idea-art {
 			justify-self: start;
 		}
 	}
 
-	@media (max-width: 560px) {
+	/*
+		Phones: centre the hero, and let the panels that were side-by-side breathe as single columns.
+		The mark leads, then the words — which is the order it reads in anyway once it is stacked.
+	*/
+	@media (max-width: 720px) {
+		.hero {
+			gap: var(--space-5);
+			text-align: center;
+			padding-block: var(--space-6) var(--space-8);
+		}
+
+		.hero-mark {
+			order: -1;
+		}
+
+		.lede,
+		.claim {
+			margin-inline: auto;
+		}
+
+		.notice {
+			margin-inline: auto;
+			text-align: left;
+		}
+
+		.eyebrow {
+			margin-bottom: var(--space-3);
+		}
+
+		/* Centre the two panels that are mostly one object plus a line of text. */
+		.cotton,
+		.idea {
+			justify-items: center;
+			text-align: center;
+		}
+
+		.cotton-art,
+		.idea-art {
+			justify-self: center;
+		}
+
+		.cotton-copy p,
+		.idea-copy p {
+			margin-inline: auto;
+		}
+
+		.cotton-jobs {
+			text-align: left;
+		}
+
+		.seed {
+			gap: var(--space-5);
+		}
+
+		/* One column each, so a label never shares a line with a value it does not fit beside. */
+		.mods li {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0;
+		}
+
+		.chain li {
+			padding: var(--space-2) var(--space-3);
+		}
+
+		.ladder,
+		.vision {
+			justify-items: center;
+		}
+
 		.ladder {
+			justify-content: center;
 			gap: var(--space-4);
+		}
+
+		.steps li,
+		.rules li {
+			padding: var(--space-3);
+		}
+
+		/* Chips stack rather than squeezing three mono labels onto one line. */
+		.bad,
+		.good {
+			flex-direction: column;
 			padding: var(--space-4);
 		}
 
-		.rules li {
-			grid-template-columns: 1.25rem minmax(0, 1fr);
-			padding: var(--space-3);
+		.bad {
+			gap: 0;
+		}
+
+		.good {
+			gap: var(--space-2);
+		}
+
+		.chip {
+			flex: none;
+		}
+
+		.formats {
+			gap: var(--space-2);
 		}
 
 		summary {
 			flex-wrap: wrap;
+			gap: var(--space-2);
+		}
+	}
+
+	@media (max-width: 560px) {
+		.swatches {
+			gap: var(--space-3);
+		}
+
+		.combos {
+			gap: var(--space-3);
+		}
+
+		.combos figure {
+			min-height: 0;
+			padding: var(--space-4);
+		}
+
+		pre {
+			font-size: var(--text-xs);
 		}
 	}
 </style>

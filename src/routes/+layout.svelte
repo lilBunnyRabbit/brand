@@ -70,7 +70,7 @@
 		run on an element that did not exist a frame ago.
 	-->
 	<a class="perch" class:is-shown={hidden} href={home()} tabindex="-1" aria-hidden="true">
-		<Mark variant={mark} size="1.5rem" ink="var(--brand-foreground)" key="perch" />
+		<Mark variant={mark} size="1.35rem" ink="var(--brand-foreground)" key="perch" />
 	</a>
 {/if}
 
@@ -145,22 +145,29 @@
 		transform: translateY(-100%);
 	}
 
-	/* The bare mark in `foreground`, matching the header. No pill, no ground of its own. */
 	/*
-		The mark, kept on screen while the bar is away. Aligned to the same gutter the bar uses, so it
-		lands exactly where the bar's own mark was rather than near it.
+		The mark, kept on screen while the bar is away — and it has to land exactly where the bar's own
+		mark was, not near it.
+
+		The bar centres its mark against the wordmark, which is the taller of the two, so the mark's top
+		edge sits well below the bar's padding. Reproducing that by hand drifts, so this box copies the
+		bar's geometry instead: the same top padding, the same gutter, and a row the height of the
+		wordmark's line box with the mark centred in it.
 	*/
 	.perch {
 		position: fixed;
 		top: var(--space-3);
 		left: clamp(var(--space-4), 4vw, var(--space-6));
 		z-index: 11;
-		display: block;
+		display: grid;
+		place-items: center;
+		height: calc(1rem * 1.55);
 		opacity: 0;
-		transform: scale(0.55) translateY(-0.5rem);
+		transform: scale(0.55);
+		transform-origin: 0 50%;
 		transition:
-			opacity 0.22s var(--ease),
-			transform 0.28s var(--ease-spring, var(--ease));
+			opacity 0.2s var(--ease),
+			transform 0.26s var(--ease-spring, var(--ease));
 		pointer-events: none;
 	}
 
@@ -200,24 +207,52 @@
 	}
 
 	/*
-		Six section links do not fit beside the wordmark on a phone. They scroll horizontally in their
-		own strip rather than wrapping — wrapping pushed the header to ~104px and put every anchor
-		underneath it.
+		Mobile keeps the bar.
+
+		A floating mark in the corner is a desktop affordance: on a phone it sits over content, it is
+		too small to be a useful target, and it takes navigation away with it. So the bar stays put and
+		slims down instead — the section strip collapses on scroll and the mark and wordmark remain,
+		which keeps the nav one tap away.
 	*/
 	@media (max-width: 720px) {
+		.bar.is-hidden {
+			transform: none;
+		}
+
+		.perch {
+			display: none;
+		}
+
 		.inner {
-			flex-wrap: nowrap;
-			gap: var(--space-3);
+			flex-wrap: wrap;
+			gap: var(--space-2) var(--space-3);
+		}
+
+		/* Brand takes the first row; the section strip drops to a second row of its own. */
+		.brand {
+			flex: 1 0 100%;
 		}
 
 		nav {
+			flex: 1 0 100%;
+			max-height: 2.5rem;
 			overflow-x: auto;
 			scrollbar-width: none;
+			transition:
+				max-height var(--dur) var(--ease),
+				opacity var(--dur) var(--ease);
 			-webkit-overflow-scrolling: touch;
 		}
 
 		nav::-webkit-scrollbar {
 			display: none;
+		}
+
+		/* Scrolled: the strip collapses and the bar becomes just the mark and the wordmark. */
+		.bar.is-hidden nav {
+			max-height: 0;
+			overflow: hidden;
+			opacity: 0;
 		}
 
 		nav a {

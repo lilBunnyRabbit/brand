@@ -399,6 +399,24 @@
 		white-space: nowrap;
 	}
 
+	@media (max-width: 720px) {
+		.controls {
+			gap: var(--space-3);
+		}
+
+		.dot {
+			width: 1.75rem;
+		}
+
+		.dot.is-here {
+			width: 2.5rem;
+		}
+
+		.narration {
+			min-height: 5.5rem;
+		}
+	}
+
 	/* Nothing travels: every chip is simply itself. The controls stay, so it is still steppable. */
 	@media (prefers-reduced-motion: reduce) {
 		li,

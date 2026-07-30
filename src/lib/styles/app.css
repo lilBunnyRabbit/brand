@@ -201,9 +201,21 @@ a {
 	box-shadow: 0 0 0 2px var(--surface-page);
 }
 
+/*
+	Mobile spacing scale.
+
+	The desktop rhythm is built on --space-8 at 3rem and section padding at 4.5rem; on a 360px screen
+	that is a third of the viewport spent on gaps. Shrinking the large steps at the root retunes every
+	section, panel and grid at once rather than needing an override each.
+*/
 @media (max-width: 720px) {
 	:root {
-		--header-h: 6.5rem;
+		/* Two rows of bar, so anchors need more clearance. */
+		--header-h: 6rem;
+
+		--space-5: 1.125rem;
+		--space-6: 1.5rem;
+		--space-8: 2rem;
 	}
 }
 

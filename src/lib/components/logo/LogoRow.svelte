@@ -140,13 +140,30 @@
 		}
 	}
 
-	@media (max-width: 480px) {
-		figure {
-			padding: var(--space-5) var(--space-2) var(--space-3);
+	@media (max-width: 720px) {
+		.detail {
+			text-align: center;
 		}
 
-		figcaption {
-			font-size: 0.58rem;
+		.heading,
+		.actions {
+			justify-content: center;
+		}
+
+		.desc,
+		.file {
+			margin-inline: auto;
+		}
+	}
+
+	@media (max-width: 440px) {
+		/* Two tiles at 200px each crowd the mark; one per row instead. */
+		.grounds {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		figure {
+			padding: var(--space-5) var(--space-3) var(--space-3);
 		}
 	}
 </style>
