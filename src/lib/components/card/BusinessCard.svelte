@@ -39,16 +39,23 @@
 				style="background: {row.groundCss}; color: {row.inkCss}; --quiet: {row.quietCss};"
 			>
 				<div class="inner front">
-					<Mark {variant} size="13%" ink="currentColor" key="front-{row.id}" />
-					<div class="who">
-						<p class="name">{card.name}</p>
-						<p class="role">{card.role}</p>
+					<Mark {variant} size="12%" ink="currentColor" key="front-{row.id}" />
+					<!--
+						Name and details sit on one baseline row at the foot of the card, the way a real card
+						is set. Three stacked blocks spread over the full height left two large voids in the
+						middle, which is what made it read as a poster rather than a card.
+					-->
+					<div class="foot">
+						<div class="who">
+							<p class="name">{card.name}</p>
+							<p class="role">{card.role}</p>
+						</div>
+						<ul class="lines">
+							{#each card.lines as line (line.label)}
+								<li>{line.value}</li>
+							{/each}
+						</ul>
 					</div>
-					<ul class="lines">
-						{#each card.lines as line (line.label)}
-							<li class:placeholder={line.placeholder}>{line.value}</li>
-						{/each}
-					</ul>
 				</div>
 			</div>
 		</div>
@@ -119,17 +126,25 @@
 	}
 
 	.front {
-		display: grid;
-		grid-template-rows: auto 1fr auto;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.foot {
+		display: flex;
+		gap: 6cqi;
+		align-items: flex-end;
+		justify-content: space-between;
 	}
 
 	.who {
-		align-self: end;
+		min-width: 0;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 12cqi;
+		font-size: 13cqi;
 		font-weight: 700;
 		line-height: 1;
 		letter-spacing: -0.03em;
@@ -147,16 +162,11 @@
 		gap: 1.2cqi;
 		padding: 0;
 		margin: 0;
-		font-size: 4.4cqi;
-		line-height: 1.25;
+		font-size: 4cqi;
+		line-height: 1.3;
+		text-align: right;
 		list-style: none;
 		color: var(--quiet);
-	}
-
-	.placeholder {
-		text-decoration: line-through;
-		text-decoration-thickness: 0.6cqi;
-		text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 	}
 
 	.note {

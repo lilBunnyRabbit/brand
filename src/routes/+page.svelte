@@ -272,18 +272,18 @@
 
 				<div class="combos">
 					{#each combos as combo (combo.id)}
-						<figure style="background: {combo.kind === 'plain' ? combo.groundVar : 'transparent'};">
-							{#if combo.kind === 'plain'}
-								<Mark variant={hero} size="4rem" ink={combo.inkVar} key="combo-{combo.id}" />
-							{:else}
-								<Lockup
-									variant={hero}
-									size="5rem"
-									disc={combo.groundVar}
-									ink={combo.inkVar}
-									key="combo-{combo.id}"
-								/>
-							{/if}
+						<!--
+							The whole card is the ground and the mark sits in it. No disc — the card IS the
+							colour, which is the only way a pair like "primary + background" reads as a pair.
+							Label colour follows the binary rule: foreground on a shade, background otherwise.
+						-->
+						<figure
+							style="background: {combo.groundVar}; color: var(--brand-{combo.ground ===
+							'background'
+								? 'foreground'
+								: 'background'});"
+						>
+							<Mark variant={hero} size="3.5rem" ink={combo.inkVar} key="combo-{combo.id}" />
 							<figcaption>
 								<span class="combo-label">{combo.label}</span>
 								<span class="combo-ratio">
@@ -850,12 +850,12 @@
 	.combos figure {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-4);
+		gap: var(--space-5);
 		align-items: flex-start;
+		justify-content: space-between;
+		min-height: 15rem;
 		padding: var(--space-5);
 		margin: 0;
-		background: var(--surface-raised);
-		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
 
@@ -874,13 +874,14 @@
 	.combo-ratio {
 		font-family: var(--font-mono);
 		font-size: var(--text-xs);
-		color: var(--fg-muted);
+		opacity: 0.7;
 	}
 
 	.combo-note {
 		max-width: 34ch;
+		margin-top: var(--space-2);
 		font-size: var(--text-sm);
-		color: var(--fg-muted);
+		opacity: 0.85;
 	}
 
 	.inks {
