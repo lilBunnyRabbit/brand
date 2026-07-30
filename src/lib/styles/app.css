@@ -38,12 +38,12 @@
 		text(15, 1.25) from the scheme's token block: 15px base, 1.25 ratio.
 		Display sizes are fluid; the body ladder is not, so measure stays stable.
 	*/
-	--text-xs: 0.64rem;
-	--text-sm: 0.8rem;
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
 	--text-base: 1rem;
-	--text-lg: 1.25rem;
-	--text-xl: 1.5625rem;
-	--text-2xl: 1.953rem;
+	--text-lg: 1.1875rem;
+	--text-xl: 1.5rem;
+	--text-2xl: 1.875rem;
 	/*
 		Floors sized for a 360px phone, not for a desktop that has been narrowed. The old 3rem hero
 		floor was 48px at 360px wide, which with -0.04em tracking broke the tagline across three lines.
@@ -75,7 +75,12 @@
 	/* Sticky-header height, so section anchors do not land underneath it. */
 	--header-h: 4rem;
 
-	font-size: 15px;
+	/*
+		16px, not the scheme's 15. text(15, 1.25) is a fine ratio but a 15px root put --text-xs at
+		9.6px and --text-sm at 12px, which is below comfortable reading for captions and metadata —
+		and this page is mostly captions and metadata.
+	*/
+	font-size: 16px;
 }
 
 /*

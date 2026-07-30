@@ -178,7 +178,7 @@
 	}
 
 	footer {
-		margin-top: clamp(var(--space-8), 8vw, 5rem);
+		margin-top: clamp(var(--space-6), 6vw, 4rem);
 	}
 
 	footer p {

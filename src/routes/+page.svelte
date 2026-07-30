@@ -86,6 +86,8 @@
 
 <Section
 	id="colours"
+	index="01"
+	accent="secondary"
 	title="Colour"
 	lede="Seventeen colours, all grown from a single starting colour."
 >
@@ -205,7 +207,26 @@
 <!-- ─── The idea ───────────────────────────────────────────────────────── -->
 
 {#if hero}
-	<Section id="idea" title="The idea" lede="It is a rabbit nose, not a rabbit head.">
+	<Section
+		id="idea"
+		index="02"
+		accent="tertiary"
+		title="The idea"
+		lede="It is a rabbit nose, not a rabbit head."
+	>
+		<div class="idea">
+			<div class="idea-art">
+				<Mark variant={hero} size="min(38vw, 8.5rem)" key="idea" />
+			</div>
+			<div class="idea-copy">
+				<p>
+					The Y of a rabbit's philtrum is the whole logic. Reduce it, mirror it, thicken it into an
+					inner curve, then let a lower curl carry the whisker pad.
+				</p>
+				<p class="idea-rule">{logoStory.rule}</p>
+			</div>
+		</div>
+
 		<ol class="steps">
 			{#each logoStory.steps as step (step.n)}
 				<li>
@@ -215,7 +236,6 @@
 				</li>
 			{/each}
 		</ol>
-		<p class="idea-rule">{logoStory.rule}</p>
 	</Section>
 {/if}
 
@@ -223,6 +243,8 @@
 
 <Section
 	id="logo"
+	index="03"
+	accent="primary"
 	title="Logo"
 	lede="Most of the time it is just the mark, in one colour, on whatever it is sitting on."
 >
@@ -328,7 +350,13 @@
 <!-- ─── Business card ──────────────────────────────────────────────────── -->
 
 {#if hero}
-	<Section id="card" title="Business card" lede="Front and back. Nothing fancy.">
+	<Section
+		id="card"
+		index="04"
+		accent="accent"
+		title="Business card"
+		lede="Front and back. Nothing fancy."
+	>
 		<BusinessCard variant={hero} />
 	</Section>
 {/if}
@@ -337,6 +365,8 @@
 
 <Section
 	id="rules"
+	index="05"
+	accent="tertiary"
 	title="Don't"
 	lede="A short list, and most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
 >
@@ -374,7 +404,13 @@
 
 <!-- ─── Assets ─────────────────────────────────────────────────────────── -->
 
-<Section id="assets" title="Assets" lede="Grab the palette however you need it.">
+<Section
+	id="assets"
+	index="06"
+	accent="secondary"
+	title="Assets"
+	lede="Grab the palette however you need it."
+>
 	{#snippet actions()}
 		<DownloadButton
 			filename={active.filename}
@@ -427,7 +463,7 @@
 		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
 		gap: clamp(var(--space-6), 5vw, var(--space-8));
 		align-items: center;
-		padding-block: clamp(var(--space-6), 7vw, 5rem);
+		padding-block: clamp(var(--space-6), 6vw, 4.5rem) clamp(var(--space-6), 6vw, 4rem);
 	}
 
 	.eyebrow {
@@ -463,10 +499,13 @@
 		color: var(--fg-muted);
 	}
 
+	/* Between the two extremes: a rule in warning, and full-strength text. */
 	.notice {
-		margin: var(--space-4) 0 0;
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
+		padding-left: var(--space-3);
+		margin: var(--space-5) 0 0;
+		font-size: var(--text-base);
+		color: var(--brand-foreground);
+		border-left: 2px solid var(--brand-warning);
 	}
 
 	.hero-mark {
@@ -494,7 +533,7 @@
 
 	/* ── groups ── */
 	.group + .group {
-		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+		margin-top: clamp(var(--space-6), 4vw, var(--space-8));
 	}
 
 	.group-head h3 {
@@ -517,7 +556,7 @@
 	.group-head p {
 		max-width: 68ch;
 		margin: var(--space-2) 0 0;
-		font-size: var(--text-sm);
+		font-size: var(--text-base);
 		color: var(--fg-muted);
 	}
 
@@ -530,12 +569,26 @@
 
 	.mods {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-		gap: var(--space-2) var(--space-5);
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+		gap: var(--space-1) var(--space-6);
 		padding: 0;
 		margin: var(--space-5) 0 0;
-		font-size: var(--text-sm);
+		font-size: var(--text-base);
 		list-style: none;
+	}
+
+	.mods li {
+		display: grid;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+		gap: var(--space-3);
+		align-items: baseline;
+		padding: var(--space-2) 0;
+		border-top: 1px solid var(--hairline);
+	}
+
+	.mods code {
+		font-weight: 700;
+		color: var(--brand-secondary);
 	}
 
 	.warn {
@@ -635,6 +688,11 @@
 	}
 
 	/* ── cottontail feature ── */
+	/* Followed by a .group, which only spaces itself after another .group. */
+	.cotton + .group {
+		margin-top: clamp(var(--space-6), 5vw, var(--space-8));
+	}
+
 	.cotton {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
@@ -659,15 +717,20 @@
 	.cotton h3 {
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: var(--text-xl);
+		font-size: var(--text-2xl);
 		font-weight: 700;
+		color: var(--brand-cottontail);
 	}
 
 	.cotton-copy p {
-		max-width: 56ch;
+		max-width: 62ch;
 		margin: var(--space-3) 0 0;
-		font-size: var(--text-sm);
+		font-size: var(--text-base);
 		color: var(--fg-muted);
+	}
+
+	.cotton-hex {
+		font-size: var(--text-sm) !important;
 	}
 
 	.cotton-hex code {
@@ -675,6 +738,30 @@
 	}
 
 	/* ── the idea ── */
+
+	.idea {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: clamp(var(--space-5), 5vw, var(--space-8));
+		align-items: center;
+		padding: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-bottom: var(--space-5);
+		/* The darkest shade — the panel that made the mark read, kept. */
+		background: var(--brand-bg_darkest);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	.idea-art {
+		color: var(--brand-primary);
+	}
+
+	.idea-copy p {
+		max-width: 56ch;
+		margin: 0;
+		font-size: var(--text-lg);
+		line-height: 1.55;
+	}
 
 	.steps {
 		display: grid;
@@ -686,9 +773,9 @@
 	}
 
 	.idea-rule {
-		margin: var(--space-5) 0 0;
-		font-size: var(--text-lg);
-		color: var(--brand-primary);
+		margin: var(--space-4) 0 0 !important;
+		font-size: var(--text-base) !important;
+		color: var(--brand-tertiary);
 	}
 
 	.steps li {
@@ -713,7 +800,7 @@
 	}
 
 	.step-body {
-		font-size: var(--text-sm);
+		font-size: var(--text-base);
 		color: var(--fg-muted);
 	}
 
@@ -1053,7 +1140,8 @@
 
 		/* Both of these were two-column at every width, including 360px. */
 		.seed,
-		.cotton {
+		.cotton,
+		.idea {
 			grid-template-columns: minmax(0, 1fr);
 		}
 

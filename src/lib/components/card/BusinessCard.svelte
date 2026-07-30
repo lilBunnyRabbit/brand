@@ -27,25 +27,29 @@
 			</div>
 
 			<!-- Back: the mark, centred, nothing else. -->
-			<div class="face back" style="background: {row.groundCss}; color: {row.inkCss};">
-				<Mark {variant} size="26%" ink="currentColor" key="back-{row.id}" />
+			<div class="face" style="background: {row.groundCss}; color: {row.inkCss};">
+				<div class="inner back">
+					<Mark {variant} size="30%" ink="currentColor" key="back-{row.id}" />
+				</div>
 			</div>
 
 			<!-- Front: mark top-left, name and role, details along the bottom. -->
 			<div
-				class="face front"
+				class="face"
 				style="background: {row.groundCss}; color: {row.inkCss}; --quiet: {row.quietCss};"
 			>
-				<Mark {variant} size="11%" ink="currentColor" key="front-{row.id}" />
-				<div class="who">
-					<p class="name">{card.name}</p>
-					<p class="role">{card.role}</p>
+				<div class="inner front">
+					<Mark {variant} size="13%" ink="currentColor" key="front-{row.id}" />
+					<div class="who">
+						<p class="name">{card.name}</p>
+						<p class="role">{card.role}</p>
+					</div>
+					<ul class="lines">
+						{#each card.lines as line (line.label)}
+							<li class:placeholder={line.placeholder}>{line.value}</li>
+						{/each}
+					</ul>
 				</div>
-				<ul class="lines">
-					{#each card.lines as line (line.label)}
-						<li class:placeholder={line.placeholder}>{line.value}</li>
-					{/each}
-				</ul>
 			</div>
 		</div>
 	{/each}
@@ -58,12 +62,12 @@
 <style>
 	.sheet {
 		display: grid;
-		gap: var(--space-5);
+		gap: var(--space-6);
 	}
 
 	.row {
 		display: grid;
-		grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-columns: 5rem minmax(0, 1fr) minmax(0, 1fr);
 		gap: var(--space-4);
 		align-items: center;
 	}
@@ -76,21 +80,37 @@
 
 	.code {
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
+		font-size: var(--text-xs);
 		letter-spacing: 0.14em;
 		color: var(--fg-muted);
 	}
 
 	.label {
-		font-size: var(--text-sm);
+		font-size: var(--text-base);
 		font-weight: 700;
 	}
 
+	/*
+		The aspect box governs, and its content is taken out of flow so it cannot push it taller.
+
+		This was the bug: with the content in normal flow, a flex column plus `margin-top: auto` grew
+		past the 85/55 box and the front rendered nearly square. `aspect-ratio` yields to content
+		unless the content cannot contribute height — hence `position: absolute` on the inner layer
+		and `overflow: hidden` on the box.
+	*/
 	.face {
+		position: relative;
 		container-type: inline-size;
 		aspect-ratio: var(--ratio);
+		overflow: hidden;
 		border-radius: var(--radius-md);
-		box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.6);
+		box-shadow: 0 12px 28px -16px rgb(0 0 0 / 0.65);
+	}
+
+	.inner {
+		position: absolute;
+		inset: 0;
+		padding: 8cqi;
 	}
 
 	.back {
@@ -98,53 +118,49 @@
 		place-items: center;
 	}
 
-	/*
-		A card is mostly margin. 9% of the width on every side leaves the type sitting in from the trim
-		rather than crowding it, and `cqi` keeps that true at any rendered size.
-	*/
 	.front {
-		display: flex;
-		flex-direction: column;
-		gap: 5cqi;
-		padding: 9cqi;
+		display: grid;
+		grid-template-rows: auto 1fr auto;
 	}
 
 	.who {
-		margin-top: auto;
+		align-self: end;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 11cqi;
+		font-size: 12cqi;
 		font-weight: 700;
 		line-height: 1;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.03em;
 	}
 
 	.role {
-		margin: 2cqi 0 0;
-		font-size: 4cqi;
+		margin: 1.5cqi 0 0;
+		font-size: 4.4cqi;
+		line-height: 1.2;
 		color: var(--quiet);
 	}
 
 	.lines {
 		display: grid;
-		gap: 1.4cqi;
+		gap: 1.2cqi;
 		padding: 0;
 		margin: 0;
-		font-size: 4cqi;
-		line-height: 1.3;
-		color: var(--quiet);
+		font-size: 4.4cqi;
+		line-height: 1.25;
 		list-style: none;
+		color: var(--quiet);
 	}
 
 	.placeholder {
 		text-decoration: line-through;
-		text-decoration-thickness: 1px;
+		text-decoration-thickness: 0.6cqi;
+		text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 	}
 
 	.note {
-		margin: var(--space-5) 0 0;
+		margin: var(--space-6) 0 0;
 		font-size: var(--text-sm);
 		color: var(--fg-muted);
 	}
@@ -162,10 +178,7 @@
 		}
 	}
 
-	/*
-		Below this, two cards share the width and each face is under 160px — at 4cqi the contact lines
-		render around 6px. One card per row instead, so the front is legible at the size it is shown.
-	*/
+	/* Two faces sharing a phone width put the contact lines near 6px. One per row instead. */
 	@media (max-width: 620px) {
 		.row {
 			grid-template-columns: minmax(0, 1fr);
