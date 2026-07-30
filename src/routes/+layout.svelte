@@ -78,6 +78,27 @@
 			onLight = box.top < PERCH_BOTTOM && box.bottom > 0;
 		}
 	}
+
+	/*
+		The mobile nav strip scrolls, but its scrollbar is hidden — so nothing says it scrolls, and the
+		last item cut mid-letter reads as a broken layout rather than "more this way". These two flags
+		drive an edge fade on whichever side still has content past it: the affordance the scrollbar
+		used to be.
+
+		4px of slack, not 0 — subpixel scroll positions never quite reach the mathematical end.
+	*/
+	let navEl: HTMLElement | undefined = $state();
+	let navLeft = $state(false);
+	let navRight = $state(false);
+
+	function onNavScroll() {
+		if (!navEl) return;
+		navLeft = navEl.scrollLeft > 4;
+		navRight = navEl.scrollLeft + navEl.clientWidth < navEl.scrollWidth - 4;
+	}
+
+	// The initial measurement — scroll events only cover what happens after mount.
+	$effect(onNavScroll);
 </script>
 
 <svelte:head>
@@ -91,7 +112,7 @@
 	<meta name="theme-color" content={onLight ? light.background.hex : dark.background.hex} />
 </svelte:head>
 
-<svelte:window onscroll={onScroll} />
+<svelte:window onscroll={onScroll} onresize={onNavScroll} />
 
 <Announcer />
 
@@ -118,7 +139,19 @@
 	</a>
 {/if}
 
-<header class="bar" class:is-hidden={hidden} class:is-scrolled={scrolled}>
+<!--
+	`data-theme` for the same reason the perch carries it: the bar is sticky, so it sits OUTSIDE the
+	light region and would stay a dark slab over the cream. Desktop never shows this — the bar only
+	returns at the top of the page, which is dark — but the mobile bar stays put, and it should read
+	as the light region's chrome while it is over it. Every token inside re-resolves; the translucent
+	ground mixes from the re-scoped `--brand-background` on its own.
+-->
+<header
+	class="bar"
+	class:is-hidden={hidden}
+	class:is-scrolled={scrolled}
+	data-theme={onLight ? 'light' : undefined}
+>
 	<div class="inner">
 		<a class="brand" href={home()}>
 			{#if mark}
@@ -127,7 +160,13 @@
 			{/if}
 			<span class="wordmark">{meta.name}</span>
 		</a>
-		<nav aria-label="Sections">
+		<nav
+			aria-label="Sections"
+			bind:this={navEl}
+			onscroll={onNavScroll}
+			class:has-left={navLeft}
+			class:has-right={navRight}
+		>
 			{#each links as link (link.id)}
 				<a href={link.href}>{link.label}</a>
 			{/each}
@@ -158,15 +197,28 @@
 	}
 
 	.bar {
+		--bar-ground: color-mix(in srgb, var(--brand-background) 82%, transparent);
+
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		background: color-mix(in srgb, var(--brand-background) 82%, transparent);
+		background: var(--bar-ground);
 		border-bottom: 1px solid transparent;
 		backdrop-filter: blur(12px) saturate(150%);
 		transition:
 			transform var(--dur) var(--ease),
-			border-color var(--dur) var(--ease);
+			border-color var(--dur) var(--ease),
+			background-color var(--dur) var(--ease),
+			color var(--dur) var(--ease);
+	}
+
+	/*
+		Re-stated at higher specificity because `app.css` gives every light scope an OPAQUE ground, and
+		which declaration wins a specificity tie is stylesheet order — not something to build on. The
+		var already re-resolves inside the scope, so this is the same translucent mix over cream.
+	*/
+	.bar[data-theme='light'] {
+		background: var(--bar-ground);
 	}
 
 	/* The hairline only appears once there is something to separate from. */
@@ -272,15 +324,52 @@
 			flex: 1 0 100%;
 		}
 
+		/*
+			The collapsed strip is still a flex item, so the row gap above its zero-height line kept
+			padding the bar's underside — 12px of padding on top, 12px + the gap below. Collapse the gap
+			with the strip, and transition it so the bar's height glides instead of stepping twice.
+		*/
+		.inner {
+			transition: row-gap var(--dur) var(--ease);
+		}
+
+		.bar.is-hidden .inner {
+			row-gap: 0;
+		}
+
+		/*
+			The edge fade. The scrollbar is hidden, so the fade is the only thing saying "more this way" —
+			each side fades only while content is actually past it, driven by the `has-*` classes from the
+			scroll handler. With both vars at 0px the gradient is a hard stop at each end: fully opaque,
+			no mask at all.
+		*/
 		nav {
+			--fade-left: 0px;
+			--fade-right: 0px;
+
 			flex: 1 0 100%;
 			max-height: 2.5rem;
 			overflow-x: auto;
 			scrollbar-width: none;
+			mask-image: linear-gradient(
+				to right,
+				transparent,
+				#000 var(--fade-left),
+				#000 calc(100% - var(--fade-right)),
+				transparent
+			);
 			transition:
 				max-height var(--dur) var(--ease),
 				opacity var(--dur) var(--ease);
 			-webkit-overflow-scrolling: touch;
+		}
+
+		nav.has-left {
+			--fade-left: var(--space-6);
+		}
+
+		nav.has-right {
+			--fade-right: var(--space-6);
 		}
 
 		nav::-webkit-scrollbar {

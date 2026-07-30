@@ -140,22 +140,6 @@
 		}
 	}
 
-	@media (max-width: 720px) {
-		.detail {
-			text-align: center;
-		}
-
-		.heading,
-		.actions {
-			justify-content: center;
-		}
-
-		.desc,
-		.file {
-			margin-inline: auto;
-		}
-	}
-
 	@media (max-width: 440px) {
 		/* Two tiles at 200px each crowd the mark; one per row instead. */
 		.grounds {

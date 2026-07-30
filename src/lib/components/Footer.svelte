@@ -67,5 +67,13 @@
 			flex-direction: column;
 			align-items: flex-start;
 		}
+
+		/*
+			Stacked under the paragraph, the first link's own tap padding indents "GitHub" past the text
+			column's left edge. Pull the row back by that padding so the link TEXT lines up with the prose.
+		*/
+		nav {
+			margin-inline-start: calc(-1 * var(--space-3));
+		}
 	}
 </style>

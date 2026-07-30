@@ -1060,8 +1060,13 @@
 		`header` is the exclusion because `Section` renders one, and the head-to-content gap is
 		`--stack-sm` and belongs to the header. Adjacent margins collapse, so a predecessor that already
 		carries its own bottom gap does not double up.
+
+		`:global()` on the predecessor because Svelte scopes BOTH compounds of a sibling pair, and a
+		child component's root element (`LogoRow`'s `<article>`) never carries this file's scope class —
+		so "whatever precedes it" quietly excluded every component, and Which colour sat welded to the
+		logo row's buttons.
 	*/
-	:not(header) + .group {
+	:global(:not(header)) + .group {
 		margin-top: var(--stack);
 	}
 
@@ -2085,14 +2090,25 @@
 			gap: var(--space-5);
 		}
 
-		.ladder,
-		.vision {
-			justify-items: center;
-		}
-
 		.ladder {
 			justify-content: center;
 			gap: var(--space-4);
+		}
+
+		/*
+			`.vision` used to be centred alongside the ladder here, which shrank each card to its caption
+			and left dead space either side. Default stretch is the fix: the cards read as the grid they
+			are, and the orphan fifth keeps its track width and the page's left edge.
+		*/
+
+		/*
+			Four sizes across one phone row wrapped 2-1-1, which is three objects and a stray rather than
+			one object growing. A column keeps the reading: smallest to largest, top to bottom.
+		*/
+		.wm-sizes {
+			flex-direction: column;
+			gap: var(--space-4);
+			align-items: flex-start;
 		}
 
 		.steps li,

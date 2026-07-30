@@ -357,9 +357,14 @@
 		`overscroll-behavior: contain` so reaching the end of the list does not hand the rest of the gesture
 		to the page behind — the page is locked while the sheet is open (see `app.css`), but without this the
 		scroll chains anyway on a trackpad and the whole document jumps.
+
+		`minmax(0, 1fr)` because the implicit auto track sizes to the widest row's min-content, which on a
+		narrow sheet is wider than the sheet itself — every row overflows sideways and the `.rv` ellipsis
+		never gets a chance to act.
 	*/
 	.rows {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		min-height: 0;
 		overflow-y: auto;
 		overscroll-behavior: contain;
