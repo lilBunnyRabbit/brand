@@ -351,11 +351,18 @@
 		opacity: 1;
 	}
 
-	/* `min-height: 0` so the flex child is allowed to be shorter than its content and scroll. */
+	/*
+		`min-height: 0` so the flex child is allowed to be shorter than its content and scroll.
+
+		`overscroll-behavior: contain` so reaching the end of the list does not hand the rest of the gesture
+		to the page behind — the page is locked while the sheet is open (see `app.css`), but without this the
+		scroll chains anyway on a trackpad and the whole document jumps.
+	*/
 	.rows {
 		display: grid;
 		min-height: 0;
 		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.row {

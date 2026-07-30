@@ -235,6 +235,26 @@
 html {
 	/* Nothing may scroll the page sideways. Wide children get their own overflow container. */
 	overflow-x: hidden;
+	/*
+		Reserve the scrollbar's width permanently, so locking the page below a modal does not widen it by
+		15px on every platform with classic scrollbars.
+	*/
+	scrollbar-gutter: stable;
+}
+
+/*
+	Lock the page while a modal is open.
+
+	`showModal()` makes everything outside the dialog INERT — unfocusable, unclickable — but inertness
+	says nothing about scrolling, so the page underneath still scrolls under the cursor. That is a
+	platform gap rather than a bug in the dialog, and every dialog in this tree has it.
+
+	`:has()` rather than a class toggled from JavaScript: the open state already lives on the element as
+	`[open]`, so deriving from it cannot go stale, and nothing has to be undone on close. It is also why
+	this rule is global — the dialogs are inside a scoped component, and only `html` can stop the page.
+*/
+html:has(dialog[open]) {
+	overflow: hidden;
 }
 
 body {
