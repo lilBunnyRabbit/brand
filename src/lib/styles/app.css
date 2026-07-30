@@ -68,6 +68,7 @@
 	--font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
 
 	--ease: cubic-bezier(0.32, 0.72, 0, 1);
+	--ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 	--dur-fast: 150ms;
 	--dur: 260ms;
 
@@ -109,6 +110,32 @@
 
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
+}
+
+/*
+	Registered custom properties, so a transition can interpolate them as NUMBERS.
+
+	This is what lets the derivation animate honestly: `background: oklch(var(--l) var(--c) var(--h))`
+	morphs through real OKLCH space along the same channels the palette is defined in, rather than
+	cross-fading two flat hexes. Without @property the vars are unanimatable strings and the colours
+	simply jump to their final values — which is a correct, if duller, fallback.
+*/
+@property --l {
+	syntax: '<number>';
+	inherits: false;
+	initial-value: 0.255;
+}
+
+@property --c {
+	syntax: '<number>';
+	inherits: false;
+	initial-value: 0.0233;
+}
+
+@property --h {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 230.47deg;
 }
 
 *,

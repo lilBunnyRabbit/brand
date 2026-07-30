@@ -267,6 +267,80 @@ export const generations: { gen: number; title: string; blurb: string; steps: St
 	}
 ];
 
+/* ── the animation: channel targets and stagger ───────────────────────── */
+
+export interface GrowStep extends Step {
+	/** Target channels, for the CSS transition to land on. */
+	l: number;
+	c: number;
+	h: number;
+	hex: string;
+	/** Seconds before this chip starts moving. */
+	delay: number;
+	/** Seconds it takes. */
+	duration: number;
+}
+
+/**
+ * The recipe with channel targets and a stagger, so the whole palette can be watched growing out of
+ * the seed.
+ *
+ * Generations move in waves, and within a wave the shades step outward from the middle rather than
+ * top-to-bottom — so the ladder opens like a fan from the seed instead of unrolling.
+ */
+export const growSteps: GrowStep[] = (() => {
+	const orderInGen = new Map<number, number>();
+	return recipe.map((step) => {
+		const seen = orderInGen.get(step.gen) ?? 0;
+		orderInGen.set(step.gen, seen + 1);
+		const colour = swatches[step.name];
+		return {
+			...step,
+			l: colour.l,
+			c: colour.c,
+			h: colour.h,
+			hex: colour.hex,
+			delay: Number((seen * 0.07).toFixed(3)),
+			duration: 0.9
+		};
+	});
+})();
+
+/** Longest a single wave takes, so the stepper knows when to advance. */
+export const waveDuration = Math.max(...growSteps.map((s) => s.delay + s.duration));
+
+/**
+ * The stages, each with the one sentence that explains the move being watched.
+ *
+ * Deliberately narrated rather than labelled: the point of animating this is that you see one
+ * colour become seventeen, and a caption per beat is what turns a grid of transitions into a
+ * sequence with a plot.
+ */
+export const stages: { gen: number; kicker: string; line: string }[] = [
+	{
+		gen: 0,
+		kicker: 'One colour',
+		line: 'Everything starts here. Picked once, by hand — the only one.'
+	},
+	{
+		gen: 1,
+		kicker: 'Step it',
+		line: 'Lightness up and down in equal steps, chroma following in proportion. Six shades, and one inversion for text.'
+	},
+	{
+		gen: 2,
+		kicker: 'Turn it',
+		line: "Foreground's lightness, three seeds of chroma, seventy-two degrees round. This one becomes the hub."
+	},
+	{
+		gen: 3,
+		kicker: 'Fan it out',
+		line: 'Same lightness, rotated hues, chroma in whole multiples of the seed. One, two, four — then six for the states. Never five.'
+	}
+];
+
+export const lastStage = stages.length - 1;
+
 /** The chroma ranks that exist, for the pip legend. 5 is deliberately absent. */
 export const pipRanks = [
 	...new Set(recipe.map((s) => s.pips).filter((p): p is number => p !== null))

@@ -3,6 +3,10 @@ import { describe, expect, it } from 'bun:test';
 import {
 	allNodes,
 	generations,
+	lastStage,
+	stages,
+	waveDuration,
+	growSteps,
 	ladderGamutFractions,
 	pipRanks,
 	recipe,
@@ -81,5 +85,58 @@ describe('the derivation plot', () => {
 			expect(n.how.length).toBeGreaterThan(10);
 			expect(n.how.endsWith('.')).toBe(true);
 		}
+	});
+});
+
+describe('the grow animation', () => {
+	it('every chip has a channel target matching its swatch', () => {
+		for (const step of growSteps) {
+			const c = swatches[step.name];
+			expect(step.l).toBeCloseTo(c.l, 9);
+			expect(step.c).toBeCloseTo(c.c, 9);
+			expect(step.h).toBeCloseTo(c.h, 9);
+			expect(step.hex).toBe(c.hex);
+		}
+	});
+
+	it('a colour is never revealed before its parent', () => {
+		const genOf = new Map(growSteps.map((s) => [s.name, s.gen]));
+		for (const step of growSteps) {
+			if (!step.parent) continue;
+			expect(genOf.get(step.parent)!).toBeLessThan(step.gen);
+		}
+	});
+
+	it('a wave lands in about a second, so the sequence is watchable', () => {
+		expect(waveDuration).toBeGreaterThan(0.8);
+		expect(waveDuration).toBeLessThan(2.5);
+	});
+
+	it('delays are clean numbers, not float noise', () => {
+		for (const step of growSteps) {
+			expect(String(step.delay).length).toBeLessThan(6);
+		}
+	});
+
+	it('there is one narrated stage per generation', () => {
+		expect(stages.length).toBe(4);
+		expect(lastStage).toBe(3);
+		expect(stages.map((s) => s.gen)).toEqual([0, 1, 2, 3]);
+		for (const s of stages) {
+			expect(s.kicker.length).toBeGreaterThan(3);
+			expect(s.line.endsWith('.')).toBe(true);
+		}
+		// Every colour belongs to a stage that exists.
+		const gens = new Set(stages.map((s) => s.gen));
+		for (const step of growSteps) expect(gens.has(step.gen)).toBe(true);
+	});
+
+	it('the seed is stage zero and has nowhere to travel', () => {
+		const seed = growSteps.find((s) => s.name === 'background')!;
+		expect(seed.gen).toBe(0);
+		expect(seed.delay).toBe(0);
+		expect(seed.l).toBeCloseTo(swatches.background.l, 9);
+		expect(seed.c).toBeCloseTo(swatches.background.c, 9);
+		expect(seed.h).toBeCloseTo(swatches.background.h, 9);
 	});
 });
