@@ -100,6 +100,24 @@
 	--dur-fast: 150ms;
 	--dur: 260ms;
 
+	/*
+		The vertical rhythm. THREE steps, and every block-level gap on the page is one of them.
+
+		This exists because the page had grown five spellings of the same idea — `clamp(6, 4vw, 8)`,
+		`clamp(6, 5vw, 8)`, `clamp(6, 6vw, 4rem)`, a flat `--space-8` and a flat `--space-5` — all meaning
+		"a gap between two blocks". They diverge most at the widths nobody tests, which is exactly why some
+		sections read as more generously spaced than others.
+
+		  --stack-section  between sections, and around anything sitting at section level
+		  --stack          between blocks inside a section
+		  --stack-sm       head to content, and before a trailing note
+
+		Anything tighter than these is a gap WITHIN one block and belongs to that block.
+	*/
+	--stack-section: clamp(var(--space-6), 6vw, 4.5rem);
+	--stack: clamp(var(--space-6), 4vw, var(--space-8));
+	--stack-sm: clamp(var(--space-5), 4vw, var(--space-6));
+
 	--measure: 1140px;
 	/* Sticky-header height, so section anchors do not land underneath it. */
 	--header-h: 4rem;

@@ -46,7 +46,7 @@
 			up to 192px of dead space, which is what made the rhythm look broken. The next section's
 			top padding is the gap.
 		*/
-		padding-block: clamp(var(--space-6), 6vw, 4.5rem) 0;
+		padding-block: var(--stack-section) 0;
 		/* Anchors must not land under the sticky header. */
 		scroll-margin-top: calc(var(--header-h) + var(--space-4));
 	}
@@ -57,7 +57,7 @@
 		gap: var(--space-5);
 		align-items: flex-end;
 		justify-content: space-between;
-		margin-bottom: clamp(var(--space-5), 3vw, var(--space-6));
+		margin-bottom: var(--stack-sm);
 	}
 
 	.index {

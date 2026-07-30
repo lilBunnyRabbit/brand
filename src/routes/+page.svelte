@@ -636,8 +636,6 @@
 	variant, because both palettes carry the same 17 keys.
 -->
 <ThemeScope theme="light" id="light-region">
-	<div class="seam" aria-hidden="true"></div>
-
 	<div class="measure">
 		<Section
 			id="light"
@@ -795,7 +793,7 @@
 		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
 		gap: clamp(var(--space-6), 5vw, var(--space-8));
 		align-items: center;
-		padding-block: clamp(var(--space-6), 6vw, 4.5rem) clamp(var(--space-6), 6vw, 4rem);
+		padding-block: var(--stack-section);
 	}
 
 	.eyebrow {
@@ -824,13 +822,6 @@
 		line-height: 1.55;
 	}
 
-	.claim {
-		max-width: 46ch;
-		margin: var(--space-4) 0 0;
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
-	}
-
 	/* Between the two extremes: a rule in warning, and full-strength text. */
 	.notice {
 		padding-left: var(--space-3);
@@ -845,30 +836,12 @@
 		place-items: center;
 	}
 
-	/* ── contract banner ── */
-	.contract {
-		padding: var(--space-4) var(--space-5);
-		margin-bottom: var(--space-8);
-		border: 1px solid var(--brand-error);
-		border-radius: var(--radius-md);
-	}
-
-	.contract.holds {
-		border-color: var(--brand-success);
-	}
-
-	.contract p {
-		max-width: 78ch;
-		margin: 0;
-		font-size: var(--text-sm);
-	}
-
 	/* ── groups ── */
 
 	/* `.cotton` too: Modifiers follows it directly and was sitting on its outline. */
 	.group + .group,
 	.cotton + .group {
-		margin-top: clamp(var(--space-6), 4vw, var(--space-8));
+		margin-top: var(--stack);
 	}
 
 	.group-head h3 {
@@ -911,7 +884,7 @@
 
 	/* ── parked experiment ── */
 	.stash {
-		margin-top: clamp(var(--space-6), 6vw, 4rem);
+		margin-top: var(--stack-section);
 	}
 
 	.stash summary {
@@ -990,7 +963,7 @@
 		display: inline-flex;
 		gap: var(--space-2);
 		align-items: center;
-		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: var(--stack-sm);
 		font-size: var(--text-sm);
 		font-weight: 600;
 		color: var(--brand-primary);
@@ -1006,12 +979,18 @@
 	}
 
 	/*
-		The light half's own descent — the same shade ladder `body` runs in the dark half, at the same stop
-		positions, written with the same `var(--brand-*)` names. This element carries `data-theme="light"`,
-		so those names resolve to the light seven: one authored ramp, both modes.
+		The light half's descent. Two changes from the version that read as flat, and the second is the one
+		that mattered.
 
-		Region-mapped rather than `background-attachment: fixed` like `body`'s, because it belongs to this
-		band rather than to the viewport — it starts on cream exactly where the cut is.
+		`fixed`, exactly like `body`'s. This was the actual bug: `body`'s ramp is viewport-mapped, so every
+		screenful of the dark half shows the WHOLE descent top to bottom. This one was region-mapped over a
+		region four screens tall, so a viewport only ever saw a quarter of it — which is both why it looked
+		weaker and why it appeared to darken as you scrolled while the dark half held still.
+
+		And the FULL ladder rather than `body`'s stop list. Measured, the same tokens dark uses would give
+		1.462:1 here against dark's own 1.243:1 — already the stronger ramp of the two, which is worth
+		knowing before reaching for a shade outside the palette. `background_lightest` (white) down to
+		`background_darkest` takes it to 1.719:1, and every stop is still a real token.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
 		child would sit on cream rather than on the page.
@@ -1022,24 +1001,14 @@
 	:global(#light-region) {
 		background-image: linear-gradient(
 			180deg,
-			var(--brand-background) 0%,
-			var(--brand-background) 22%,
-			var(--brand-background_dark) 52%,
-			var(--brand-background_darker) 78%,
+			var(--brand-background_lightest) 0%,
+			var(--brand-background_light) 26%,
+			var(--brand-background) 48%,
+			var(--brand-background_dark) 68%,
+			var(--brand-background_darker) 84%,
 			var(--brand-background_darkest) 100%
 		);
-	}
-
-	/*
-		The cut. One line of dark's primary, and nothing graded on either side of it.
-
-		See `seamColor()` in `brand/tokens.ts` for why every graded version of this transition was doomed
-		rather than merely badly tuned — the short version is that the two grounds are 150° of hue apart, so
-		the middle of any ramp between them is a colour that is in neither palette.
-	*/
-	.seam {
-		height: var(--seam-h);
-		background: var(--seam);
+		background-attachment: fixed;
 	}
 
 	/* ── light: the statement ── */
@@ -1075,7 +1044,7 @@
 		gap: clamp(var(--space-5), 4vw, var(--space-8));
 		align-items: start;
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-bottom: clamp(var(--space-6), 5vw, var(--space-8));
+		margin-bottom: var(--stack);
 		background: var(--surface-well);
 		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
@@ -1122,7 +1091,7 @@
 		gap: clamp(var(--space-5), 5vw, var(--space-8));
 		align-items: center;
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-bottom: var(--space-5);
+		margin-bottom: var(--stack);
 		/* The darkest shade — the panel that made the mark read, kept. */
 		background: var(--brand-background_darkest);
 		border: 1px solid var(--hairline);
@@ -1265,10 +1234,6 @@
 		border-radius: 50%;
 	}
 
-	.quiet {
-		color: var(--fg-muted);
-	}
-
 	/*
 		── size ladder ──
 
@@ -1341,7 +1306,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 		gap: var(--space-5);
-		margin-bottom: var(--space-8);
+		margin-bottom: var(--stack);
 	}
 
 	.demo p {
@@ -1562,8 +1527,7 @@
 			order: -1;
 		}
 
-		.lede,
-		.claim {
+		.lede {
 			margin-inline: auto;
 		}
 
@@ -1755,7 +1719,7 @@
 		display: grid;
 		gap: clamp(var(--space-4), 3vw, var(--space-5));
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
-		margin-block: clamp(var(--space-6), 5vw, var(--space-8));
+		margin-block: var(--stack);
 		background: var(--surface-well);
 		border-radius: var(--radius-lg);
 		outline: 2px solid var(--brand-cottontail);
@@ -1896,7 +1860,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
 		gap: var(--space-4) clamp(var(--space-5), 4vw, var(--space-8));
-		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: var(--stack-sm);
 	}
 
 	.verdict-list {
@@ -2002,7 +1966,7 @@
 	.moves {
 		display: grid;
 		gap: var(--space-3);
-		margin-top: clamp(var(--space-5), 4vw, var(--space-6));
+		margin-top: var(--stack-sm);
 	}
 
 	.move {
@@ -2063,7 +2027,7 @@
 
 	.closing {
 		max-width: 66ch;
-		margin: clamp(var(--space-5), 4vw, var(--space-6)) 0 0;
+		margin: var(--stack-sm) 0 0;
 		font-size: var(--text-base);
 		line-height: 1.6;
 		color: var(--fg-muted);

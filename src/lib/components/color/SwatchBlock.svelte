@@ -88,18 +88,22 @@
 	</div>
 
 	<!--
+		The sheet is the card, opened up: the WHOLE dialog is the colour, and every row sits on it in the
+		card's own label ink. Nothing here is a document surface — a modal that reverted to page grey looked
+		like it belonged to a different component than the swatch you clicked.
+
 		Backdrop clicks: a click on `::backdrop` targets the dialog element itself, so comparing the target
 		against the element is the whole test. Escape and focus containment are already the platform's.
 	-->
 	<dialog
 		bind:this={sheet}
+		style="background: {swatch.hex}; color: var({swatch.labelVar});"
 		aria-label="{swatch.label} — every notation"
 		onclick={(event) => {
 			if (event.target === sheet) sheet.close();
 		}}
 	>
-		<!-- The head IS the swatch, same as the card face: the colour, the mark on it, the binary label. -->
-		<div class="sheet-head" style="background: {swatch.hex}; color: var({swatch.labelVar});">
+		<div class="sheet-head">
 			{#if variant}
 				<Mark {variant} size="1.6rem" ink="currentColor" key="sh-{swatch.token}" />
 			{/if}
@@ -267,9 +271,8 @@
 		Tailwind's preflight zeroes the margin on every element, which leaves the sheet pinned to the top
 		of the viewport instead.
 
-		The rest stops the sheet inheriting the plate: it is a child of the coloured card, so it would
-		otherwise render as text-on-swatch, a different dialog for every colour. The body is a document
-		surface and uses the document's own tokens; only the head is the colour.
+		The colour comes from the inline style, same as the card. Everything inside is `currentColor`
+		against it, so one binary label rule covers the whole sheet.
 	*/
 	dialog {
 		width: min(30rem, calc(100vw - 2 * var(--space-4)));
@@ -277,8 +280,6 @@
 		margin: auto;
 		padding: 0;
 		overflow: hidden;
-		color: var(--brand-foreground);
-		background: var(--surface-raised);
 		border: 0;
 		border-radius: var(--radius-lg);
 	}
@@ -287,7 +288,7 @@
 		background: color-mix(in srgb, #000 66%, transparent);
 	}
 
-	/* The card face again, at the top of its own sheet: the colour, the mark on it, the binary label. */
+	/* The card face again, at the top of its own sheet. */
 	.sheet-head {
 		display: flex;
 		gap: var(--space-4);
@@ -350,9 +351,14 @@
 		border: 0;
 	}
 
+	/*
+		A wash of the label colour, not a surface token — the row sits on the swatch, so the only colour
+		guaranteed to read on it is the one the binary label rule already picked. `--surface-edge` here was a
+		page shade landing on an arbitrary swatch.
+	*/
 	.row:hover,
 	.row.is-copied {
-		background: var(--surface-edge);
+		background: color-mix(in srgb, currentColor 16%, transparent);
 	}
 
 	.rl {
@@ -367,7 +373,7 @@
 		font-size: var(--text-xs);
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		color: var(--fg-muted);
+		opacity: 0.8;
 	}
 
 	.row.is-lib .rl {
@@ -382,6 +388,6 @@
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: var(--fg-muted);
+		opacity: 0.6;
 	}
 </style>

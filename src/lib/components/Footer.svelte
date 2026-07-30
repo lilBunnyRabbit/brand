@@ -23,7 +23,7 @@
 
 <style>
 	footer {
-		margin-top: clamp(var(--space-6), 6vw, 4rem);
+		margin-top: var(--stack-section);
 		border-top: 1px solid var(--hairline);
 	}
 
