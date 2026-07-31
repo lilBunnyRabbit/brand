@@ -19,7 +19,7 @@
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
 	import { wordmarks } from '$lib/brand/config/wordmarks';
-	import { faces, typeScale } from '$lib/brand/config/typography';
+	import { faces } from '$lib/brand/config/typography';
 	import { hueEvidence, hueMoves, lightUsage } from '$lib/brand/config/light-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
 	import { misuses } from '$lib/brand/config/misuse';
@@ -649,28 +649,6 @@
 					</div>
 				</div>
 			{/each}
-		</div>
-
-		<div class="group">
-			<div class="group-head">
-				<p>
-					Eight steps. The two largest are fluid so they fit a phone. The body sizes are fixed, so
-					the measure never moves.
-				</p>
-			</div>
-			<!-- Each row is set at its own step, so it demonstrates the value beside it. -->
-			<ul class="scale">
-				{#each typeScale as step (step.id)}
-					<li>
-						<span class="scale-sample" style="font-size: var(--text-{step.id});">Aa</span>
-						<span class="scale-meta">
-							<code>--text-{step.id}</code>
-							<span class="scale-value">{step.value}</span>
-							<span class="scale-use">{step.use}</span>
-						</span>
-					</li>
-				{/each}
-			</ul>
 		</div>
 	</Section>
 
@@ -1638,64 +1616,6 @@
 	.face-meta code {
 		font-family: var(--font-mono);
 		color: var(--brand-secondary);
-	}
-
-	.scale {
-		display: grid;
-		gap: 0;
-		padding: 0;
-		margin: var(--space-5) 0 0;
-		list-style: none;
-	}
-
-	/*
-		`auto`, not a fixed width, for the sample column.
-
-		It was `6rem`, which the two fluid steps do not fit in: "Aa" at `--text-hero` is about 9rem wide, so
-		it overflowed its own cell and printed on top of the token name beside it. A grid column is shared by
-		every row, so `auto` sizes the track to the largest sample and all eight labels still line up.
-	*/
-	.scale li {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: var(--space-4);
-		align-items: center;
-		padding-block: var(--space-3);
-	}
-
-	.scale li + li {
-		border-top: 1px solid var(--hairline);
-	}
-
-	.scale-sample {
-		font-weight: 700;
-		line-height: 1;
-		letter-spacing: -0.02em;
-	}
-
-	.scale-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-2) var(--space-4);
-		align-items: baseline;
-	}
-
-	.scale-meta code {
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		font-weight: 700;
-	}
-
-	.scale-value {
-		font-family: var(--font-mono);
-		font-size: var(--text-sm);
-		font-variant-numeric: tabular-nums;
-		color: var(--brand-secondary);
-	}
-
-	.scale-use {
-		font-size: var(--text-sm);
-		color: var(--fg-muted);
 	}
 
 	/* ── the name beside the mark ── */
