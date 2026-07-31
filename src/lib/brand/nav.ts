@@ -31,8 +31,8 @@ const SECTIONS = [
 	{ id: 'type', label: 'Type' },
 	{ id: 'card', label: 'Card' },
 	{ id: 'rules', label: "Don't" },
-	{ id: 'assets', label: 'Assets' },
-	{ id: 'light', label: 'Light' }
+	{ id: 'light', label: 'Light' },
+	{ id: 'assets', label: 'Assets' }
 ] as const;
 
 export type SectionId = (typeof SECTIONS)[number]['id'];

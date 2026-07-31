@@ -653,7 +653,6 @@
 
 		<div class="group">
 			<div class="group-head">
-				<h3>The ladder</h3>
 				<p>
 					Eight steps. The two largest are fluid so they fit a phone. The body sizes are fixed, so
 					the measure never moves.
@@ -761,60 +760,6 @@
 			</div>
 		{/if}
 	</Section>
-
-	<!-- ─── Assets ─────────────────────────────────────────────────────────── -->
-
-	<Section
-		id="assets"
-		index="08"
-		accent="secondary"
-		title="Assets"
-		lede="Grab the palette however you need it."
-	>
-		{#snippet actions()}
-			<DownloadButton
-				filename={active.filename}
-				content={() => rendered}
-				type={active.id === 'json' ? 'application/json' : 'text/plain'}
-				label="Download"
-			/>
-			<CopyButton
-				value={() => rendered}
-				label="Copy"
-				describe="the palette as {active.label}"
-				variant="solid"
-			/>
-		{/snippet}
-
-		<div class="formats" role="group" aria-label="Export format">
-			{#each exportFormats as f (f.id)}
-				<label class="fchip" class:is-on={format === f.id}>
-					<input type="radio" name="format" value={f.id} bind:group={format} />
-					{f.label}
-				</label>
-			{/each}
-		</div>
-
-		<!--
-		A native <details> rather than a fixed-height scroll box. A scrollable region has to be
-		keyboard-scrollable (WCAG 2.1.1), which means a tabindex on a non-interactive element — a
-		genuine a11y smell, not just a lint complaint. <details> gets focus, keyboard operation and
-		expanded state from the platform, and keeps a long dump from burying the page. Copy and
-		Download sit outside it, so nothing has to be expanded to be reachable.
-	-->
-		<details class="code">
-			<summary>
-				<span>{active.filename}</span>
-				<span class="lines">{rendered.trimEnd().split('\n').length} lines</span>
-			</summary>
-			<pre><code>{rendered}</code></pre>
-		</details>
-
-		<p class="sources">
-			Source SVGs live in the repo:
-			<a href={meta.assetsUrl}>{meta.assetsUrl.replace('https://github.com/', '')}</a>.
-		</p>
-	</Section>
 </div>
 
 <!-- ─── The threshold ──────────────────────────────────────────────────── -->
@@ -841,7 +786,7 @@
 	<div class="measure">
 		<Section
 			id="light"
-			index="09"
+			index="08"
 			accent="primary"
 			title="Light mode"
 			lede="It exists because interfaces need it. It is not the brand."
@@ -879,7 +824,7 @@
 		-->
 		<Section
 			id="light-colour"
-			index="10"
+			index="09"
 			accent="secondary"
 			title="Seventeen twins"
 			lede="Same names, same groups, same order, and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
@@ -916,7 +861,7 @@
 
 		<Section
 			id="light-orange"
-			index="11"
+			index="10"
 			accent="accent"
 			title="The orange one"
 			lede="Everything else is a twin. The primary changed hue. That was measured, not chosen."
@@ -969,7 +914,7 @@
 
 		<Section
 			id="light-logo"
-			index="12"
+			index="11"
 			accent="tertiary"
 			title="The mark on paper"
 			lede="The same five combinations, in the light palette."
@@ -990,6 +935,64 @@
 				{combos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 in dark, and it
 				loses more than that in greyscale. Still a logotype, still exempt. When you cannot control
 				the reproduction, use the neutral pair.
+			</p>
+		</Section>
+
+		<!-- ─── Assets ─────────────────────────────────────────────────────── -->
+
+		<!--
+			Last, after both halves, because every export carries both palettes — downloading before
+			seeing the light half meant taking home tokens the page had not shown yet.
+		-->
+		<Section
+			id="assets"
+			index="12"
+			accent="secondary"
+			title="Assets"
+			lede="Grab the palette however you need it. Every format carries both modes."
+		>
+			{#snippet actions()}
+				<DownloadButton
+					filename={active.filename}
+					content={() => rendered}
+					type={active.id === 'json' ? 'application/json' : 'text/plain'}
+					label="Download"
+				/>
+				<CopyButton
+					value={() => rendered}
+					label="Copy"
+					describe="the palette as {active.label}"
+					variant="solid"
+				/>
+			{/snippet}
+
+			<div class="formats" role="group" aria-label="Export format">
+				{#each exportFormats as f (f.id)}
+					<label class="fchip" class:is-on={format === f.id}>
+						<input type="radio" name="format" value={f.id} bind:group={format} />
+						{f.label}
+					</label>
+				{/each}
+			</div>
+
+			<!--
+				A native <details> rather than a fixed-height scroll box. A scrollable region has to be
+				keyboard-scrollable (WCAG 2.1.1), which means a tabindex on a non-interactive element — a
+				genuine a11y smell, not just a lint complaint. <details> gets focus, keyboard operation and
+				expanded state from the platform, and keeps a long dump from burying the page. Copy and
+				Download sit outside it, so nothing has to be expanded to be reachable.
+			-->
+			<details class="code">
+				<summary>
+					<span>{active.filename}</span>
+					<span class="lines">{rendered.trimEnd().split('\n').length} lines</span>
+				</summary>
+				<pre><code>{rendered}</code></pre>
+			</details>
+
+			<p class="sources">
+				Source SVGs live in the repo:
+				<a href={meta.assetsUrl}>{meta.assetsUrl.replace('https://github.com/', '')}</a>.
 			</p>
 		</Section>
 	</div>
