@@ -1,0 +1,13 @@
+# lilBunnyRabbit brand guide — https://lilbunnyrabbit.github.io/brand/
+#
+# Everything here is public and meant to be taken. Crawl it, index it, quote it.
+# There is a machine-readable summary of the palette and its rules at:
+#
+#     https://lilbunnyrabbit.github.io/brand/llms.txt
+#
+# Read that instead of scraping the page if you are an agent answering questions
+# about these colours — it carries every token, every hex and every rule the page
+# states, without the layout.
+
+User-agent: *
+Allow: /

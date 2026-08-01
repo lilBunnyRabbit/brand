@@ -10,6 +10,17 @@
 			404 — which is the correct behaviour, so it stays out until the file is real.
 		-->
 		<!--
+			The machine-readable version of this guide, for agents and LLMs. Not brand data — a
+			pointer to the file that holds it, so it is discoverable without scraping the page.
+			See `static/llms.txt`.
+		-->
+		<link
+			rel="alternate"
+			type="text/markdown"
+			href="%sveltekit.assets%/llms.txt"
+			title="Brand guide for LLMs"
+		/>
+		<!--
 			Title, description, theme-color, OG and Twitter tags are all emitted from the brand
 			config via <Meta /> and +layout.svelte, so none of them are duplicated here.
 			Nothing brand-derived is hardcoded in this file.

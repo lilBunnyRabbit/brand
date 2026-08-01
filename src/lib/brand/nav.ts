@@ -48,3 +48,14 @@ export function sections(): SectionLink[] {
 export function home(): string {
 	return `${base}/`;
 }
+
+/**
+ * The machine-readable guide, `static/llms.txt`.
+ *
+ * A real file rather than an anchor, so it needs `base` for exactly the reason at the top of this
+ * file — under `BASE_PATH=/brand` a bare `/llms.txt` is a 404. `src/app.html` points a
+ * `<link rel="alternate">` at the same file for anything that discovers it without reading the page.
+ */
+export function llmsTxt(): string {
+	return `${base}/llms.txt`;
+}
