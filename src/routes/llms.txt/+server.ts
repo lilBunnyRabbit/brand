@@ -118,6 +118,12 @@ scope change, not a remapping. In CSS that is \`[data-theme='light']\` on any el
 Every token is a custom property named \`--brand-<key>\`, e.g. \`${varName('primary')}\`,
 \`${varName('background_lightest')}\`.
 
+**The token keys are snake_case, the custom properties are kebab-case.** The keys below are
+identifiers — Chromatics DSL variables and object keys, which cannot hold a hyphen — so the table
+says \`background_lightest\` while the stylesheet says \`${varName('background_lightest')}\`. Convert
+underscores to hyphens at the CSS boundary and nowhere else. Same for the Tailwind utilities:
+\`bg-background-lightest\`, \`text-mark-ears\`.
+
 ## Dark — the brand palette
 
 All ${names.length} derived from one literal, the seed \`${formatOklch(dark.background)}\`. Nothing is hand-picked.

@@ -39,10 +39,10 @@
 		white — `palette.light.ts` explains what that cost last time.
 	*/
 	--surface-page: var(--brand-background);
-	--surface-raised: var(--brand-background_light);
-	--surface-well: var(--brand-background_darker);
+	--surface-raised: var(--brand-background-light);
+	--surface-well: var(--brand-background-darker);
 	/* The top rung. Warm cream in light (1.091:1 on the page), not white — there is no white here. */
-	--surface-edge: var(--brand-background_lightest);
+	--surface-edge: var(--brand-background-lightest);
 
 	/*
 		The hairline. A fraction of `foreground` rather than a solid shade: the page is a gradient, so
@@ -147,13 +147,13 @@
 	too. One line per colour; this list only changes when the palette gains or loses a colour.
 */
 @theme inline {
-	--color-background_lightest: var(--brand-background_lightest);
-	--color-background_lighter: var(--brand-background_lighter);
-	--color-background_light: var(--brand-background_light);
+	--color-background-lightest: var(--brand-background-lightest);
+	--color-background-lighter: var(--brand-background-lighter);
+	--color-background-light: var(--brand-background-light);
 	--color-background: var(--brand-background);
-	--color-background_dark: var(--brand-background_dark);
-	--color-background_darker: var(--brand-background_darker);
-	--color-background_darkest: var(--brand-background_darkest);
+	--color-background-dark: var(--brand-background-dark);
+	--color-background-darker: var(--brand-background-darker);
+	--color-background-darkest: var(--brand-background-darkest);
 	--color-foreground: var(--brand-foreground);
 	--color-tertiary: var(--brand-tertiary);
 	--color-secondary: var(--brand-secondary);
@@ -165,7 +165,7 @@
 	--color-error: var(--brand-error);
 	--color-info: var(--brand-info);
 	/* The one colour that does not theme. */
-	--color-mark_ears: var(--brand-mark_ears);
+	--color-mark-ears: var(--brand-mark-ears);
 
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
@@ -274,9 +274,9 @@ body {
 			180deg,
 			var(--brand-background) 0%,
 			var(--brand-background) 22%,
-			var(--brand-background_dark) 52%,
-			var(--brand-background_darker) 78%,
-			var(--brand-background_darkest) 100%
+			var(--brand-background-dark) 52%,
+			var(--brand-background-darker) 78%,
+			var(--brand-background-darkest) 100%
 		)
 		no-repeat;
 	background-attachment: fixed;

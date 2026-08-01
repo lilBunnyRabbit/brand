@@ -32,9 +32,22 @@ import {
 
 const names = Object.keys(dark) as SwatchName[];
 
+/**
+ * A palette key as CSS spells it: `background_lightest` → `background-lightest`.
+ *
+ * The keys are snake_case because they are identifiers — Chromatics DSL variables and TypeScript
+ * object keys, neither of which can hold a hyphen. CSS has no such constraint and every other
+ * custom property on the page is kebab (`--fg-muted`, `--surface-raised`, `--text-lg`), so a
+ * `--brand-background_lightest` sitting among them was the identifier leaking into the stylesheet.
+ * One conversion at the boundary, and the two naming conventions stop mixing.
+ */
+export function cssKey(name: string): string {
+	return name.replace(/_/g, '-');
+}
+
 /** CSS custom property name for a swatch. Identical in both modes — the mode is the scope. */
 export function varName(name: string): string {
-	return `--brand-${name}`;
+	return `--brand-${cssKey(name)}`;
 }
 
 /** `oklch(l c h)`, trailing zeros trimmed. The canonical form — the palette is authored in it. */
@@ -161,12 +174,21 @@ export function exportCss(): string {
 	].join('\n');
 }
 
-/** Tailwind v4 `@theme`, so the palette is usable as `bg-background`, `text-primary`, … */
+/**
+ * Tailwind v4 `@theme`, so the palette is usable as `bg-background`, `text-primary`, …
+ *
+ * Kebab like the custom properties, which is also what makes the utilities readable:
+ * `bg-background-lightest`, not `bg-background_lightest`.
+ */
 export function exportTailwind(): string {
-	const theme = names.map((name) => `\t--color-${name}: ${themes.dark[name].hex};`).join('\n');
-	const override = names.map((name) => `\t--color-${name}: ${themes.light[name].hex};`).join('\n');
+	const theme = names
+		.map((name) => `\t--color-${cssKey(name)}: ${themes.dark[name].hex};`)
+		.join('\n');
+	const override = names
+		.map((name) => `\t--color-${cssKey(name)}: ${themes.light[name].hex};`)
+		.join('\n');
 	return (
-		`@theme {\n${theme}\n\t--color-mark_ears: ${markEars.hex};\n}\n\n` +
+		`@theme {\n${theme}\n\t--color-${cssKey(markEars.name)}: ${markEars.hex};\n}\n\n` +
 		`/* Light is a scope, not a second theme block. */\n[data-theme='light'] {\n${override}\n}\n`
 	);
 }

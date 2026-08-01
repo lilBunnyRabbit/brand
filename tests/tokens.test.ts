@@ -23,7 +23,14 @@ import {
 	tokenName,
 	type SwatchName
 } from '../src/lib/brand/config/palette';
-import { brandStyleSheet, exportCss, exportJson, labelFor } from '../src/lib/brand/tokens';
+import {
+	brandStyleSheet,
+	exportCss,
+	exportJson,
+	exportTailwind,
+	labelFor,
+	varName
+} from '../src/lib/brand/tokens';
 
 const names = Object.keys(dark) as SwatchName[];
 const GROUPS = groupsFor('dark');
@@ -103,9 +110,16 @@ describe('the emitted stylesheet ships both modes', () => {
 
 	it('declares all 17 in each block', () => {
 		for (const name of names) {
-			const occurrences = css.split(`--brand-${name}:`).length - 1;
+			const occurrences = css.split(`${varName(name)}:`).length - 1;
 			expect(occurrences).toBe(2);
 		}
+	});
+
+	it('spells every custom property in kebab, never the identifier’s underscore', () => {
+		// The keys are snake_case because they are DSL/TS identifiers. CSS is kebab, and the
+		// stylesheet is the boundary where that conversion has to happen.
+		expect(css).toContain('--brand-background-lightest:');
+		expect(css).not.toMatch(/--brand-[a-z]+_/);
 	});
 
 	it('recomputes the composited steps per scope, not once on :root', () => {
@@ -127,7 +141,14 @@ describe('the exports carry both modes', () => {
 		const css = exportCss();
 		expect(css).toContain('/* dark */');
 		expect(css).toContain('/* light */');
-		expect(css).toContain(`--brand-mark_ears: ${markEars.hex};`);
+		expect(css).toContain(`${varName(markEars.name)}: ${markEars.hex};`);
+	});
+
+	it('Tailwind names its utilities in kebab too', () => {
+		const tw = exportTailwind();
+		expect(tw).toContain('--color-background-lightest:');
+		expect(tw).toContain('--color-mark-ears:');
+		expect(tw).not.toMatch(/--color-[a-z]+_/);
 	});
 
 	it('JSON keys each mode under the scheme’s own token names', () => {

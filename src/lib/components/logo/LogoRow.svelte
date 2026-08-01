@@ -71,7 +71,7 @@
 
 	.light {
 		background: #ffffff;
-		color: var(--brand-background_light);
+		color: var(--brand-background-light);
 	}
 
 	figcaption {

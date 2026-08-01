@@ -1123,8 +1123,8 @@
 		background: linear-gradient(
 			180deg,
 			transparent 0%,
-			var(--brand-background_darkest) 62%,
-			var(--brand-background_darkest) 100%
+			var(--brand-background-darkest) 62%,
+			var(--brand-background-darkest) 100%
 		);
 	}
 
@@ -1191,12 +1191,12 @@
 	:global(#light-region) {
 		background-image: linear-gradient(
 			180deg,
-			var(--brand-background_lightest) 0%,
-			var(--brand-background_light) 17%,
+			var(--brand-background-lightest) 0%,
+			var(--brand-background-light) 17%,
 			var(--brand-background) 25%,
-			var(--brand-background_dark) 50%,
-			var(--brand-background_darker) 75%,
-			var(--brand-background_darkest) 100%
+			var(--brand-background-dark) 50%,
+			var(--brand-background-darker) 75%,
+			var(--brand-background-darkest) 100%
 		);
 		background-attachment: fixed;
 	}
@@ -1274,7 +1274,7 @@
 		padding: clamp(var(--space-5), 4vw, var(--space-6));
 		margin-bottom: var(--stack);
 		/* The darkest shade — the panel that made the mark read, kept. */
-		background: var(--brand-background_darkest);
+		background: var(--brand-background-darkest);
 		border: 1px solid var(--hairline);
 		border-radius: var(--radius-lg);
 	}
