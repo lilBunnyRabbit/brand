@@ -8,8 +8,10 @@ The point of it: **drop an SVG into `src/lib/brand/logos/`, or change the seed i
 
 SvelteKit + Svelte 5 + Tailwind v4 on bun, prerendered by `adapter-static`, deployed to GitHub Pages.
 
-> **Dark only.** A light mode is designed but not built — there is nothing here to invert and no
-> toggle to add. The mark is still being drawn; what is published is current but not final.
+> **Dark is the brand.** Light mode is built, but it is a scope for product UI rather than a second
+> identity — a REGION of the page carrying `data-theme="light"`, not a toggle and not a preference.
+> `config/prohibitions.ts` states where it may and may not be used. The mark is still being drawn;
+> what is published is current but not final.
 
 ## Run it
 
@@ -39,16 +41,16 @@ cd /tmp/stage && python3 -m http.server 8899   # open http://localhost:8899/bran
 
 17 colours, every one generated from **one literal**: the seed `oklch(0.255 0.0233 230.47)`.
 
-| group    | colours                                                                                   |
-| -------- | ----------------------------------------------------------------------------------------- |
-| Surfaces | `bg_lightest` `bg_lighter` `bg_light` **`background`** `bg_dark` `bg_darker` `bg_darkest` |
-| Content  | `foreground`                                                                              |
-| Brand    | `tertiary` `secondary` **`primary`** `accent`                                             |
-| Identity | `cottontail`                                                                              |
-| States   | `success` `warning` `error` `info`                                                        |
+| group    | colours                                                                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Surfaces | `background_lightest` `background_lighter` `background_light` **`background`** `background_dark` `background_darker` `background_darkest` |
+| Content  | `foreground`                                                                                                                              |
+| Brand    | `tertiary` `secondary` **`primary`** `accent`                                                                                             |
+| Identity | `cottontail`                                                                                                                              |
+| States   | `success` `warning` `error` `info`                                                                                                        |
 
 **The contract: every non-shade colour clears WCAG AA against every one of the seven shades.** Worst
-case 4.59, `error` on `bg_lightest`. So any shade can back any section and changing a section
+case 4.59, `error` on `background_lightest`. So any shade can back any section and changing a section
 background never needs a contrast re-check. The page measures this live rather than quoting it, and
 `tests/palette.test.ts` asserts it — if the seed moves and the contract degrades, the page says so
 instead of continuing to claim 4.59.

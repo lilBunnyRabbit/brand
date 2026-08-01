@@ -54,7 +54,7 @@ export function formatRgb(color: Color): string {
  * in both modes.
  *
  * Shades take `foreground`, everything else takes `background`. Measured: dark 4.84–8.60 and
- * 6.55–13.66, light 4.82–8.28 and 4.45–7.48. Nothing else works — in dark, `foreground`,
+ * 6.55–13.66, light 4.82–7.68 and 4.45–7.48. Nothing else works — in dark, `foreground`,
  * `cottontail` and white all land between 1.0 and 2.4 on the light swatches.
  */
 export function labelFor(name: string): SwatchName {
@@ -270,11 +270,13 @@ export interface SwatchView {
 /**
  * Outside sRGB by more than half a channel step (1/510).
  *
- * A strict `isInGamut` is too strict to badge: two of the light colours land a hair outside because
- * Chromatics' gamut mapper stopped there — `background_lighter` overshoots red by 0.00001 and
- * `warning` undershoots blue by 0.00027. Both round to exact, correct hexes. Badging them would
- * report a problem that does not exist at 8 bits per channel, so the threshold is the smallest
- * excursion a display could actually show.
+ * A strict `isInGamut` is too strict to badge: one light colour lands a hair outside because
+ * Chromatics' gamut mapper stopped there — `warning` undershoots blue by 0.00027. It rounds to an
+ * exact, correct hex. Badging it would report a problem that does not exist at 8 bits per channel,
+ * so the threshold is the smallest excursion a display could actually show.
+ *
+ * `background_lighter` used to be the other one. It is not any more: the light ladder now stops at
+ * the tint ceiling, so no shade is gamut-mapped in either mode.
  */
 export function perceptiblyOutOfGamut(color: Color): boolean {
 	const slack = 1 / 510;

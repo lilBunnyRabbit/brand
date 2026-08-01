@@ -27,10 +27,21 @@
 */
 :root,
 [data-theme] {
-	/* Section backgrounds. Three per viewport is the ceiling — adjacent shades are ~1.1:1. */
+	/*
+		Section backgrounds. Three per viewport is the ceiling — adjacent shades are ~1.1:1 going down
+		(1.130, 1.135, 1.140, the same in both modes).
+
+		Going UP the two modes are not alike, and light is the quiet one: 1.029 per rung against dark's
+		1.05. That is the gamut, not a taste call. Light's ladder can only climb 0.0294 in lightness
+		before the page tint stops fitting in sRGB, where dark's climbs 0.100 — so a lift that reads on
+		dark is a third of the step on cream. Lean on `--surface-well` when a light surface has to
+		separate; the down side has the room. Do NOT reach past `background_lightest` for a whiter
+		white — `palette.light.ts` explains what that cost last time.
+	*/
 	--surface-page: var(--brand-background);
 	--surface-raised: var(--brand-background_light);
 	--surface-well: var(--brand-background_darker);
+	/* The top rung. Warm cream in light (1.091:1 on the page), not white — there is no white here. */
 	--surface-edge: var(--brand-background_lightest);
 
 	/*

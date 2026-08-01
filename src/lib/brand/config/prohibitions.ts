@@ -25,7 +25,7 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'nothing-on-white',
 		rule: 'Nothing brand-coloured on white.',
-		why: 'The light ground is #f5ecdc, a cream. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff.',
+		why: 'The light ground is #f5ecdc, a cream. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff — there is no white anywhere in either palette. The lightest shade there is stops at #fff5e6, where the warmth would otherwise have to go.',
 		severity: 'never'
 	},
 	{

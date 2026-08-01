@@ -12,10 +12,15 @@
  *
  * Dark falls out of one seed with arithmetic this codebase owns. Light does not: it leans on two
  * Chromatics solvers that are not vendored here — `ensureContrast()` (used for `foreground` and for
- * the ladder's downward span) and `gamutMap()` (used by six colours). `gamutMap` moves lightness and
- * hue as well as chroma, so a chroma-only clip cannot reproduce it. `warning` lands on
- * L 0.4268 H 109.3148 rather than the requested L 0.425 H 110, and `info` on L 0.4329 H 246.2376
- * rather than L 0.425 H 240 — the drift is the mapper's output, not a rounding artefact.
+ * the ladder's downward span) and `gamutMap()`, which the scheme calls on all eight rail colours but
+ * which only MOVES two of them. `gamutMap` moves lightness and hue as well as chroma, so a
+ * chroma-only clip cannot reproduce it. `warning` lands on L 0.4268 H 109.3148 rather than the
+ * requested L 0.425 H 110, and `info` on L 0.4329 H 246.2376 rather than L 0.425 H 240 — the drift
+ * is the mapper's output, not a rounding artefact. The other six ask for less chroma than sRGB has
+ * at the rail, so the call is a no-op and the requested numbers are what ships.
+ *
+ * The ladder does not use it at all any more. It used to, at the top, and that was the tell that the
+ * top was wrong — see `UP`.
  *
  * Reimplementing those solvers would make every number the page states a guess. So the resolved
  * values are transcribed and the recipe is recorded per colour as its description. Same call already
@@ -66,31 +71,50 @@ const RAIL_L = 0.425;
 /*
 	The ladder is ASYMMETRIC, unlike dark's ±span.
 
-	Upward there is only 0.055 of room left before white, so up divides what is there. Downward the
-	reach is solved the same way dark's is — the darkest shade is the darkest ground on which the
-	hardest rail colour still clears AA — and comes out at 0.12. So the light ladder leans down.
+	Downward the reach is solved the same way dark's is — the darkest shade is the darkest ground on
+	which the hardest rail colour still clears AA — and comes out at 0.12.
+
+	Upward the binding limit is not contrast, it is the GAMUT. Up used to be `1 - light_bl`, which
+	reaches for L 1.0 — a coordinate, not a colour. The sRGB chroma ceiling at L 1.0 is exactly zero,
+	so the mapper stripped the whole page tint and the top rung fell out as #ffffff, the one value in
+	the light half with no chroma at all. It read as a hole in the ladder rather than a rung of it,
+	and the spacing said so: 1.26, 2.59, then 8.26 ΔE from the page. That last jump was a chroma
+	CLIFF, not a lightness step.
+
+	So up reaches the TINT ceiling instead — the lightest L at which the page chroma still fits in
+	sRGB, 0.9744, giving 0.0294. All seven rungs are now OKLCH(L, LIGHT_C, LIGHT_H): one chroma, one
+	hue, only lightness moving, and not one of them needs gamut mapping.
+
+	The ceiling is a division, not a solve. Near white the sRGB boundary converges on a straight line
+	into (L 1, C 0), so a single probe fixes its slope — in Chromatics,
+	`OKLCH(0.99, 0.02, 80).maxChroma() / 0.01` — and the ceiling is `1 - light_c / slope`. Probes from
+	0.96 to 0.995 land within 0.0004 of each other and produce the identical hex.
+
+	The up side is quieter than it was, and that is correct rather than a loss: there is 0.0294 of
+	lightness above the page before the tint leaves sRGB, against 0.120 below. The reach the old
+	ladder appeared to have WAS the cliff. Do not compensate by pushing the top rung back toward white.
 */
-const UP = 1 - LIGHT_L;
+const UP = 0.0294;
 const DOWN = 0.12;
 
 export const light = {
 	background_lightest: at(
 		'background_lightest',
-		1,
-		0,
-		0,
-		'OKLCH(light_bl + up, light_c, light_bh).gamutMap() — white; the room above ran out'
+		0.9744,
+		LIGHT_C,
+		LIGHT_H,
+		'OKLCH(light_bl + up, light_c, light_bh) — up reaches the tint ceiling, not L 1.0'
 	),
 	background_lighter: at(
 		'background_lighter',
-		0.9798,
-		0.0219,
-		85.9452,
-		'OKLCH(light_bl + up * 2/3, light_c, light_bh).gamutMap()'
+		0.9646,
+		LIGHT_C,
+		LIGHT_H,
+		'OKLCH(light_bl + up * 2/3, light_c, light_bh)'
 	),
 	background_light: at(
 		'background_light',
-		0.9633,
+		0.9548,
 		LIGHT_C,
 		LIGHT_H,
 		'OKLCH(light_bl + up / 3, light_c, light_bh)'
@@ -169,5 +193,8 @@ export const light = {
 	info: at('info', 0.4329, 0.1119, 246.2376, 'OKLCH(light_l, u * 6, 240).gamutMap()')
 } satisfies Record<SwatchName, Color>;
 
-/** The downward reach, exported so the page can state that this ladder is not symmetric. */
+/**
+ * Both reaches, exported so the page can state that this ladder is not symmetric — and that the two
+ * limits are different KINDS of limit. `down` is a contrast solve, `up` is the sRGB tint ceiling.
+ */
 export const lightLadderSpan = { up: UP, down: DOWN };

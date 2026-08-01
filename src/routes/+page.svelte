@@ -1173,8 +1173,14 @@
 
 		And the FULL ladder rather than `body`'s stop list. Measured, the same tokens dark uses would give
 		1.462:1 here against dark's own 1.243:1 — already the stronger ramp of the two, which is worth
-		knowing before reaching for a shade outside the palette. `background_lightest` (white) down to
-		`background_darkest` takes it to 1.719:1, and every stop is still a real token.
+		knowing before reaching for a shade outside the palette. `background_lightest` down to
+		`background_darkest` takes it to 1.595:1, and every stop is still a real token.
+
+		The stops are weighted DOWN the ladder because the ladder is. Light climbs 0.0294 in lightness
+		above the page and falls 0.120 below it, so the top three shades sit within 1.03:1 of each other
+		— an even share of the viewport would spend half its height on a step nobody can see. Percentages
+		track lightness instead: the three light rungs take the first quarter between them, the page
+		shade lands at 25%, and the descent gets the remaining three quarters in even thirds.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
 		child would sit on cream rather than on the page.
@@ -1186,10 +1192,10 @@
 		background-image: linear-gradient(
 			180deg,
 			var(--brand-background_lightest) 0%,
-			var(--brand-background_light) 26%,
-			var(--brand-background) 48%,
-			var(--brand-background_dark) 68%,
-			var(--brand-background_darker) 84%,
+			var(--brand-background_light) 17%,
+			var(--brand-background) 25%,
+			var(--brand-background_dark) 50%,
+			var(--brand-background_darker) 75%,
 			var(--brand-background_darkest) 100%
 		);
 		background-attachment: fixed;

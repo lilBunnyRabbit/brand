@@ -475,9 +475,9 @@ describe('structure', () => {
  * mistyped, light fails here if a HEX were mistyped, and there is no derivation to fall back on.
  */
 const LIGHT_TABLE: Record<SwatchName, string> = {
-	background_lightest: '#ffffff',
-	background_lighter: '#fff8e8',
-	background_light: '#fbf2e2',
+	background_lightest: '#fff5e6',
+	background_lighter: '#fcf2e2',
+	background_light: '#f8efdf',
 	background: '#f5ecdc',
 	background_dark: '#e8decf',
 	background_darker: '#dbd1c2',
@@ -506,15 +506,28 @@ describe('the light twin', () => {
 	}
 
 	it('is inside sRGB to within a rounding error, and every hex is exact', () => {
-		// Two of these are a hair outside because Chromatics' gamut mapper stopped there:
-		// background_lighter overshoots red by 0.00001, warning undershoots blue by 0.00027. Both round
-		// to exact hexes, so nothing is misreported — but the strict check would flag them, which is why
-		// the page badges on `perceptiblyOutOfGamut` instead.
+		// One of these is a hair outside because Chromatics' gamut mapper stopped there: warning
+		// undershoots blue by 0.00027. It rounds to an exact hex, so nothing is misreported — but the
+		// strict check would flag it, which is why the page badges on `perceptiblyOutOfGamut` instead.
+		//
+		// `background_lighter` used to be the other one, by 0.00001. That was an artefact of the mapper
+		// dragging the rung's hue to 85.9452 while rescuing a top rung that reached past the tint
+		// ceiling. The ladder stops at the ceiling now, so no shade is mapped and none is outside.
 		for (const name of names) {
 			expect(perceptiblyOutOfGamut(light[name])).toBe(false);
 		}
 		const strict = names.filter((n) => !light[n].isInGamut);
-		expect(strict).toEqual(['background_lighter', 'warning']);
+		expect(strict).toEqual(['warning']);
+	});
+
+	it('every shade is the same chroma and hue — only lightness moves', () => {
+		// The ladder is one line through OKLCH space. A rung off it is a rung that got rescued by the
+		// gamut mapper, which is exactly how the white top rung went unnoticed.
+		for (const name of shadeNames) {
+			expect(light[name].c).toBeCloseTo(light.background.c, 6);
+			expect(light[name].h).toBeCloseTo(light.background.h, 6);
+			expect(light[name].isInGamut).toBe(true);
+		}
 	});
 
 	it('is registered under both mode names', () => {
@@ -577,9 +590,11 @@ describe('what light mode does NOT get', () => {
 		expect(d.min).toBeCloseTo(9.56, 1);
 		expect(d.max).toBeCloseTo(16.98, 1);
 		// 3.04 clears WCAG 1.4.11's 3:1 for a UI component and nothing more — which is why the light
-		// one is a focus ring and a marker, never text and never the logo.
+		// one is a focus ring and a marker, never text and never the logo. The top of the range fell
+		// from 5.23 when the lightest shade stopped being white; the bottom, which is the one the rule
+		// rests on, is on `background_darkest` and did not move.
 		expect(l.min).toBeCloseTo(3.04, 1);
-		expect(l.max).toBeCloseTo(5.23, 1);
+		expect(l.max).toBeCloseTo(4.86, 1);
 		expect(l.min).toBeGreaterThanOrEqual(3);
 		expect(l.min).toBeLessThan(4.5);
 	});
@@ -634,15 +649,31 @@ describe('the light primary is orange, and that is measured', () => {
 
 describe('the light ladder leans down', () => {
 	it('is asymmetric, unlike dark’s ±span', () => {
-		expect(lightLadderSpan.up).toBeCloseTo(0.055, 3);
+		expect(lightLadderSpan.up).toBeCloseTo(0.0294, 4);
 		expect(lightLadderSpan.down).toBeCloseTo(0.12, 3);
 		expect(lightLadderSpan.down).toBeGreaterThan(lightLadderSpan.up);
 	});
 
-	it('runs out of room upward — the lightest shade is plain white', () => {
-		expect(light.background_lightest.l).toBe(1);
-		expect(light.background_lightest.c).toBe(0);
-		expect(light.background.l + lightLadderSpan.up).toBeCloseTo(1, 6);
+	it('stops at the tint ceiling, so the top rung keeps its chroma', () => {
+		// Not L 1.0. There the sRGB chroma ceiling is zero, so reaching for it strips the page tint and
+		// hands back plain white — a coordinate rather than a colour, and the one value in the light half
+		// with nothing of the paper left in it. The ladder stops where the tint does instead.
+		expect(light.background_lightest.l).toBeCloseTo(0.9744, 4);
+		expect(light.background_lightest.c).toBeCloseTo(light.background.c, 6);
+		expect(light.background_lightest.h).toBeCloseTo(light.background.h, 6);
+		expect(light.background_lightest.hex).not.toBe('#ffffff');
+		expect(light.background.l + lightLadderSpan.up).toBeCloseTo(light.background_lightest.l, 4);
+
+		// And the ceiling is real: the same chroma one step higher does not fit.
+		const above = light.background_lightest.derive('above', { l: 0.985 });
+		expect(above.isInGamut).toBe(false);
+	});
+
+	it('divides that reach upward, the same way it divides the span down', () => {
+		const bl = light.background.l;
+		expect(light.background_light.l - bl).toBeCloseTo(lightLadderSpan.up / 3, 3);
+		expect(light.background_lighter.l - bl).toBeCloseTo((lightLadderSpan.up * 2) / 3, 3);
+		expect(light.background_lightest.l - bl).toBeCloseTo(lightLadderSpan.up, 3);
 	});
 
 	it('divides the solved span downward', () => {

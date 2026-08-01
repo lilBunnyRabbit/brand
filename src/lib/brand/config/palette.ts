@@ -152,7 +152,8 @@ const COPY: Record<ThemeName, Record<GroupId, { label: string; description: stri
 		surfaces: {
 			label: 'Surfaces',
 			description:
-				'Seven shades of warm paper, plain white down to soft sand. Same job as the dark seven: ' +
+				'Seven shades of warm paper, pale cream down to soft sand. Not one of them is white — ' +
+				'the lightest stops where the warmth would have to go. Same job as the dark seven: ' +
 				'pick one and build on it.'
 		},
 		content: {

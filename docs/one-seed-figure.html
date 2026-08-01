@@ -353,10 +353,13 @@
 			info: [0.432921, 0.111909, 246.2376],
 			cottontail: [0.545, 0.143122, 50.47]
 		};
+		// One chroma, one hue, only lightness moving. The top three used to break that: up reached for
+		// L 1.0, where sRGB allows no chroma at all, so the mapper dragged them off the line and the
+		// first rung came back white. Up stops at the tint ceiling now, L 0.9744.
 		const LSURF = [
-			[1, 0, 0],
-			[0.979801, 0.021893, 85.9452],
-			[0.963333, 0.023019, 80],
+			[0.9744, 0.023019, 80],
+			[0.9646, 0.023019, 80],
+			[0.9548, 0.023019, 80],
 			[0.945, 0.023019, 80],
 			[0.905, 0.023019, 80],
 			[0.865, 0.023019, 80],
