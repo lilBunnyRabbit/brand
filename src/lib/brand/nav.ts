@@ -50,7 +50,8 @@ export function home(): string {
 }
 
 /**
- * The machine-readable guide, `static/llms.txt`.
+ * The machine-readable guide — prerendered from `src/routes/llms.txt/+server.ts` at build time,
+ * so its palette tables are generated from the config rather than hand-maintained.
  *
  * A real file rather than an anchor, so it needs `base` for exactly the reason at the top of this
  * file — under `BASE_PATH=/brand` a bare `/llms.txt` is a 404. `src/app.html` points a

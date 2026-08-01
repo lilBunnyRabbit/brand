@@ -26,16 +26,16 @@ import {
 	stripRootSize,
 	toCurrentColor
 } from '../src/lib/svg';
-import { swatches, type SwatchName } from '../src/lib/brand/config/palette';
+import { dark, type SwatchName } from '../src/lib/brand/config/palette';
 
 const root = join(import.meta.dir, '..');
 const source = process.argv[2] ?? 'lilbunnyrabbit.mark.v6.wip.svg';
 
 /** `primary`: the main logo colour, and mid-lightness so it reads on most browser chrome. */
 const inkName = (process.argv[3] ?? 'primary') as SwatchName;
-const ink = swatches[inkName];
+const ink = dark[inkName];
 if (!ink) {
-	throw new Error(`Unknown swatch "${inkName}". One of: ${Object.keys(swatches).join(', ')}`);
+	throw new Error(`Unknown swatch "${inkName}". One of: ${Object.keys(dark).join(', ')}`);
 }
 
 /**
@@ -46,9 +46,9 @@ if (!ink) {
  * Pass a disc swatch (e.g. `primary`) to get a self-contained badge that ignores the chrome.
  */
 const discArg = process.argv[4] ?? 'none';
-const disc = discArg === 'none' ? null : swatches[discArg as SwatchName];
+const disc = discArg === 'none' ? null : dark[discArg as SwatchName];
 if (discArg !== 'none' && !disc) {
-	throw new Error(`Unknown swatch "${discArg}". One of: none, ${Object.keys(swatches).join(', ')}`);
+	throw new Error(`Unknown swatch "${discArg}". One of: none, ${Object.keys(dark).join(', ')}`);
 }
 
 const from = join(root, 'src', 'lib', 'brand', 'logos', source);

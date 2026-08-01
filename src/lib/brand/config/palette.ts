@@ -1,10 +1,10 @@
 /**
  * The palette registry: two modes, one set of keys, one set of rules.
  *
- * The colours themselves live next door — `palette.dark.ts` (derived from one seed) and
- * `palette.light.ts` (transcribed, for the reason stated in its header). This file holds everything
- * that is TRUE OF BOTH: which names are shades, how they group, what the modifier alphas are, and
- * the one asset colour that does not theme.
+ * The colours themselves live next door — `palette.dark.ts` and `palette.light.ts`, both
+ * transcribed verbatim from the Chromatics scheme's export. This file holds everything that is
+ * TRUE OF BOTH: which names are shades, how they group, what the modifier alphas are, and the one
+ * asset colour that does not theme.
  *
  * Because both palettes carry the same 17 keys, no component takes a light variant. A light section
  * is a scope, not a fork: `[data-theme="light"]` swaps the values behind `--brand-*` and everything
