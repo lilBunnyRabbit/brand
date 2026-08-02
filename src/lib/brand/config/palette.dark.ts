@@ -66,13 +66,7 @@ export const dark = {
 		230.47,
 		'OKLCH(bl + span / 3, c * (bl + span / 3) / bl, bh)'
 	),
-	background: at(
-		'background',
-		0.255,
-		0.0233,
-		230.47,
-		'OKLCH(0.255, 0.0233, 230.47) — the seed'
-	),
+	background: at('background', 0.255, 0.0233, 230.47, 'OKLCH(0.255, 0.0233, 230.47) — the seed'),
 	background_dark: at(
 		'background_dark',
 		0.2217,
@@ -118,7 +112,13 @@ export const dark = {
 		Light does NOT follow this offset. Its only legal arc is 271.5–293, so it keeps −120; see the
 		note there for why hue cannot fix the light twin at all.
 	*/
-	tertiary: at('tertiary', 0.745, 0.0233, 176.47, 'primary.shift({ h: 54 }).atChroma(c * 1)'),
+	tertiary: at(
+		'tertiary',
+		0.745,
+		0.0233,
+		176.47,
+		'primary.shift({ h: (bh - primary.ok_h) / 2 }).atChroma(c * 1)'
+	),
 	secondary: at('secondary', 0.745, 0.0466, 302.47, 'primary.complement().atChroma(c * 2)'),
 	primary: at(
 		'primary',

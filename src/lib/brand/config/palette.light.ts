@@ -183,7 +183,7 @@ export const light = {
 		RAIL_L,
 		0.0614,
 		50.47,
-		'OKLCH(light_l, u * 3, 50.47) — orange, at 55% of its ceiling'
+		'OKLCH(light_l, u * 3, light_ph) — light_ph 50.47, orange, at 55% of its ceiling'
 	),
 	accent: at('accent', RAIL_L, 0.0818, 338.47, 'OKLCH(light_l, u * 4, primary − 72)'),
 
@@ -192,7 +192,7 @@ export const light = {
 		0.545,
 		0.1431,
 		50.47,
-		'OKLCH(light_foreground.ok_l + light_span, maxChroma(), 50.47) — pops by chroma, not lightness'
+		'OKLCH(light_foreground.ok_l + light_span, maxChroma(), light_ph) — pops by chroma, not lightness'
 	),
 
 	success: at('success', RAIL_L, 0.1228, 140, 'OKLCH(light_l, u * 6, 140)'),
