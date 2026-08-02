@@ -35,10 +35,13 @@
  * form — it reads as a shade of the paper rather than a colour on it. Orange measures 15.2 in the
  * same position, so the light mode is fitted to its own ground instead of inheriting dark's wheel.
  *
- * Two of dark's four brand relationships survive the move and two cannot:
+ * One of dark's four brand relationships survives the move, two break, and one has since diverged
+ * on dark's side:
  *
  *   accent    = primary − 72     dark's own offset, still legal here
- *   tertiary  = primary − 120    dark's own offset, still legal here
+ *   tertiary  = primary − 120    dark's OLD offset. Dark has since moved to +54, its own bisector,
+ *               and light cannot follow: its only legal arc is 271.5–293, which is where −120
+ *               already lands. See the note on the token.
  *   secondary   BREAKS — the complement of orange is blue, and blue is `info`. Moved to hue 190,
  *               the centre of the legal teal arc, 50° clear of both success and info.
  *   warning     BREAKS — hue 70 sits 10° from the page hue. Nothing between 105 and 115 was free
@@ -156,6 +159,17 @@ export const light = {
 		'ensureContrast(OKLCH(0.70, c, 260), light_background, 6.92) — solved to dark’s body ratio'
 	),
 
+	/*
+		−120, where dark now uses +54 (its bisector) — and this is the one place light cannot follow.
+
+		Light has the same defect as dark had, worse: ΔE 4.8 from `light_foreground`, close enough to
+		body text that it barely reads as a colour. It is not fixable by hue. The scheme's hue law
+		leaves light exactly ONE legal arc, 271.5–293, and the best point in it scores 5.3 against
+		this 4.8 — half a ΔE for abandoning dark's offset. The binding constraint is chroma, not
+		angle: `u × 1` is 0.0205 against `light_foreground`'s 0.0233 at the same lightness, so no hue
+		puts meaningful distance between a rank-1 colour and the text. Moving it would mean breaking
+		the integer chroma ranks, which is a bigger decision than this token.
+	*/
 	tertiary: at('tertiary', RAIL_L, 0.0205, 290.47, 'OKLCH(light_l, u * 1, primary − 120)'),
 	secondary: at(
 		'secondary',

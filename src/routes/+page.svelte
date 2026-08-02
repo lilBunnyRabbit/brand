@@ -63,7 +63,7 @@
 	const chain = [
 		{ name: 'background', on: 'background', ink: 'foreground', op: 'the seed' },
 		{ name: 'foreground', on: 'foreground', ink: 'background', op: '1 − L · C ÷ 3 · H + 180°' },
-		{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H − 120°' },
+		{ name: 'tertiary', on: 'tertiary', ink: 'background', op: 'C × 1 · H + 54°' },
 		{ name: 'secondary', on: 'secondary', ink: 'background', op: 'C × 2 · H + 180°' },
 		{ name: 'primary', on: 'primary', ink: 'background', op: 'C × 3 · H + 72°' },
 		{ name: 'accent', on: 'accent', ink: 'background', op: 'C × 4 · H = foreground' }

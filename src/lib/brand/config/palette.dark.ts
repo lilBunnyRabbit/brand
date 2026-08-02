@@ -97,7 +97,28 @@ export const dark = {
 
 	foreground: at('foreground', 0.745, 0.0078, 50.47, 'OKLCH(1 - bl, c / 3, (bh + 180) % 360)'),
 
-	tertiary: at('tertiary', 0.745, 0.0233, 2.47, 'primary.shift({ h: -120 }).atChroma(c * 1)'),
+	/*
+		THE BISECTOR OF PRIMARY AND THE GROUND, and it is derived rather than picked.
+
+		At −120 this was a dusty rose 28° from `error` — the only brand colour parked in a semantic
+		hue's neighbourhood — and ΔE 7.2 from `foreground` where `secondary` is 14.7. Rank 1 fell off
+		the chroma ladder into body-text territory instead of tapering into it: too close to the text
+		to read as a colour, too warm on a blue-grey page not to catch the eye.
+
+		The scheme's hue law (≥45° off the neutral, ≥45° off every other brand hue, ≥25° off every
+		state) leaves dark exactly three arcs: 0–5, 167.5–185, 347.5–359.5. −120 took the third. The
+		second is wider and empty, and its two edges are set by the two 45° constraints — the neutral
+		at 230.47 above, primary at 122.47 below — so the point furthest from both is their midpoint,
+		(122.47 + 230.47) / 2 = 176.47. Hence `primary + 54`.
+
+		ΔE from the nearest rail 7.2 → 11.9. A teal at 194 scores a hair better (12.0) but sits 36°
+		off the neutral, which is the rule's own definition of reading as a lit shade of the page —
+		measured, that colour is ΔE 5.7 from the page hue raised to this lightness, against 7.9 here.
+
+		Light does NOT follow this offset. Its only legal arc is 271.5–293, so it keeps −120; see the
+		note there for why hue cannot fix the light twin at all.
+	*/
+	tertiary: at('tertiary', 0.745, 0.0233, 176.47, 'primary.shift({ h: 54 }).atChroma(c * 1)'),
 	secondary: at('secondary', 0.745, 0.0466, 302.47, 'primary.complement().atChroma(c * 2)'),
 	primary: at(
 		'primary',

@@ -94,7 +94,7 @@ export const trees: Record<ThemeName, readonly TreeNode[]> = {
 		{ name: 'primary', parent: 'foreground', move: '3× · into green', phases: ['c', 'h'] },
 		{ name: 'accent', parent: 'foreground', move: '4× · same hue', phases: ['c'] },
 		{ name: 'secondary', parent: 'primary', move: '2× · other side', phases: ['c', 'h'] },
-		{ name: 'tertiary', parent: 'primary', move: '1× · turned back', phases: ['c', 'h'] },
+		{ name: 'tertiary', parent: 'primary', move: '1× · into teal', phases: ['c', 'h'] },
 		{ name: 'cottontail', parent: 'primary', move: 'lifted brighter', phases: ['l', 'c'] }
 	]),
 	light: build([

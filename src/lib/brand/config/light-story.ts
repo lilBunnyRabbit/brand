@@ -63,7 +63,8 @@ export const hueMoves: readonly HueMove[] = [
 		token: 'tertiary',
 		rule: 'primary − 120°',
 		kept: true,
-		outcome: 'Dark’s own offset, still legal here.'
+		outcome:
+			'Dark’s old offset, and light keeps it. Dark has since moved to +54 — light’s only legal arc is 271.5–293°, which is exactly where −120 lands.'
 	},
 	{
 		id: 'secondary',
