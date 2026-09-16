@@ -242,8 +242,7 @@
 	with the measured number underneath. The jobs the light twin cannot do are shown struck out, which is
 	the whole point of the section — same token, fewer jobs on paper.
 -->
-{#snippet cottontailPanel(theme: ThemeName, compact = false)}
-	{@const jobs = cottontailJobs(theme)}
+{#snippet cottontailPanel(theme: ThemeName)}
 	<!--
 		The panel wears the ring it is describing: 2px of cottontail, offset by a gap of the page shade.
 		That is WCAG 2.4.11's own two-sided technique at panel scale, so the section's first exhibit is the
@@ -255,13 +254,12 @@
 			<p class="cotton-what">
 				{theme === 'dark'
 					? 'The brightest thing in the system, named after the flash of a rabbit’s tail. The ring around this panel is it.'
-					: 'The same token on paper, popping by chroma rather than brightness. The ring around this panel is it. One job did not survive the move.'}
+					: 'The same token on paper. It pops by chroma here rather than brightness, and it lost one job on the way over. The ring around this panel is it.'}
 			</p>
 		</div>
 
-		<!-- Compact shows only what changed; what still holds is one line underneath. -->
 		<ul class="cotton-jobs">
-			{#each jobs.filter((job) => !compact || !job.ok) as job (job.id)}
+			{#each cottontailJobs(theme) as job (job.id)}
 				<li class:is-off={!job.ok}>
 					<span class="job-demo">
 						{#if job.id === 'ring'}
@@ -288,16 +286,6 @@
 				</li>
 			{/each}
 		</ul>
-
-		{#if compact}
-			<p class="cotton-kept">
-				Still its own:
-				{jobs
-					.filter((job) => job.ok)
-					.map((job) => `${job.label.toLowerCase()}, ${job.detail}`)
-					.join(' · ')}.
-			</p>
-		{/if}
 
 		<p class="cotton-rule">
 			{theme === 'dark'
@@ -920,7 +908,7 @@
 				</div>
 			{/each}
 
-			{@render cottontailPanel('light', true)}
+			{@render cottontailPanel('light')}
 		</Section>
 
 		<!-- ─── The hue that moved ─────────────────────────────────────────── -->
