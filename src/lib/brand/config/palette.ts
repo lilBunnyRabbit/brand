@@ -11,7 +11,7 @@
  * downstream re-themes from the same rules. Anything needing a light-specific override is a sign the
  * token map is being bypassed.
  */
-import { Color } from '$lib/color';
+import type { Color } from '$lib/color';
 import { dark, ladderSpan, type SwatchName } from './palette.dark';
 import { light, lightLadderSpan } from './palette.light';
 
@@ -32,15 +32,14 @@ export const themeNames = ['dark', 'light'] as const satisfies readonly ThemeNam
 /**
  * The mark's pale ears — a FIXED asset colour, byte-identical in both modes.
  *
- * Only the disc themes. Deriving light ears from `light_primary` the way dark derives them from
- * `primary` gives 2.28 on the disc against 7.36 for this, and they vanish under greyscale. So this
- * one is pinned rather than derived, and it belongs to neither palette.
+ * Only the disc themes. It is dark's `cottontail` pinned rather than a colour of its own, so it is
+ * derived from that token and cannot drift from it. Deriving light ears from `light_primary` the
+ * way dark derives its own gives 1.09 on the disc against 6.06 for this, and they vanish under
+ * greyscale.
  */
-export const markEars = new Color(
+export const markEars = dark.cottontail.derive(
 	'mark_ears',
-	0.945,
-	0.1033,
-	122.47,
+	{},
 	'Fixed. Identical in both modes. Only the disc themes.'
 );
 
@@ -152,21 +151,21 @@ const COPY: Record<ThemeName, Record<GroupId, { label: string; description: stri
 		surfaces: {
 			label: 'Surfaces',
 			description:
-				'Seven shades of warm paper, pale cream down to soft sand. Not one of them is white — ' +
-				'the lightest stops where the warmth would have to go. Same job as the dark seven: ' +
-				'pick one and build on it.'
+				'Seven shades of warm paper, white down to soft sand. The top rung is white because ' +
+				'that is where the tint runs out, not because anyone picked it; the page is the fourth. ' +
+				'Same job as the dark seven: pick one and build on it.'
 		},
 		content: {
 			label: 'Content',
 			description:
-				'For everything you read. Solved to land on the same contrast as the dark text, so ' +
-				'neither mode reads harsher than the other.'
+				'For everything you read. Solved to an 8:1 body ratio, a step darker than the dark text ' +
+				'on purpose: on paper the text alone decides how deep the ladder goes.'
 		},
 		brand: {
 			label: 'Brand',
 			description:
-				'The same four ranks, re-solved for a warm ground. The loud one turned orange on the way ' +
-				'over. That story is further down.'
+				'The same four ranks, re-solved for a warm ground and sat a step above the text. The ' +
+				'loud one turned orange on the way over. That story is further down.'
 		},
 		identity: {
 			label: 'Identity',
@@ -200,12 +199,18 @@ export function groupsFor(theme: ThemeName): readonly PaletteGroup[] {
 export const modifiers = {
 	hover: 0.85,
 	active: 0.7,
-	/** AA-large at best — captions and metadata only, and not on the lightest two shades. */
+	/**
+	 * AA-large at best — captions and metadata only. Misses 3:1 on the rungs furthest from the page:
+	 * dark's lightest shade, light's two deepest.
+	 */
 	muted: 0.65,
-	/** 2.17:1. Legally exempt, but never for anything informational. */
+	/** About 2:1 in either mode. Legally exempt, but never for anything informational. */
 	disabled: 0.38,
-	/** The lowest alpha clearing 3:1 on EVERY shade. `muted` at 0.65 misses it on the lightest two. */
-	border: 0.67
+	/**
+	 * The lowest alpha clearing 3:1 on EVERY shade in BOTH modes. Dark alone would settle for 0.66;
+	 * light's ladder reaches deeper below its page than dark's does, and its deepest rung needs this.
+	 */
+	border: 0.76
 } as const;
 
 export type ModifierName = keyof typeof modifiers;

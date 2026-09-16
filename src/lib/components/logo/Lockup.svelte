@@ -20,11 +20,11 @@
 	/*
 		THE EXTRA CASE, not the default.
 
-		Two-tone: cottontail ears on a primary disc, 1.94:1. The main logo is the single-colour mark
+		Two-tone: cottontail ears on a primary disc, 1.96:1. The main logo is the single-colour mark
 		on a shade (`Mark.svelte`, 7.06:1) — this is the version for places that want a filled badge,
 		and it comes with a caveat.
 
-		1.94 is deliberate and correct: WCAG exempts logotypes (SC 1.4.3, 1.4.11), so there is no
+		1.96 is deliberate and correct: WCAG exempts logotypes (SC 1.4.3, 1.4.11), so there is no
 		stroke, no shadow and no lighter green. It holds up because the two colours differ in
 		LIGHTNESS rather than hue, so it barely moves under greyscale or any dichromacy — which a
 		two-hue mark would not. It is a logotype allowance and never a text allowance: no small text in

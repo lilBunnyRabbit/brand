@@ -5,10 +5,10 @@
  * `cottontail` and `primary` differ in LIGHTNESS, not hue, so the mark barely moves under
  * simulation. A two-hue mark would look richer and lose most of its separation.
  *
- * These are computed, not quoted. The brief cites 2.01–2.02 from Chromatics; culori's
- * Machado-based matrices give 1.93–1.94 for the same pair. The numbers differ by simulation method,
- * so the page shows what this code can actually defend — and the claim that matters (near-zero
- * variation across conditions) holds either way, in fact slightly tighter here.
+ * These are computed, not quoted. The scheme cites 1.96 for the pair and 1.95 under greyscale;
+ * culori's Machado-based matrices land within 0.01 of that. Numbers can differ by simulation
+ * method, so the page shows what this code can actually defend — and the claim that matters
+ * (near-zero variation across conditions) holds either way.
  */
 import { contrastRatio, simulateVision, type VisionSimulation } from '$lib/color';
 import { dark } from './config/palette';

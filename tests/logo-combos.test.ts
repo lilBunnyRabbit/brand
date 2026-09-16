@@ -53,10 +53,13 @@ describe('logo combos', () => {
 
 	it('COTTONTAIL IS NEVER USED EXCEPT ON PRIMARY', () => {
 		// The rule that is easiest to break by accident — a bright colour is tempting for a headline.
-		// Every combo that inks with cottontail must sit on primary, and nothing else may.
+		// Every combo that inks with cottontail, or with the ears it is pinned as, must sit on primary.
 		for (const combo of logoCombos) {
-			if (combo.ink === 'cottontail') expect(combo.ground).toBe('primary');
+			if (combo.ink === 'cottontail' || combo.ink === 'mark_ears') {
+				expect(combo.ground).toBe('primary');
+			}
 		}
+		expect(logoCombos.some((c) => c.ink === 'mark_ears')).toBe(true);
 		for (const entry of plainInks) {
 			expect(entry.ink).not.toBe('cottontail');
 		}

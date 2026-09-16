@@ -28,20 +28,19 @@
 :root,
 [data-theme] {
 	/*
-		Section backgrounds. Three per viewport is the ceiling — adjacent shades are ~1.1:1 going down
-		(1.130, 1.135, 1.140, the same in both modes).
+		Section backgrounds. Three per viewport is the ceiling — adjacent dark shades are about 1.1:1
+		apart (1.14 at the top of the ladder down to 1.06 at the bottom).
 
-		Going UP the two modes are not alike, and light is the quiet one: 1.029 per rung against dark's
-		1.05. That is the gamut, not a taste call. Light's ladder can only climb 0.0294 in lightness
-		before the page tint stops fitting in sRGB, where dark's climbs 0.100 — so a lift that reads on
-		dark is a third of the step on cream. Lean on `--surface-well` when a light surface has to
-		separate; the down side has the room. Do NOT reach past `background_lightest` for a whiter
-		white — `palette.light.ts` explains what that cost last time.
+		Light is not alike: its rungs above the page are 1.05 apart and the three below it 1.2, because
+		the page sits near white and the only depth a light ladder can have is below it — 0.051 of
+		lightness up to white against 0.175 down. A lift that reads on dark is a third of the step on
+		paper. Lean on `--surface-well` when a light surface has to separate; the down side has the
+		room.
 	*/
 	--surface-page: var(--brand-background);
 	--surface-raised: var(--brand-background-light);
 	--surface-well: var(--brand-background-darker);
-	/* The top rung. Warm cream in light (1.091:1 on the page), not white — there is no white here. */
+	/* The top rung. In light that is white — the tint runs out at L 1 — 1.16:1 on the page. */
 	--surface-edge: var(--brand-background-lightest);
 
 	/*
@@ -295,12 +294,12 @@ a {
 /*
 	One global focus ring.
 
-	`cottontail` — 9.56 to 16.98 against the seven shades, the highest-contrast thing in the system,
-	and unmistakably ours.
+	`cottontail` — 9.58 to 17.20 against the seven dark shades, the highest-contrast thing in the
+	system, and unmistakably ours. In light it is the orange twin, 3.08 to 6.31: a ring on every rung.
 
-	Against a primary fill it is only 1.94:1 on its own, which fails the two-sided requirement. The
+	Against a primary fill it is only 1.96:1 on its own, which fails the two-sided requirement. The
 	ring-plus-offset pattern fixes that and is WCAG 2.4.11's own technique rather than a dodge: ring,
-	then a gap of the page shade, then the component. Ring against gap is 13.66 and gap against a
+	then a gap of the page shade, then the component. Ring against gap is 13.80 and gap against a
 	primary button is 7.06 — both clear.
 */
 :focus-visible {

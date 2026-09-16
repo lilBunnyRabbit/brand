@@ -25,7 +25,7 @@
 		A brand palette is built outward from the accent and a product palette upward from the ground,
 		and this mark needs no colour of its own — picking the right existing one per ground beats any
 		single compromise colour. A mid-lightness mark that cleared both grounds would score about
-		4.30 and 3.65; choosing per ground gives 7.06 and 15.70.
+		4.30 and 3.65; choosing per ground gives 7.06 and 13.5.
 
 		The two-tone cottontail-on-primary lockup is a separate, narrower case — see `Lockup.svelte`.
 	*/

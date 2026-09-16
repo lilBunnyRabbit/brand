@@ -4,8 +4,7 @@
  * The prose lives in the sections; this is the part that is DATA — which uses are sanctioned, which
  * of dark's brand relationships survived the move to a warm ground, and the two ΔE measurements that
  * decided the light primary's hue. Kept here so the claims can be changed without touching markup,
- * and so the page cannot state a relationship the palette does not have — `tests/palette.test.ts`
- * asserts each of the four against the real colours.
+ * and so the page cannot state a relationship the palette does not have.
  */
 
 /** Where light mode is allowed, and where it is not. The second list is the one people misread. */
@@ -26,13 +25,14 @@ export const lightUsage = {
 /**
  * The measurement that decided the hue.
  *
- * Reusing dark's green on a warm page fails, and it fails measurably rather than by taste: it sits
- * too close to the page's own darkened form to read as a colour ON the paper instead of a shade OF
- * it. Orange sits further out in the same position.
+ * Carry the page hue down the ladder rule to the brand's lightness — the page's own darkened form —
+ * and measure each candidate against it. Dark's green sits too close to read as a colour ON the
+ * paper instead of a shade OF it; the orange sits further out in the same position, and it is also
+ * the seed's complement, so the measurement and the relationship agree.
  */
 export const hueEvidence = {
-	green: 13.1,
-	orange: 15.2,
+	green: 12.8,
+	orange: 14.2,
 	unit: 'ΔE',
 	note: 'Distance from the page’s own darkened form. Further is better: the colour reads as ink on the paper instead of a tint of it.'
 } as const;
@@ -49,22 +49,22 @@ export interface HueMove {
 	outcome: string;
 }
 
-/** Dark's four brand relationships, and which two could not come along. */
+/** Dark's four brand relationships, and the three that could not come along. */
 export const hueMoves: readonly HueMove[] = [
 	{
 		id: 'accent',
 		token: 'accent',
 		rule: 'primary − 72°',
 		kept: true,
-		outcome: 'Dark’s own offset, still legal here.'
+		outcome: 'Dark’s own offset, on the other side of primary. Still legal here.'
 	},
 	{
 		id: 'tertiary',
 		token: 'tertiary',
-		rule: 'primary − 120°',
-		kept: true,
+		rule: 'primary + 54°',
+		kept: false,
 		outcome:
-			'Dark’s old offset, and light keeps it. Dark has since moved to +54 — light’s only legal arc is 271.5–293°, which is exactly where −120 lands.'
+			'Dark’s tertiary is the midpoint of primary and the ground. On a warm page that arc is spoken for, so it takes the one arc paper leaves open: the midpoint of the text and accent hues, 302°, 36° from each.'
 	},
 	{
 		id: 'secondary',
@@ -72,7 +72,7 @@ export const hueMoves: readonly HueMove[] = [
 		rule: 'primary + 180°',
 		kept: false,
 		outcome:
-			'The complement of orange is blue, and blue is already info. Moved to 190°, the centre of the legal teal arc, 50° clear of both success and info.'
+			'The complement of orange is blue, and blue is already info. Moved to the midpoint of success and info, 190°, 50° clear of both.'
 	},
 	{
 		id: 'warning',
@@ -80,6 +80,6 @@ export const hueMoves: readonly HueMove[] = [
 		rule: 'hue 70°',
 		kept: false,
 		outcome:
-			'70° sits 10° from the page hue, and nothing between 105° and 115° was free for an amber. So warning is green-gold at 110°.'
+			'70° sits 16° from the page hue. Moved to the midpoint of the page and success, 113°, 27° clear of both. A green-gold, forced rather than chosen.'
 	}
 ];

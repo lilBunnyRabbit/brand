@@ -66,8 +66,8 @@ export function formatRgb(color: Color): string {
  * The label colour for a swatch card — a binary rule, not a luminance heuristic, and the same rule
  * in both modes.
  *
- * Shades take `foreground`, everything else takes `background`. Measured: dark 4.84–8.60 and
- * 6.55–13.66, light 4.82–7.68 and 4.45–7.48. Nothing else works — in dark, `foreground`,
+ * Shades take `foreground`, everything else takes `background`. Measured: dark 4.80–8.62 and
+ * 6.55–13.80, light 4.54–9.29 and 5.43–8.01. Nothing else works — in dark, `foreground`,
  * `cottontail` and white all land between 1.0 and 2.4 on the light swatches.
  */
 export function labelFor(name: string): SwatchName {
@@ -292,13 +292,11 @@ export interface SwatchView {
 /**
  * Outside sRGB by more than half a channel step (1/510).
  *
- * A strict `isInGamut` is too strict to badge: one light colour lands a hair outside because
- * Chromatics' gamut mapper stopped there — `warning` undershoots blue by 0.00027. It rounds to an
- * exact, correct hex. Badging it would report a problem that does not exist at 8 bits per channel,
- * so the threshold is the smallest excursion a display could actually show.
- *
- * `background_lighter` used to be the other one. It is not any more: the light ladder now stops at
- * the tint ceiling, so no shade is gamut-mapped in either mode.
+ * A strict `isInGamut` is too strict to badge: the three light states that Chromatics' gamut mapper
+ * placed sit on the boundary, and a transcription rounded to four decimals can land a hair either
+ * side of it while still rounding to the exact, correct hex. Badging that would report a problem
+ * that does not exist at 8 bits per channel, so the threshold is the smallest excursion a display
+ * could actually show. Nothing in either palette trips it today.
  */
 export function perceptiblyOutOfGamut(color: Color): boolean {
 	const slack = 1 / 510;
@@ -349,35 +347,81 @@ export function groupViews(theme: ThemeName): GroupView[] {
 
 /* ────────────────────────────── the contract ────────────────────────────── */
 
+export interface ContractCell {
+	on: SwatchName;
+	shade: ShadeName;
+	ratio: number;
+}
+
+export interface ContractPair extends ContractCell {
+	/** What this pair has to clear: 4.5 for text, and for colour on the page and the surface; 3 below. */
+	floor: number;
+}
+
 export interface ContractResult {
 	/** Every rail colour against every shade. */
-	pairs: { on: SwatchName; shade: ShadeName; ratio: number }[];
-	worst: { on: SwatchName; shade: ShadeName; ratio: number };
+	pairs: ContractPair[];
+	/** The lowest ratio anywhere — what dark's stronger form is judged on. */
+	worst: ContractCell;
+	/** `foreground` on its hardest shade. AA in both modes. */
+	text: ContractCell;
+	/** The hardest brand or state colour on the page or the surface. AA in both modes. */
+	legible: ContractCell;
+	/** The hardest coloured pair on the two deepest rungs. WCAG's 3:1 non-text floor. */
+	floor: ContractCell;
+	/** Every pair clears its own floor. */
 	holds: boolean;
+	/** Every pair clears AA — the stronger form, which dark meets and paper cannot. */
+	allAA: boolean;
 	count: number;
 }
+
+/** The shades a brand or state colour must read on as text: the page and the surface. */
+const LEGIBLE_ON: readonly ShadeName[] = ['background', 'background_dark'];
+
+/** The rungs beyond the surface, where colour is a fill or a mark rather than body copy. */
+const BELOW: readonly ShadeName[] = ['background_darker', 'background_darkest'];
 
 /**
  * Measure the contract rather than asserting it in prose.
  *
- * The page states the worst cell as a live number, so if the seed ever moves and the contract
- * degrades, the page says so instead of continuing to claim 4.59.
+ * The contract splits by role. The text is legible on every shade; brand and state colours are
+ * legible on the page and the surface, and clear 3:1 on every rung below. Dark meets the stronger
+ * form for free — every rail colour sits at the text's lightness and the ladder is solved against
+ * the dimmest of them — so `allAA` is what its copy states. Paper cannot, which is why the parts are
+ * measured separately: the page states each worst cell as a live number, so if the palette ever
+ * moves and a part degrades, the page says so instead of continuing to claim yesterday's figure.
+ *
+ * Above the page a colour darker than the page can only read better than it does on the page, so
+ * the three lighter rungs carry the AA floor without a solve of their own.
  *
  * `cottontail` is excluded in both modes — it is an identity colour, not a rail colour, and it makes
- * no contract claim. Dark's clears anyway (9.56–16.98); light's does not (3.04–5.23), which is
- * exactly why it is a UI token there and nothing more.
+ * no contract claim. Dark's clears anyway (9.58–17.20); light's clears the 3:1 floor (3.08–6.31),
+ * which is exactly why it is a UI token there and nothing more.
  */
 export function measureContract(theme: ThemeName): ContractResult {
 	const palette = themes[theme];
-	const pairs: ContractResult['pairs'] = [];
+	const pairs: ContractPair[] = [];
 	for (const shade of shadeNames) {
 		for (const name of names) {
 			if (isShade(name) || name === 'cottontail') continue;
-			pairs.push({ on: name, shade, ratio: contrastRatio(palette[name], palette[shade]) });
+			const floor = name === 'foreground' || !BELOW.includes(shade) ? 4.5 : 3;
+			pairs.push({ on: name, shade, ratio: contrastRatio(palette[name], palette[shade]), floor });
 		}
 	}
-	const worst = pairs.reduce((a, b) => (b.ratio < a.ratio ? b : a));
-	return { pairs, worst, holds: worst.ratio >= 4.5, count: pairs.length };
+	const lowest = (cells: ContractCell[]) => cells.reduce((a, b) => (b.ratio < a.ratio ? b : a));
+	const colour = pairs.filter((p) => p.on !== 'foreground');
+	const worst = lowest(pairs);
+	return {
+		pairs,
+		worst,
+		text: lowest(pairs.filter((p) => p.on === 'foreground')),
+		legible: lowest(colour.filter((p) => LEGIBLE_ON.includes(p.shade))),
+		floor: lowest(colour.filter((p) => BELOW.includes(p.shade))),
+		holds: pairs.every((p) => p.ratio >= p.floor),
+		allAA: worst.ratio >= 4.5,
+		count: pairs.length
+	};
 }
 
 /** Contrast of `cottontail` across the seven shades — the focus-ring range, per mode. */

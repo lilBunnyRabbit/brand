@@ -25,8 +25,10 @@ import {
 	formatOklch,
 	measureContract,
 	modifierRatio,
-	varName
+	varName,
+	type ContractCell
 } from '$lib/brand/tokens';
+import { hueEvidence } from '$lib/brand/config/light-story';
 import { faces } from '$lib/brand/config/typography';
 import { contrastRatio, parseColor } from '$lib/color';
 
@@ -76,9 +78,12 @@ function lightTable(): string {
 }
 
 function contractLine(theme: ThemeName): string {
-	const { worst, count, holds } = measureContract(theme);
-	const cell = `\`${tokenName(worst.on, theme)}\` on \`${tokenName(worst.shade, theme)}\``;
-	return `- ${theme}: ${holds ? `${count}/${count}` : 'CONTRACT BROKEN'}, worst **${r3(worst.ratio)}** (${cell})`;
+	const c = measureContract(theme);
+	const cell = (x: ContractCell) =>
+		`**${r3(x.ratio)}** (\`${tokenName(x.on, theme)}\` on \`${tokenName(x.shade, theme)}\`)`;
+	const verdict = c.holds ? `${c.count}/${c.count}` : 'CONTRACT BROKEN';
+	const form = c.allAA ? ', every pair AA' : '';
+	return `- ${theme}: ${verdict}${form} — text ${cell(c.text)}, colour on page/surface ${cell(c.legible)}, floor below ${cell(c.floor)}`;
 }
 
 function body(): string {
@@ -130,46 +135,54 @@ All ${names.length} derived from one literal, the seed \`${formatOklch(dark.back
 
 ${darkTable()}
 
-The ladder is symmetric, ±${ladderSpan} lightness, chroma proportional to lightness so lighter shades read
-as elevated. Hue is identity and chroma is rank: the seed's chroma \`c\` is the quantum and every
-brand rank is an integer multiple of it (1c, 2c, 3c, 4c), with states at 6c. 5c is deliberately
-empty so the brand band and the state band stay apart.
+The ladder is symmetric, ±${ladderSpan} lightness — solved, not chosen: the lightest shade is the seed lifted
+to exactly where the dimmest rail colour still clears 4.55 (AA plus rounding headroom). Chroma moves in
+proportion to lightness so lighter shades read as elevated. Hue is identity and chroma is rank: the
+seed's chroma \`c\` is the quantum and every brand rank is an integer multiple of it (1c, 2c, 3c, 4c),
+with states at 6c. 5c is deliberately empty so the brand band and the state band stay apart.
 
 ## Light — the product UI twin
 
-Same keys, same jobs. Authored as resolved literals rather than arithmetic, because two of them
-come out of a contrast solver and two out of a gamut mapper.
+Same keys, same jobs. Every value is a relationship to the dark seed or a solve against the contract,
+but the solving lives in Chromatics (a luminance inversion for the text, the brand and the ladder;
+the sRGB chroma ceiling at every rung; a gamut map for three states), so they ship as resolved literals.
 
 ${lightTable()}
 
-Three things about light that are easy to get wrong:
+Four things about light that are easy to get wrong:
 
-- **The light primary is orange, not green.** Dark's green sits 13.1 ΔE from its own darkened form
-  on this ground — it reads as a shade of the paper rather than a colour on it. Orange measures
-  15.2 in the same position. Light is fitted to its own ground, it does not inherit dark's wheel.
+- **The light primary is orange, not green.** Carry the page hue down to the brand's lightness and
+  measure: dark's green sits ${hueEvidence.green} ΔE from that darkened form — a shade of the paper rather than a
+  colour on it. Orange measures ${hueEvidence.orange}, and it is the seed's complement. Light is fitted to its own
+  ground, it does not inherit dark's wheel.
+- **The brand sits above the text.** Text is L ${light.foreground.l}, solved to an 8:1 body ratio; brand and states
+  share L ${light.primary.l}, solved so the loudest of them still clears AA on the surface. See the contract below.
 - **\`cottontail\` changes job.** In dark it is the badge ink. In light it is a UI colour — focus
   ring, marker, chart highlight. Never text (${r2(lightCt.min)}–${r2(lightCt.max)} across the shades), never the logo.
-- **The ladder is asymmetric**: ${lightLadderSpan.up} up, ${lightLadderSpan.down} down. Up is limited by the gamut, not by
-  contrast — past L ${light.background_lightest.l} the page tint no longer fits in sRGB. \`background_lightest\` is
-  \`${light.background_lightest.hex}\`, a cream. **It is not white and must not be "corrected" to white** — at L 1.0 the sRGB
-  chroma ceiling is zero, which strips the tint and puts a hole in the ladder.
+- **The ladder is asymmetric**: ${lightLadderSpan.up} up, ${lightLadderSpan.down} down. Up ends at a wall, not at the
+  contract: white, where the sRGB chroma ceiling is zero, so \`background_lightest\` is
+  \`${light.background_lightest.hex}\` by arithmetic rather than by choice. Down is solved the way dark's reach is — the
+  ladder descends until the text still reads 4.55. Every rung holds the same gamut fraction of the
+  chroma sRGB allows at its own lightness.
 
 ## One fixed colour
 
 \`${markEars.name}\` \`${markEars.hex}\` \`${formatOklch(markEars)}\` — the mark's pale ears. Byte-identical in both
-modes, belongs to neither palette. Only the disc themes. Deriving light ears from \`light_primary\`
-gives 2.28 on the disc against 7.36 for this, and they vanish under greyscale.
+modes — dark's \`cottontail\` pinned. Only the disc themes. Deriving light ears from \`light_primary\`
+gives ${r2(contrastRatio(light.cottontail, light.primary))} on the disc against ${r2(contrastRatio(markEars, light.primary))} for this, and they vanish under greyscale.
 
 ## The contrast contract
 
-Every one of the 9 rail colours (\`foreground\`, the 4 brand, the 4 states) clears **WCAG AA 4.5:1
-against every one of the 7 shades** — 63 pairs per mode, both modes.
+The 9 rail colours (\`foreground\`, the 4 brand, the 4 states) against the 7 shades — 63 pairs per
+mode. The contract splits by role: **the text clears WCAG AA (4.5:1) on every shade; brand and
+state colours clear AA on the page and the surface (\`background_dark\`) and WCAG's 3:1 non-text
+floor on every rung below.** Dark meets the stronger form — every pair AA — for free.
 
 ${contractLine('dark')}
 ${contractLine('light')}
 
-The practical consequence: **any shade can back any section and nothing needs re-checking.**
-\`cottontail\` is excluded — it is an identity colour and makes no contract claim.
+The practical consequence: **any shade can back body text, and the page and the surface can back
+anything.** \`cottontail\` is excluded — it is an identity colour and makes no contract claim.
 
 The contract is solved and verified in Chromatics; the guide measures it live on the page, and
 this file's numbers above are measured from the shipped values at build time.
@@ -194,9 +207,9 @@ Available pre-composited as \`--fg-muted\`, \`--fg-disabled\`, \`--fg-border\`, 
 Hard don'ts:
 
 1. **Light mode is UI only.** Never for brand recognition, marketing, the app icon or social cards.
-2. **Nothing brand-coloured on white.** The light ground is \`${light.background.hex}\`, a cream. On actual white the
-   dark brand colours vanish — primary is ${r2(contrastRatio(dark.primary, white))}:1, cottontail ${r2(contrastRatio(dark.cottontail, white))}:1. Light mode is not permission
-   to use \`#fff\`.
+2. **Nothing from the dark palette on white.** Dark's colours vanish there — primary is ${r2(contrastRatio(dark.primary, white))}:1,
+   cottontail ${r2(contrastRatio(dark.cottontail, white))}:1. White is the top rung of the LIGHT ladder (\`${light.background_lightest.hex}\`, where the tint
+   runs out) and the light palette is what goes on it; the light page itself is \`${light.background.hex}\`, a cream.
 3. **No two brand colours adjacent or layered.** They are all the same lightness, so side by side
    they blur into one shape. A gap or a border fixes it.
 4. **No gradients between brand colours.** Same lightness means the gradient has nowhere to travel

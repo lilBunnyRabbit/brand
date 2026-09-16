@@ -1,5 +1,5 @@
 /**
- * Brand Light — the twin set, for product UI only. EDIT HERE.
+ * Brand Light — the twin set, for product UI only. TRANSCRIBED, not derived. EDIT HERE.
  *
  * Every dark token has a counterpart here under the SAME key, doing the same job in the same
  * position. Nothing rebinds: switching modes is a scope change, not a remapping. In the scheme's own
@@ -8,44 +8,53 @@
  * It is not an identity palette. Dark is the brand; this exists so a product surface can render
  * light. `config/prohibitions.ts` states the rule.
  *
- * ── WHY THESE ARE LITERALS AND DARK IS DERIVED ──
+ * ── WHY THESE ARE LITERALS ──
  *
- * Dark falls out of one seed with arithmetic this codebase owns. Light does not: it leans on two
- * Chromatics solvers that are not vendored here — `ensureContrast()` (used for `foreground` and for
- * the ladder's downward span) and `gamutMap()`, which the scheme calls on all eight rail colours but
- * which only MOVES two of them. `gamutMap` moves lightness and hue as well as chroma, so a
- * chroma-only clip cannot reproduce it. `warning` lands on L 0.4268 H 109.3148 rather than the
- * requested L 0.425 H 110, and `info` on L 0.4329 H 246.2376 rather than L 0.425 H 240 — the drift
- * is the mapper's output, not a rounding artefact. The other six ask for less chroma than sRGB has
- * at the rail, so the call is a no-op and the requested numbers are what ships.
+ * Nothing in the light half is chosen — every value is a relationship to the dark seed or a solve
+ * against the contract — but the solving lives in Chromatics, not here. Three of its operations are
+ * not vendored: `xyy.setLuminance`, which lands a colour on an exact WCAG luminance and sizes the
+ * text, the brand and the ladder; `maxChroma` at every rung, which is what keeps the ladder inside
+ * sRGB all the way up to white; and `gamutMap`, which three of the states need. Reimplementing them
+ * would make every number the page states a guess, so the resolved values are transcribed and the
+ * recipe is recorded per colour as its description — the same call as `ladderSpan` in the dark file.
  *
- * The ladder does not use it at all any more. It used to, at the top, and that was the tell that the
- * top was wrong — see `UP`.
+ * ── THE PAGE ──
  *
- * Reimplementing those solvers would make every number the page states a guess. So the resolved
- * values are transcribed and the recipe is recorded per colour as its description. Same call already
- * made for `ladderSpan` in the dark file, and for the same reason.
+ * The page is the top of the dark system: L 0.949 = `foreground.l + span * 2`, where dark puts
+ * `cottontail`. Its hue is the midpoint of the two hues dark is built around, the text's (also
+ * accent's) and primary's — 86.47 — and its chroma is the same 45.6% gamut fraction (`tint`) the
+ * dark seed sits at. The text sits on the page's complement at exactly the luminance an 8:1 body
+ * ratio demands, darker than dark's inherited 6.92 on purpose: on paper the text alone sizes the
+ * ladder, so its body ratio is also the depth.
  *
- * `tests/palette.test.ts` pins all 17 hexes and re-measures the contract, so a bad transcription
- * fails the build rather than shipping.
+ * ── THE CONTRACT SPLITS ──
+ *
+ * At L 0.40 the sRGB gamut is about half as wide as at dark's 0.745: brand colours at the text's
+ * lightness came out brown, grey or olive. So on paper the contract splits by role. The text clears
+ * AA on every shade; brand and states clear AA on the page and the surface (`background_dark`) and
+ * WCAG's 3:1 non-text floor on every rung below; and the brand sits at its own solved lightness,
+ * 0.474, a step above the text — where its loudest colour (a rank-6 green) still reads 4.55 on the
+ * surface. The page measures all three parts live.
+ *
+ * ── THE LADDER ──
+ *
+ * Every rung holds `tint` of the chroma sRGB allows AT ITS OWN LIGHTNESS, so the chroma is a
+ * different literal on every rung. Two reaches, neither chosen. Up, the limit is a wall: white,
+ * where the available chroma is zero, so the top rung comes out `#ffffff` on its own — the one value
+ * in either palette with no chroma, and a rung of the ladder rather than a hole in it. Down, the
+ * limit is the contract: the ladder descends until the text reads 4.55, the mirror of dark's `span`.
+ * Steps of 3.2 · 2.9 · 2.7 ΔE above the page and 8.3 · 6.1 · 4.9 below — the page sits near white,
+ * so the only depth a light ladder can have is below it.
  *
  * ── THE PART THAT IS NOT A SWAP ──
  *
- * The light primary is ORANGE, not green. Dark's green sits 13.1 ΔE from this page's own darkened
- * form — it reads as a shade of the paper rather than a colour on it. Orange measures 15.2 in the
- * same position, so the light mode is fitted to its own ground instead of inheriting dark's wheel.
- *
- * One of dark's four brand relationships survives the move, two break, and one has since diverged
- * on dark's side:
- *
- *   accent    = primary − 72     dark's own offset, still legal here
- *   tertiary  = primary − 120    dark's OLD offset. Dark has since moved to +54, its own bisector,
- *               and light cannot follow: its only legal arc is 271.5–293, which is where −120
- *               already lands. See the note on the token.
- *   secondary   BREAKS — the complement of orange is blue, and blue is `info`. Moved to hue 190,
- *               the centre of the legal teal arc, 50° clear of both success and info.
- *   warning     BREAKS — hue 70 sits 10° from the page hue. Nothing between 105 and 115 was free
- *               for an amber, so warning is green-gold at 110.
+ * The light primary is ORANGE, not green. Carry the page hue down the ladder to the brand's
+ * lightness — the page's own darkened form — and measure each candidate against it: a green on
+ * dark's hue sits 12.8 ΔE from it, close enough to read as a shade of the paper rather than a colour
+ * on it; the orange 14.2. Orange is also the seed's complement, `foreground.h`, the angle dark's own
+ * accent sits on. Not one hue here is a literal: accent keeps dark's 72° from primary on the other
+ * side, and the rest are midpoints. `hueMoves` in `light-story.ts` states which of dark's four
+ * relationships survived the move.
  */
 import { Color } from '$lib/color';
 import type { SwatchName } from './palette.dark';
@@ -53,162 +62,134 @@ import type { SwatchName } from './palette.dark';
 const at = (name: string, l: number, c: number, h: number, formula: string) =>
 	new Color(`light_${name}`, l, c, h, formula);
 
-/*
-	The page anchor is the top of the dark system: `foreground.l + span * 2`, i.e. exactly where dark
-	puts `cottontail`. Its chroma is the same 45.6% gamut fraction the dark seed sits at, so both
-	grounds are equally saturated relative to what sRGB allows at their lightness.
+/* The page: the top of the dark system, on the midpoint hue, at the seed's gamut fraction. */
+const TOP = 0.949;
+const LIGHT_H = 86.47;
+const PAGE_C = 0.0259;
 
-	Hue 80 rather than the derived midpoint 86.47, which was too yellow.
-*/
-const LIGHT_L = 0.945;
-const LIGHT_H = 80;
-const LIGHT_C = 0.023;
+/* The brand lightness, solved against the surface. Every brand and state colour shares it. */
+const BRAND_L = 0.4743;
 
-/*
-	The rail. `foreground` is solved to dark's OWN body ratio (6.92 → 7.04 here), so neither mode
-	reads twice as stark as the other, and the brand rail then sits at that lightness — mirroring
-	dark, where primary sits at `foreground.ok_l`.
-*/
-const RAIL_L = 0.425;
-
-/*
-	The ladder is ASYMMETRIC, unlike dark's ±span.
-
-	Downward the reach is solved the same way dark's is — the darkest shade is the darkest ground on
-	which the hardest rail colour still clears AA — and comes out at 0.12.
-
-	Upward the binding limit is not contrast, it is the GAMUT. Up used to be `1 - light_bl`, which
-	reaches for L 1.0 — a coordinate, not a colour. The sRGB chroma ceiling at L 1.0 is exactly zero,
-	so the mapper stripped the whole page tint and the top rung fell out as #ffffff, the one value in
-	the light half with no chroma at all. It read as a hole in the ladder rather than a rung of it,
-	and the spacing said so: 1.26, 2.59, then 8.26 ΔE from the page. That last jump was a chroma
-	CLIFF, not a lightness step.
-
-	So up reaches the TINT ceiling instead — the lightest L at which the page chroma still fits in
-	sRGB, 0.9744, giving 0.0294. All seven rungs are now OKLCH(L, LIGHT_C, LIGHT_H): one chroma, one
-	hue, only lightness moving, and not one of them needs gamut mapping.
-
-	The ceiling is a division, not a solve. Near white the sRGB boundary converges on a straight line
-	into (L 1, C 0), so a single probe fixes its slope — in Chromatics,
-	`OKLCH(0.99, 0.02, 80).maxChroma() / 0.01` — and the ceiling is `1 - light_c / slope`. Probes from
-	0.96 to 0.995 land within 0.0004 of each other and produce the identical hex.
-
-	The up side is quieter than it was, and that is correct rather than a loss: there is 0.0294 of
-	lightness above the page before the tint leaves sRGB, against 0.120 below. The reach the old
-	ladder appeared to have WAS the cliff. Do not compensate by pushing the top rung back toward white.
-*/
-const UP = 0.0294;
-const DOWN = 0.12;
+/* Both reaches: up to white, down to where the text still reads 4.55. */
+const UP = 0.051;
+const DOWN = 0.1748;
 
 export const light = {
 	background_lightest: at(
 		'background_lightest',
-		0.9744,
-		LIGHT_C,
+		1,
+		0,
 		LIGHT_H,
-		'OKLCH(light_bl + up, light_c, light_bh) — up reaches the tint ceiling, not L 1.0'
+		'OKLCH(top + up, maxChroma * tint, light_bh) — white: at L 1 there is no chroma to hold'
 	),
 	background_lighter: at(
 		'background_lighter',
-		0.9646,
-		LIGHT_C,
+		0.983,
+		0.0086,
 		LIGHT_H,
-		'OKLCH(light_bl + up * 2/3, light_c, light_bh)'
+		'OKLCH(top + up * 2/3, maxChroma * tint, light_bh)'
 	),
 	background_light: at(
 		'background_light',
-		0.9548,
-		LIGHT_C,
+		0.966,
+		0.0172,
 		LIGHT_H,
-		'OKLCH(light_bl + up / 3, light_c, light_bh)'
+		'OKLCH(top + up / 3, maxChroma * tint, light_bh)'
 	),
 	background: at(
 		'background',
-		LIGHT_L,
-		LIGHT_C,
+		TOP,
+		PAGE_C,
 		LIGHT_H,
-		'OKLCH(foreground.ok_l + span * 2, maxChroma * k, 80) — the page. k is the seed’s gamut fraction'
+		'OKLCH(foreground.l + span * 2, maxChroma * tint, (foreground.h + primary.h) / 2) — the page'
 	),
 	background_dark: at(
 		'background_dark',
-		0.905,
-		LIGHT_C,
+		0.8907,
+		0.0566,
 		LIGHT_H,
-		'OKLCH(light_bl - light_span / 3, light_c, light_bh)'
+		'OKLCH(top - light_span / 3, maxChroma * tint, light_bh) — the surface'
 	),
 	background_darker: at(
 		'background_darker',
-		0.865,
-		LIGHT_C,
+		0.8325,
+		0.0777,
 		LIGHT_H,
-		'OKLCH(light_bl - light_span * 2/3, light_c, light_bh)'
+		'OKLCH(top - light_span * 2/3, maxChroma * tint, light_bh)'
 	),
 	background_darkest: at(
 		'background_darkest',
-		0.825,
-		LIGHT_C,
+		0.7742,
+		0.0723,
 		LIGHT_H,
-		'OKLCH(light_bl - light_span, light_c, light_bh)'
+		'OKLCH(top - light_span, maxChroma * tint, light_bh)'
 	),
 
 	foreground: at(
 		'foreground',
-		RAIL_L,
+		0.3982,
 		0.0233,
-		260,
-		'ensureContrast(OKLCH(0.70, c, 260), light_background, 6.92) — solved to dark’s body ratio'
+		266.47,
+		'OKLCH(page.complement().xyy.setLuminance((page.Y + 0.05) / 8 - 0.05).ok_l, c, light_bh + 180) — an 8:1 body'
 	),
 
 	/*
-		−120, where dark now uses +54 (its bisector) — and this is the one place light cannot follow.
-
-		Light has the same defect as dark had, worse: ΔE 4.8 from `light_foreground`, close enough to
-		body text that it barely reads as a colour. It is not fixable by hue. The scheme's hue law
-		leaves light exactly ONE legal arc, 271.5–293, and the best point in it scores 5.3 against
-		this 4.8 — half a ΔE for abandoning dark's offset. The binding constraint is chroma, not
-		angle: `u × 1` is 0.0205 against `light_foreground`'s 0.0233 at the same lightness, so no hue
-		puts meaningful distance between a rank-1 colour and the text. Moving it would mean breaking
-		the integer chroma ranks, which is a bigger decision than this token.
+		Rank 1 on the midpoint of the text and accent hues — 36° from each, dark's "furthest from both
+		walls" rule in the one arc a warm page leaves open. 9.5 ΔE from the text. At the text's own
+		lightness it read 3.7 whatever the hue, which is what pushed the whole brand rail up to its own
+		solved lightness.
 	*/
-	tertiary: at('tertiary', RAIL_L, 0.0205, 290.47, 'OKLCH(light_l, u * 1, primary − 120)'),
+	tertiary: at(
+		'tertiary',
+		BRAND_L,
+		0.0259,
+		302.47,
+		'OKLCH(light_bl, u * 1, (light_foreground.h + light_accent.h) / 2)'
+	),
 	secondary: at(
 		'secondary',
-		RAIL_L,
-		0.0409,
+		BRAND_L,
+		0.0519,
 		190,
-		'OKLCH(light_l, u * 2, 190) — +180 lands on info, so the teal arc instead'
+		'OKLCH(light_bl, u * 2, (h_success + h_info) / 2) — +180 lands on info, so the teal arc instead'
 	),
 	primary: at(
 		'primary',
-		RAIL_L,
-		0.0614,
+		BRAND_L,
+		0.0778,
 		50.47,
-		'OKLCH(light_l, u * 3, light_ph) — light_ph 50.47, orange, at 55% of its ceiling'
+		'OKLCH(light_bl, u * 3, foreground.h) — the seed’s complement: orange'
 	),
-	accent: at('accent', RAIL_L, 0.0818, 338.47, 'OKLCH(light_l, u * 4, primary − 72)'),
+	accent: at('accent', BRAND_L, 0.1037, 338.47, 'OKLCH(light_bl, u * 4, foreground.h − 72)'),
 
+	/*
+		Pops by CHROMA, not lightness: on paper the "brighter than everything" route lands beside the
+		text. Two up-strides above the text at the full sRGB ceiling — boxed between the brand rail
+		0.03 below it and the darkest rung's 3:1 floor just above, so it is primary's louder twin
+		(same hue, 9.9 ΔE) rather than a colour of its own.
+	*/
 	cottontail: at(
 		'cottontail',
-		0.545,
-		0.1431,
+		0.5002,
+		0.1314,
 		50.47,
-		'OKLCH(light_foreground.ok_l + light_span, maxChroma(), light_ph) — pops by chroma, not lightness'
+		'light_primary.atLightness(light_foreground.l + up * 2).atChroma(maxChroma()) — pops by chroma, not lightness'
 	),
 
-	success: at('success', RAIL_L, 0.1228, 140, 'OKLCH(light_l, u * 6, 140)'),
+	success: at('success', 0.4745, 0.1538, 140.32, 'OKLCH(light_bl, u * 6, 140).gamutMap()'),
 	warning: at(
 		'warning',
-		0.4268,
-		0.0928,
-		109.3148,
-		'OKLCH(light_l, u * 6, 110).gamutMap() — green-gold; 70 is 10° from the page hue'
+		0.4761,
+		0.1064,
+		113.24,
+		'OKLCH(light_bl, u * 6, (light_bh + h_success) / 2).gamutMap() — green-gold; 70 sits 16° from the page hue'
 	),
-	error: at('error', RAIL_L, 0.1228, 30, 'OKLCH(light_l, u * 6, 30)'),
-	info: at('info', 0.4329, 0.1119, 246.2376, 'OKLCH(light_l, u * 6, 240).gamutMap()')
+	error: at('error', BRAND_L, 0.1556, 30, 'OKLCH(light_bl, u * 6, 30)'),
+	info: at('info', 0.4829, 0.1244, 246.07, 'OKLCH(light_bl, u * 6, 240).gamutMap()')
 } satisfies Record<SwatchName, Color>;
 
 /**
  * Both reaches, exported so the page can state that this ladder is not symmetric — and that the two
- * limits are different KINDS of limit. `down` is a contrast solve, `up` is the sRGB tint ceiling.
+ * limits are different KINDS of limit. `down` is a contrast solve; `up` is the wall at white.
  */
 export const lightLadderSpan = { up: UP, down: DOWN };

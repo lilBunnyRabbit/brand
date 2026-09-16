@@ -3,8 +3,9 @@
 A single-page brand guide: the logo, the palette, a business card and the rules.
 **[lilbunnyrabbit.github.io/brand](https://lilbunnyrabbit.github.io/brand/)**
 
-The point of it: **drop an SVG into `src/lib/brand/logos/`, or change the seed in
-`src/lib/brand/config/palette.ts`, and the whole page follows.** No component edits.
+The point of it: **drop an SVG into `src/lib/brand/logos/`, or paste new numbers into
+`src/lib/brand/config/palette.dark.ts` / `palette.light.ts`, and the whole page follows.** No
+component edits.
 
 SvelteKit + Svelte 5 + Tailwind v4 on bun, prerendered by `adapter-static`, deployed to GitHub Pages.
 
@@ -50,17 +51,19 @@ cd /tmp/stage && python3 -m http.server 8899   # open http://localhost:8899/bran
 | States   | `success` `warning` `error` `info`                                                                                                        |
 
 **The contract: every non-shade colour clears WCAG AA against every one of the seven shades.** Worst
-case 4.59, `error` on `background_lightest`. So any shade can back any section and changing a section
-background never needs a contrast re-check. The page measures this live rather than quoting it, and
-`tests/palette.test.ts` asserts it — if the seed moves and the contract degrades, the page says so
-instead of continuing to claim 4.59.
+case 4.54, `error` on `background_lightest`. So any shade can back any section and changing a section
+background never needs a contrast re-check. The page measures this live rather than quoting it — if
+the seed moves and the contract degrades, the page says so instead of continuing to claim 4.54. Paper
+cannot meet that form: the light half splits the contract by role (text on every shade; brand and
+states on the page and the surface, with a 3:1 floor on the rungs below) and measures each part.
 
-Three things in the palette are _solved_, not chosen, and the tests prove the property rather than
+Three things in the palette are _solved_, not chosen, and the page measures the property rather than
 trusting the number:
 
-- **`span = 0.100`** — the ladder's half-reach. The lightest shade is the lightest colour on which
-  the hardest text (`error`, lowest luminance at L 0.745) still clears AA. The tests confirm the
-  contract holds at 0.100 and breaks above **0.1047**, so it ships at 96% of the true ceiling.
+- **`span = 0.102`** — the ladder's half-reach, solved rather than searched for. WCAG contrast
+  inverts into a luminance target with one division, so the lightest shade is the seed lifted to
+  exactly the luminance at which the dimmest rail colour (`error`, at L 0.745) still reads 4.55:
+  AA plus the 0.05 that the rungs' own chroma and 8-bit rounding cost on the way to the screen.
 - **Brand chroma is an integer multiple of the seed's** — 1c, 2c, 3c, 4c for tertiary → accent, 6c
   for the states, with 5c deliberately empty so the two bands stay apart. Chroma encodes rank.
 - **`cottontail` is 60% of the sRGB gamut boundary** at its lightness and hue, expressed as a
@@ -72,8 +75,9 @@ pair is roughly 1:1. That is the single most important rule, and the Don't secti
 looks obviously wrong.
 
 Interaction and de-emphasis are **opacity on an existing colour**, never a new colour: hover 85%,
-active 70%, muted 65%, disabled 38%, borders 67%. Composited in gamma sRGB, which is what a browser
-paints. Muted text is AA-large at best — captions only, and not on the lightest two shades.
+active 70%, muted 65%, disabled 38%, borders 76%. Composited in gamma sRGB, which is what a browser
+paints. Borders are the lowest alpha that clears 3:1 on every shade in both modes. Muted text is
+AA-large at best — captions only, and not on the rungs furthest from the page.
 
 ## The logo
 
@@ -92,10 +96,10 @@ Three sanctioned combinations, in order of how often you want them:
 | ------------------------ | ------------------------------------------------------ | --------------- |
 | `background` + `primary` | the bare mark on a shade — **the default**             | 7.06            |
 | `primary` + `background` | flipped, as a filled badge that carries its own ground | 7.06            |
-| `primary` + `cottontail` | the bright badge                                       | 1.94, logo only |
+| `primary` + `cottontail` | the bright badge                                       | 1.96, logo only |
 
 **`cottontail` is never text.** Its only job is the mark on a primary ground. On a primary fill it is
-1.94:1, which is a logotype allowance (WCAG exempts logotypes, SC 1.4.3 and 1.4.11) and nothing more
+1.96:1, which is a logotype allowance (WCAG exempts logotypes, SC 1.4.3 and 1.4.11) and nothing more
 — so no stroke, no shadow, no lighter green, and no headlines. That combination survives greyscale
 and all three dichromacies almost unchanged, because the two colours differ in _brightness_ rather
 than hue; the page renders those simulations with measured values.
@@ -105,16 +109,17 @@ The site's own chrome sticks to the triplet — `background`, `primary`, `cotton
 
 ## How to change things
 
-| Task                                        | What to edit                                                                                                                                                   |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Add a logo variant**                      | Drop the `.svg` into `src/lib/brand/logos/`. That is the whole step. Optionally add an entry to `config/logos.ts` for a label or minimum size.                 |
-| **Change the palette**                      | The seed in `config/palette.ts`. Everything else is a formula against it, so the swatches, the page, the card, the favicon and all four exports move together. |
-| **Change the card**                         | `config/card.ts` — size, role, contact lines, which shade each face uses. Placeholder lines are struck through on the page so nobody prints a draft.           |
-| **Change a rule**                           | `config/prohibitions.ts`. The Don't section is generated from it.                                                                                              |
-| **Mark something as a draft**               | Name the file `….wip.svg`, or set `status: 'wip'`. The page badges it.                                                                                         |
-| **Regenerate the favicon**                  | `bun run favicon [file] [ink] [disc]` — composes the lockup (disc + ears) so it cannot drift from the site.                                                    |
-| **Add an export format**                    | One entry in `exportFormats` in `brand/tokens.ts` plus one render function.                                                                                    |
-| **Swap the colour engine for `chromatics`** | Rewrite the body of `src/lib/color/index.ts`. Nothing else imports colour math directly.                                                                       |
+| Task                                        | What to edit                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Add a logo variant**                      | Drop the `.svg` into `src/lib/brand/logos/`. That is the whole step. Optionally add an entry to `config/logos.ts` for a label or minimum size.                                                                                                                                                                      |
+| **Change the palette**                      | Retune the scheme in Chromatics and paste the new numbers into `config/palette.dark.ts` / `palette.light.ts`; each colour carries its recipe as its description. The swatches, the page, the card, the favicon and all four exports read from there.                                                                |
+| **Change the card**                         | `config/card.ts` — size, role, contact lines, which shade each face uses. Placeholder lines are struck through on the page so nobody prints a draft.                                                                                                                                                                |
+| **Change a rule**                           | `config/prohibitions.ts`. The Don't section is generated from it.                                                                                                                                                                                                                                                   |
+| **Mark something as a draft**               | Name the file `….wip.svg`, or set `status: 'wip'`. The page badges it.                                                                                                                                                                                                                                              |
+| **Regenerate the favicon**                  | `bun run favicon [file] [ink] [disc]` — composes the lockup (disc + ears) so it cannot drift from the site.                                                                                                                                                                                                         |
+| **Add an export format**                    | One entry in `exportFormats` in `brand/tokens.ts` plus one render function.                                                                                                                                                                                                                                         |
+| **Point the Live embed elsewhere**          | Copy from the studio (Share, or Export → Embed) and `pbpaste > config/chromatics-link.txt` straight from the clipboard — never through a terminal paste, which mangles a 9k-character line. Only the payload after the `#` is kept; `bun test` decodes it, so a mangled paste fails the build rather than the page. |
+| **Swap the colour engine for `chromatics`** | Rewrite the body of `src/lib/color/index.ts`. Nothing else imports colour math directly.                                                                                                                                                                                                                            |
 
 ### The logo filename convention
 
@@ -171,7 +176,8 @@ needed it:
 src/lib/color/       the colour seam — swap to chromatics here, nowhere else
 src/lib/svg.ts       pure string transforms (no DOM: runs at prerender and under bun test)
 src/lib/brand/
-  config/            THE FILES YOU EDIT — palette, logos, card, prohibitions, meta
+  config/            THE FILES YOU EDIT — palette, logos, card, prohibitions, meta, the
+                     Chromatics link (`chromatics-link.txt`, one line, nothing but the URL)
   logos/             DROP SVGs HERE
   logo-meta.ts       filename parsing + variant construction (pure, tested)
   discover.ts        import.meta.glob assembly (Vite-only, thin)

@@ -29,6 +29,7 @@ import {
 	exportJson,
 	exportTailwind,
 	labelFor,
+	measureContract,
 	varName
 } from '../src/lib/brand/tokens';
 
@@ -82,6 +83,26 @@ describe('the palette registry', () => {
 	it('mark_ears is a fixed asset colour, not a palette key', () => {
 		expect(names).not.toContain('mark_ears');
 		expect(Object.keys(light)).not.toContain('mark_ears');
+	});
+});
+
+describe('the contract', () => {
+	// The property, not the numbers: every pair clears its own floor in both modes, and dark still
+	// meets the stronger all-AA form its copy states.
+	it('holds in both modes', () => {
+		for (const theme of themeNames) {
+			const contract = measureContract(theme);
+			expect(contract.count).toBe(63);
+			expect(contract.holds).toBe(true);
+		}
+	});
+
+	it('dark meets the stronger form, every pair AA', () => {
+		expect(measureContract('dark').allAA).toBe(true);
+	});
+
+	it('the ears are dark’s cottontail, pinned', () => {
+		expect(markEars.hex).toBe(dark.cottontail.hex);
 	});
 });
 

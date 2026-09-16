@@ -9,6 +9,15 @@
  */
 import type { SwatchName, ThemeName } from './palette';
 
+/**
+ * What a mark may be inked with: any palette key, or the fixed ears colour.
+ *
+ * `mark_ears` is dark's `cottontail` pinned, so in dark the two are one colour. In light it is what
+ * keeps the pale ears pale on the orange disc — `light_cottontail` on `light_primary` reads 1.09,
+ * and the badge would vanish.
+ */
+export type Ink = SwatchName | 'mark_ears';
+
 export interface LogoCombo {
 	id: string;
 	label: string;
@@ -17,7 +26,7 @@ export interface LogoCombo {
 	/** What sits behind the mark. */
 	ground: SwatchName;
 	/** The mark itself. */
-	ink: SwatchName;
+	ink: Ink;
 	note: string;
 	/** Logotypes are exempt from WCAG contrast (SC 1.4.3, 1.4.11); flags the ones relying on that. */
 	exempt?: boolean;
@@ -45,8 +54,8 @@ export const logoCombos: readonly LogoCombo[] = [
 		label: 'primary + cottontail',
 		kind: 'disc',
 		ground: 'primary',
-		ink: 'cottontail',
-		note: 'The bright one, for when the badge should catch the eye. Low contrast on purpose: fine for a logotype, never for text.',
+		ink: 'mark_ears',
+		note: 'The bright one, for when the badge should catch the eye. The ears are the fixed asset colour, so on paper they stay pale on the orange disc. Low contrast in dark on purpose: fine for a logotype, never for text.',
 		exempt: true
 	},
 	/*
@@ -102,12 +111,12 @@ export interface MarkVariant {
  * The mark, in every combination worth shipping: brand and neutral, dark and light.
  *
  * `ears: null` is `mark_ears` — pinned, identical in both modes. Only the disc themes, and that is
- * the whole reason the light brand mark works: keeping the pale ears fixed gives 7.36 on the light
- * disc, where deriving them from `light_primary` the way dark derives its own would give 2.68 and
+ * the whole reason the light brand mark works: keeping the pale ears fixed gives 6.06 on the light
+ * disc, where deriving them from `light_primary` the way dark derives its own would give 1.09 and
  * disappear entirely in greyscale.
  *
- * The surprise, which the page should say out loud: the LIGHT brand mark is more legible than the
- * dark one. Dark's 1.94 survives on the logotype exemption; light's 7.36 clears AAA outright.
+ * Worth saying out loud: the LIGHT brand mark needs no exemption. Dark's 1.96 survives on the
+ * logotype allowance; light's 6.06 clears AA on its own.
  */
 export const markVariants: readonly MarkVariant[] = [
 	{
@@ -132,7 +141,7 @@ export const markVariants: readonly MarkVariant[] = [
 		theme: 'light',
 		disc: 'primary',
 		ears: null,
-		note: 'Same ears, orange disc. The most legible of the four. Still not the one to use for recognition.'
+		note: 'Same ears, orange disc. Clears AA on its own, where the dark badge lives on the logotype exemption. Still not the one to use for recognition.'
 	},
 	{
 		id: 'light-neutral',

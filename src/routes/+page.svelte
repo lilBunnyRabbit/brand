@@ -7,6 +7,7 @@
 	import Lockup from '$lib/components/logo/Lockup.svelte';
 	import LogoRow from '$lib/components/logo/LogoRow.svelte';
 	import Wordmark from '$lib/components/logo/Wordmark.svelte';
+	import Chromatics from '$lib/components/color/Chromatics.svelte';
 	import SeedTree from '$lib/components/color/SeedTree.svelte';
 	import SwatchBlock from '$lib/components/color/SwatchBlock.svelte';
 
@@ -15,7 +16,14 @@
 
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
-	import { dark, light, modifiers, themes, type ThemeName } from '$lib/brand/config/palette';
+	import {
+		dark,
+		light,
+		markEars,
+		modifiers,
+		themes,
+		type ThemeName
+	} from '$lib/brand/config/palette';
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
 	import { wordmarks } from '$lib/brand/config/wordmarks';
@@ -43,7 +51,7 @@
 	// rather than continuing to claim a number that used to be true.
 	const contract = measureContract('dark');
 
-	// The sizes the brief says to check, because thin ear strokes at a 1.94:1 margin are the risk.
+	// The sizes the brief says to check, because thin ear strokes at a 1.96:1 margin are the risk.
 	const sizes = [16, 24, 32, 48, 64];
 
 	/*
@@ -72,9 +80,10 @@
 	/*
 		Ratios measured from the palette rather than written down, so they cannot drift.
 
-		Built per mode from the SAME combo list, which is what makes the light section show
-		`light_primary + light_cottontail` without a second config: the combo names a role, and the
-		palette in scope decides what that role is.
+		Built per mode from the SAME combo list, which is what makes the light section show the same
+		five pairs on the light palette without a second config: the combo names a role, and the
+		palette in scope decides what that role is. Only `mark_ears` does not theme — the pale ears
+		are one fixed colour on either disc.
 	*/
 	const comboViews = (theme: ThemeName) =>
 		logoCombos.map((combo) => ({
@@ -82,7 +91,10 @@
 			key: `${theme}-${combo.id}`,
 			groundVar: `var(${varName(combo.ground)})`,
 			inkVar: `var(${varName(combo.ink)})`,
-			ratio: contrastRatio(themes[theme][combo.ink], themes[theme][combo.ground])
+			ratio: contrastRatio(
+				combo.ink === 'mark_ears' ? markEars : themes[theme][combo.ink],
+				themes[theme][combo.ground]
+			)
 		}));
 
 	const combos = comboViews('dark');
@@ -124,30 +136,42 @@
 
 	const lightContract = measureContract('light');
 
+	const asWord = ['none', 'one', 'two', 'three', 'four'];
+	const keptMoves = hueMoves.filter((move) => move.kept).length;
+	const kept = asWord[keptMoves];
+	const moved = asWord[hueMoves.length - keptMoves];
+
 	/*
 		How `cottontail` is actually used, per mode, so the panel can demonstrate the jobs rather than
-		describe them. The dark one does all three; the light one only the first.
+		describe them. The ring and the callout are measured; the badge is a story rule — the ears on
+		the light disc are the fixed colour, never this token — so light loses that one by decision.
 	*/
 	const cottontailJobs = (theme: ThemeName) => {
+		const palette = themes[theme];
 		const ring = cottontailOnShades(theme);
+		const badge = contrastRatio(palette.cottontail, palette.primary);
+		const pop = contrastRatio(palette.background, palette.cottontail);
 		return [
 			{
 				id: 'ring',
 				label: 'Focus ring',
 				detail: `${ring.min.toFixed(2)}–${ring.max.toFixed(2)} on the seven shades`,
-				ok: true
+				ok: ring.min >= 3
 			},
 			{
 				id: 'badge',
 				label: 'The mark on a primary badge',
-				detail: `${contrastRatio(themes[theme].cottontail, themes[theme].primary).toFixed(2)}: a logotype allowance, never text`,
+				detail:
+					theme === 'dark'
+						? `${badge.toFixed(2)}: a logotype allowance, never text`
+						: `${badge.toFixed(2)}: the ears stay the fixed colour instead`,
 				ok: theme === 'dark'
 			},
 			{
 				id: 'pop',
 				label: 'A loud callout, sparingly',
-				detail: `${contrastRatio(themes[theme].background, themes[theme].cottontail).toFixed(2)} with the page shade as its text`,
-				ok: theme === 'dark'
+				detail: `${pop.toFixed(2)} with the page shade as its text`,
+				ok: pop >= 4.5
 			}
 		];
 	};
@@ -226,7 +250,7 @@
 			<p class="cotton-what">
 				{theme === 'dark'
 					? 'The brightest thing in the system, named after the flash of a rabbit’s tail. The ring around this panel is it.'
-					: 'The same token on paper, and the only one that lost jobs on the way over. The ring around this panel is it.'}
+					: 'The same token on paper. It pops by chroma here rather than brightness, and it lost one job on the way over. The ring around this panel is it.'}
 			</p>
 		</div>
 
@@ -798,16 +822,18 @@
 		<!--
 			The contract lives in the lede rather than in a paragraph of its own. As a paragraph it sat
 			between the lede and the first group heading with no space either side, and it restated what the
-			dark half had already proven — the number is the only new part, so the number is all that is left.
+			dark half had already proven — the split is the only new part, so the split is all that is left.
 		-->
 		<Section
 			id="light-colour"
 			index="09"
 			accent="secondary"
 			title="Seventeen twins"
-			lede="Same names, same groups, same order, and the same guarantee: {lightContract.count} colour-on-background pairs, the closest still comfortable at {lightContract.worst.ratio.toFixed(
+			lede="Same names, same groups, same order. The guarantee splits on paper: the text clears AA on all seven shades ({lightContract.text.ratio.toFixed(
 				2
-			)}:1."
+			)}:1 at worst), brand and states clear AA on the page and the surface ({lightContract.legible.ratio.toFixed(
+				2
+			)}:1) and 3:1 on every rung below ({lightContract.floor.ratio.toFixed(2)}:1)."
 		>
 			{#each groupViews('light') as group (group.id)}
 				<div class="group" id="light-{group.id}">
@@ -846,11 +872,12 @@
 		>
 			<!--
 				The comparison, on the ground it was decided on: both candidates set as text and as a fill on
-				the actual light page. Two identical plates, so the only difference on screen is the thing
-				being tested — which is what makes the number underneath mean something.
+				the actual light page, at the brand's own lightness and chroma, so hue is the only variable.
+				Two identical plates, so the only difference on screen is the thing being tested — which is
+				what makes the number underneath mean something.
 			-->
 			<div class="tryout">
-				{#each [{ id: 'green', hex: dark.primary.hex, delta: hueEvidence.green, verdict: 'Dark’s green: sinks into the paper', reject: true }, { id: 'orange', hex: light.primary.hex, delta: hueEvidence.orange, verdict: 'Orange: sits on it', reject: false }] as probe (probe.id)}
+				{#each [{ id: 'green', hex: light.primary.derive( 'green', { h: dark.primary.h } ).hex, delta: hueEvidence.green, verdict: 'Dark’s green hue: sinks into the paper', reject: true }, { id: 'orange', hex: light.primary.hex, delta: hueEvidence.orange, verdict: 'Orange: sits on it', reject: false }] as probe (probe.id)}
 					<figure class="try" class:is-reject={probe.reject}>
 						<div class="try-plate">
 							<span class="try-text" style="color: {probe.hex};">Aa the quick brown fox</span>
@@ -867,8 +894,9 @@
 			<p class="lm-why">{hueEvidence.note}</p>
 
 			<p class="closing">
-				So the light mode is fitted to its own ground rather than inheriting dark's wheel. Two of
-				dark's four brand relationships came along unchanged. Two could not.
+				So the light mode is fitted to its own ground rather than inheriting dark's wheel. Of dark's
+				four brand relationships, {kept} came along unchanged. {moved.charAt(0).toUpperCase() +
+					moved.slice(1)} could not.
 			</p>
 
 			<div class="moves">
@@ -899,7 +927,8 @@
 		>
 			<!--
 				Identical cards to the dark section — same snippet, same rules. Only the palette in scope
-				differs, so `primary + cottontail` here IS `light_primary + light_cottontail`.
+				differs, so the discs and the neutral pair re-theme; the ears of the bright badge do not,
+				because `mark_ears` is the fixed colour.
 			-->
 			<div class="combos">
 				{#each lightCombos as combo (combo.id)}
@@ -908,12 +937,34 @@
 			</div>
 
 			<p class="closing">
-				One thing before you use the bright badge on paper: it measures
-				{lightCombos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 here against
-				{combos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 in dark, and it
-				loses more than that in greyscale. Still a logotype, still exempt. When you cannot control
-				the reproduction, use the neutral pair.
+				The bright badge is the one that reads better here: the same pale ears measure
+				{lightCombos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 on the orange
+				disc against
+				{combos.find((c) => c.id === 'primary-cottontail')?.ratio.toFixed(2)}:1 in dark, so on paper
+				it needs no exemption. Do not swap the ears for the light cottontail — that pair is
+				invisible. When you cannot control the reproduction, use the neutral pair.
 			</p>
+		</Section>
+
+		<!-- ─── The scheme, live ───────────────────────────────────────────── -->
+
+		<!--
+			The last thing before the exports, and the only interactive thing on the page: everything
+			above is this guide's account of the palette, and this is the palette itself, in the tool
+			that solved it. It goes here rather than beside the swatches in the dark half because it
+			would have pre-empted them — the derivation reads as arithmetic you can follow, not as a
+			widget you poke, and there is no reading the frame before you know what a rung is.
+
+			`Chromatics` owns the frame's height. Nothing else on the page has to know.
+		-->
+		<Section
+			id="live"
+			index="12"
+			accent="primary"
+			title="Live"
+			lede="Every number above is transcribed from a Chromatics scheme. This is that scheme, running."
+		>
+			<Chromatics />
 		</Section>
 
 		<!-- ─── Assets ─────────────────────────────────────────────────────── -->
@@ -924,7 +975,7 @@
 		-->
 		<Section
 			id="assets"
-			index="12"
+			index="13"
 			accent="secondary"
 			title="Assets"
 			lede="Grab the palette however you need it. Every format carries both modes."
@@ -1171,16 +1222,15 @@
 		region four screens tall, so a viewport only ever saw a quarter of it — which is both why it looked
 		weaker and why it appeared to darken as you scrolled while the dark half held still.
 
-		And the FULL ladder rather than `body`'s stop list. Measured, the same tokens dark uses would give
-		1.462:1 here against dark's own 1.243:1 — already the stronger ramp of the two, which is worth
-		knowing before reaching for a shade outside the palette. `background_lightest` down to
-		`background_darkest` takes it to 1.595:1, and every stop is still a real token.
+		And the FULL ladder rather than `body`'s stop list: `background_lightest` down to
+		`background_darkest` is 2.05:1 here against dark's 1.80:1, and every stop is still a real token.
 
-		The stops are weighted DOWN the ladder because the ladder is. Light climbs 0.0294 in lightness
-		above the page and falls 0.120 below it, so the top three shades sit within 1.03:1 of each other
-		— an even share of the viewport would spend half its height on a step nobody can see. Percentages
-		track lightness instead: the three light rungs take the first quarter between them, the page
-		shade lands at 25%, and the descent gets the remaining three quarters in even thirds.
+		The stops are weighted DOWN the ladder because the ladder is. Light climbs 0.051 in lightness
+		above the page and falls 0.175 below it, so the three rungs above the page sit 1.05:1 apart and
+		the three below 1.2:1 — an even share of the viewport would spend half its height on steps
+		nobody can see. Percentages track lightness instead: the three light rungs take the first
+		quarter between them, the page shade lands at 25%, and the descent gets the remaining three
+		quarters in even thirds.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
 		child would sit on cream rather than on the page.
@@ -2183,7 +2233,7 @@
 		The outline is the point, not decoration: this is the ring-plus-offset pattern at panel scale, so
 		the panel demonstrates its own subject before you read a word of it. `outline` rather than `border`
 		because only outline can sit OUTSIDE the box with a gap of page shade between — which is the half of
-		the technique that makes a 1.94:1 ring legal.
+		the technique that makes a 1.96:1 ring legal.
 
 		The margin below carries the outline plus its offset clear of whatever follows.
 	*/

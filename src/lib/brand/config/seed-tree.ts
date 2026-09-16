@@ -105,11 +105,16 @@ export const trees: Record<ThemeName, readonly TreeNode[]> = {
 			move: 'dark enough to read',
 			phases: ['l', 'c', 'h']
 		},
-		{ name: 'primary', parent: 'foreground', move: '3× · into orange', phases: ['c', 'h'] },
-		{ name: 'accent', parent: 'foreground', move: '4× · into pink', phases: ['c', 'h'] },
+		{
+			name: 'primary',
+			parent: 'foreground',
+			move: '3× · into orange',
+			phases: ['l', 'c', 'h']
+		},
+		{ name: 'accent', parent: 'foreground', move: '4× · into pink', phases: ['l', 'c', 'h'] },
 		{ name: 'secondary', parent: 'primary', move: '2× · into teal', phases: ['c', 'h'] },
-		{ name: 'tertiary', parent: 'primary', move: '1× · turned back', phases: ['c', 'h'] },
-		{ name: 'cottontail', parent: 'primary', move: 'lifted brighter', phases: ['l', 'c'] }
+		{ name: 'tertiary', parent: 'primary', move: '1× · into mauve', phases: ['c', 'h'] },
+		{ name: 'cottontail', parent: 'primary', move: 'pushed louder', phases: ['l', 'c'] }
 	])
 };
 
@@ -278,14 +283,14 @@ export const beats: Record<ThemeName, readonly Beat[]> = {
 		{
 			from: 800,
 			to: 2400,
-			lead: 'The text colour is that paper ',
-			strong: 'turned inside out',
-			tail: ': as dark as the paper is light.'
+			lead: 'The text colour sits opposite the paper on the wheel, ',
+			strong: 'exactly as dark as an 8:1 body needs',
+			tail: '.'
 		},
 		{
 			from: 2400,
 			to: 3700,
-			lead: 'primary leaves the text colour ',
+			lead: 'primary leaves the text colour a step lighter and ',
 			strong: 'three times stronger',
 			tail: ', and turns into the oranges.'
 		},
@@ -307,8 +312,8 @@ export const beats: Record<ThemeName, readonly Beat[]> = {
 			from: 6000,
 			to: 7200,
 			lead: 'cottontail is primary again, ',
-			strong: 'lifted',
-			tail: ' until it stands out on paper. A UI colour here, never the logo.'
+			strong: 'pushed to all the chroma',
+			tail: ' the gamut allows. A UI colour here, never the logo.'
 		},
 		{
 			from: 7200,

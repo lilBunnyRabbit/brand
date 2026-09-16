@@ -2,8 +2,7 @@
  * The rules, and the reasons. EDIT HERE.
  *
  * Transcribed from the colour brief. These drive the Do / Don't section, so the page states the same
- * rules the code enforces — and several of them are asserted in `tests/palette.test.ts`, which is
- * the difference between a guideline and a guarantee.
+ * rules the code enforces, and the contract behind them is measured on the page rather than quoted.
  */
 export interface Rule {
 	id: string;
@@ -25,7 +24,7 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'nothing-on-white',
 		rule: 'Nothing brand-coloured on white.',
-		why: 'The light ground is #f5ecdc, a cream. On actual white the dark brand colours vanish: primary is 2.23:1 and cottontail 1.15:1. Light mode is not permission to use #fff — there is no white anywhere in either palette. The lightest shade there is stops at #fff5e6, where the warmth would otherwise have to go.',
+		why: 'Dark’s colours on white vanish: primary is 2.23:1 and cottontail 1.14:1. White is the top rung of the LIGHT ladder — that is where the tint runs out — and the light palette is what goes on it. Nothing from the dark palette ever does.',
 		severity: 'never'
 	},
 	{
@@ -67,13 +66,13 @@ export const prohibitions: readonly Rule[] = [
 	{
 		id: 'muted-text',
 		rule: 'Muted text is for captions, not content.',
-		why: 'At 65% it is 3.76:1 on the page and 2.96 on the lightest shade. Fine for a caption, not for anything important.',
+		why: 'At 65% it is 3.75:1 on the page and 2.94 on the lightest shade. Fine for a caption, not for anything important.',
 		severity: 'care'
 	},
 	{
 		id: 'logo-exempt',
 		rule: 'Do not “fix” the logo’s contrast.',
-		why: 'The bright badge is 1.94:1 on purpose. Logos are exempt (WCAG 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
+		why: 'The bright badge is 1.96:1 on purpose. Logos are exempt (WCAG 1.4.3, 1.4.11). No stroke, no shadow, no lighter green.',
 		severity: 'never'
 	}
 ];
