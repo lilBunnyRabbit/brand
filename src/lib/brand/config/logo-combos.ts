@@ -55,7 +55,7 @@ export const logoCombos: readonly LogoCombo[] = [
 		kind: 'disc',
 		ground: 'primary',
 		ink: 'mark_ears',
-		note: 'The bright one, for when the badge should catch the eye. The ears are the fixed asset colour, so on paper they stay pale on the orange disc. Low contrast in dark on purpose: fine for a logotype, never for text.',
+		note: 'The bright one, for when the badge should catch the eye. The ears are the fixed asset colour, pale on either disc. Low contrast in dark on purpose: a logotype, never text.',
 		exempt: true
 	},
 	/*

@@ -1,11 +1,15 @@
 <script lang="ts">
 	import Mark from '$lib/components/logo/Mark.svelte';
+	import Wordmark from '$lib/components/logo/Wordmark.svelte';
 	import { card } from '$lib/brand/config/card';
+	import { wordmarks } from '$lib/brand/config/wordmarks';
 	import { dark } from '$lib/brand/config/palette';
 	import { varName } from '$lib/brand/tokens';
 	import type { LogoVariant } from '$lib/brand/types';
 
 	let { variant }: { variant: LogoVariant } = $props();
+
+	const lockup = wordmarks[0];
 
 	/** A ground may be a palette swatch or raw stock (white), which is not in the palette. */
 	const resolve = (value: string) => (value in dark ? `var(${varName(value)})` : value);
@@ -33,26 +37,19 @@
 				</div>
 			</div>
 
-			<!-- Front. -->
+			<!--
+				Front. The back already carries the mark large, so the front carries the lockup small and
+				gives the space to the person: name and role low on the card, contacts on the baseline, one
+				left margin for all of it. `--brand-foreground` is re-pointed at the card's ink because the
+				lockup sets its name in the foreground token, and on a card the ink IS the foreground.
+			-->
 			<div
 				class="face"
-				style="background: {row.groundCss}; color: {row.inkCss}; --quiet: {row.quietCss};"
+				style="background: {row.groundCss}; color: {row.inkCss}; --brand-foreground: {row.inkCss}; --quiet: {row.quietCss};"
 			>
 				<div class="inner front">
-					<!--
-						Placement, straight off the reference:
-						  name      top-left
-						  role      directly beneath it, tiny, very wide tracking
-						  mark      top-right
-						  contacts  bottom-left, three mono lines
-
-						The middle row takes the slack, so the space sits between the name and the contacts.
-
-						All uppercase, all left-aligned, name at regular weight. The empty right half below
-						the mark is deliberate.
-					-->
-					<div class="mark">
-						<Mark {variant} size="100%" ink="currentColor" key="front-{row.id}" />
+					<div class="lockup">
+						<Wordmark {variant} {lockup} size="9cqi" ink="currentColor" />
 					</div>
 					<div class="who">
 						<p class="name">{card.name}</p>
@@ -134,56 +131,46 @@
 
 	.front {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		/* The middle row takes the slack, so the name floats near the centre. */
-		grid-template-rows: auto 1fr auto;
-		column-gap: 4cqi;
+		/* Lockup at the head; the slack sits under it, so the person and the contacts settle to the foot. */
+		grid-template-rows: auto 1fr auto auto;
+		row-gap: 3cqi;
 	}
 
-	.mark {
+	.lockup {
 		grid-row: 1;
-		grid-column: 2;
-		align-self: start;
-		width: 16cqi;
 	}
 
 	.who {
-		grid-row: 1;
-		grid-column: 1;
-		align-self: start;
+		grid-row: 3;
 		min-width: 0;
 	}
 
 	.name {
 		margin: 0;
-		font-size: 8.5cqi;
-		font-weight: 400;
-		line-height: 1;
-		letter-spacing: 0.13em;
-		text-transform: uppercase;
+		font-size: 7cqi;
+		font-weight: 700;
+		line-height: 1.05;
+		letter-spacing: -0.02em;
 	}
 
 	.role {
-		margin: 2.2cqi 0 0;
-		font-size: 2.4cqi;
-		line-height: 1;
-		letter-spacing: 0.46em;
-		text-transform: uppercase;
+		margin: 1.2cqi 0 0;
+		font-size: 3.2cqi;
+		line-height: 1.3;
 		color: var(--quiet);
 	}
 
+	/* Addresses as typed, not shouted: an uppercased e-mail reads as a different string. */
 	.lines {
-		display: grid;
-		grid-row: 3;
-		grid-column: 1 / -1;
-		gap: 0.9cqi;
+		display: flex;
+		flex-wrap: wrap;
+		grid-row: 4;
+		gap: 0.6cqi 5cqi;
 		padding: 0;
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 3.2cqi;
-		line-height: 1.3;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		font-size: 3cqi;
+		line-height: 1.4;
 		list-style: none;
 		color: var(--quiet);
 	}

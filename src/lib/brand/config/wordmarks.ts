@@ -10,8 +10,8 @@
  * one case and let tracking do it, or split the parts by tone. `parts` exists for that — the name is
  * always the same string, only its segmentation and tone change.
  *
- * Nothing is marked as the answer. That is deliberate: these are candidates for a decision that has
- * not been made, and a page that quietly crowns one is a page that makes the decision for you.
+ * The first entry is the lockup. The rest are what it was judged against, kept in the file so the
+ * decision can be re-read rather than re-made; the page folds them away. Reorder to change the answer.
  */
 
 /** One segment of the name. Splitting it is how a camel hump gets a different tone or weight. */

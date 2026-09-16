@@ -20,6 +20,8 @@ export interface TypeFace {
 	role: string;
 	/** Weights the page actually uses. A weight not listed here is a weight nobody asked for. */
 	weights: readonly number[];
+	/** Two lines set in the face: one at display weight, one at reading size. */
+	specimen: readonly [string, string];
 	/** Where it came from, and under what licence. */
 	source: string;
 	licence: string;
@@ -32,6 +34,10 @@ export const faces: readonly TypeFace[] = [
 		cssVar: '--font-sans',
 		role: 'Everything you read. Headings, body, labels.',
 		weights: [400, 500, 600, 700, 800],
+		specimen: [
+			'Dark is the brand.',
+			'Light is what you reach for when a product surface needs it.'
+		],
 		source: 'rsms/inter v4.1, the variable file',
 		licence: 'SIL Open Font License 1.1'
 	},
@@ -41,6 +47,7 @@ export const faces: readonly TypeFace[] = [
 		cssVar: '--font-mono',
 		role: 'Every value: hexes, formulas, ratios, token names. And the wordmark.',
 		weights: [400, 700],
+		specimen: ['lilBunnyRabbit', '1 − L · C ÷ 3 · H + 180°'],
 		source: 'source-foundry/Hack v3.003',
 		licence: 'MIT, plus Bitstream Vera for the inherited DejaVu work'
 	}

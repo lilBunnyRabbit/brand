@@ -27,6 +27,7 @@
 	import { logoCombos, plainInks } from '$lib/brand/config/logo-combos';
 	import { logoStory } from '$lib/brand/config/logo-story';
 	import { wordmarks } from '$lib/brand/config/wordmarks';
+	import { sectionIndex } from '$lib/brand/nav';
 	import { faces } from '$lib/brand/config/typography';
 	import { hueEvidence, hueMoves, lightUsage } from '$lib/brand/config/light-story';
 	import { prohibitions } from '$lib/brand/config/prohibitions';
@@ -45,6 +46,9 @@
 
 	const variants = logos.variants.filter((v) => !v.hidden);
 	const hero = variants[0];
+
+	// First is the answer; the rest are the record of the choice. See `wordmarks.ts`.
+	const [lockup, ...alternates] = wordmarks;
 	const anyWip = variants.some((v) => v.axes.status === 'wip');
 
 	// Measured, not quoted: if the seed ever moves and the contract degrades, the page says so
@@ -238,7 +242,8 @@
 	with the measured number underneath. The jobs the light twin cannot do are shown struck out, which is
 	the whole point of the section — same token, fewer jobs on paper.
 -->
-{#snippet cottontailPanel(theme: ThemeName)}
+{#snippet cottontailPanel(theme: ThemeName, compact = false)}
+	{@const jobs = cottontailJobs(theme)}
 	<!--
 		The panel wears the ring it is describing: 2px of cottontail, offset by a gap of the page shade.
 		That is WCAG 2.4.11's own two-sided technique at panel scale, so the section's first exhibit is the
@@ -250,12 +255,13 @@
 			<p class="cotton-what">
 				{theme === 'dark'
 					? 'The brightest thing in the system, named after the flash of a rabbit’s tail. The ring around this panel is it.'
-					: 'The same token on paper. It pops by chroma here rather than brightness, and it lost one job on the way over. The ring around this panel is it.'}
+					: 'The same token on paper, popping by chroma rather than brightness. The ring around this panel is it. One job did not survive the move.'}
 			</p>
 		</div>
 
+		<!-- Compact shows only what changed; what still holds is one line underneath. -->
 		<ul class="cotton-jobs">
-			{#each cottontailJobs(theme) as job (job.id)}
+			{#each jobs.filter((job) => !compact || !job.ok) as job (job.id)}
 				<li class:is-off={!job.ok}>
 					<span class="job-demo">
 						{#if job.id === 'ring'}
@@ -283,6 +289,16 @@
 			{/each}
 		</ul>
 
+		{#if compact}
+			<p class="cotton-kept">
+				Still its own:
+				{jobs
+					.filter((job) => job.ok)
+					.map((job) => `${job.label.toLowerCase()}, ${job.detail}`)
+					.join(' · ')}.
+			</p>
+		{/if}
+
 		<p class="cotton-rule">
 			{theme === 'dark'
 				? 'Never text. On a primary fill it is a logotype allowance and nothing more.'
@@ -304,6 +320,22 @@
 			{#if anyWip}
 				<p class="notice">Still being drawn. Current, not final.</p>
 			{/if}
+			<!-- The tagline is a promise; these are the two things it most often means. -->
+			<div class="hero-actions">
+				{#if hero}
+					<DownloadButton
+						filename={hero.file}
+						href={hero.url}
+						label="Download the mark"
+						variant="solid"
+					/>
+				{/if}
+				<CopyButton
+					value={() => exportFormats[0].render()}
+					label="Copy the palette"
+					describe="the palette as {exportFormats[0].label}"
+				/>
+			</div>
 		</div>
 
 		{#if hero}
@@ -317,11 +349,23 @@
 
 	<Section
 		id="colours"
-		index="01"
+		index={sectionIndex('colours')}
 		accent="secondary"
 		title="Colour"
 		lede="Seventeen colours, all grown from one seed."
 	>
+		<!-- Measured cells beside the title, not clauses in a sentence. -->
+		{#snippet actions()}
+			<ul class="contract" aria-label="The contract, measured">
+				<li><span>pairs</span><strong>{contract.count}</strong></li>
+				<li><span>worst</span><strong>{contract.worst.ratio.toFixed(2)}:1</strong></li>
+				<li>
+					<span>{contract.allAA ? 'every pair' : 'floor'}</span><strong
+						>{contract.allAA ? 'AA' : `${contract.floor.ratio.toFixed(2)}:1`}</strong
+					>
+				</li>
+			</ul>
+		{/snippet}
 		<div class="seed">
 			<div class="seed-copy">
 				<!--
@@ -335,8 +379,7 @@
 				</h3>
 				<p>
 					Every other colour is a formula against that one. Change the seed and all seventeen move
-					with it. They stay readable too: {contract.count} colour-on-background combinations, the closest
-					still comfortable at {contract.worst.ratio.toFixed(2)}:1.
+					with it, and the cells beside the title say whether they still read.
 				</p>
 			</div>
 
@@ -352,7 +395,7 @@
 		</div>
 
 		{#each groupViews('dark') as group (group.id)}
-			<div class="group" id={group.id}>
+			<div class="group" class:is-single={group.swatches.length === 1} id={group.id}>
 				<div class="group-head">
 					<h3>{group.label} <span class="count">{group.swatches.length}</span></h3>
 					{#if group.description}<p>{group.description}</p>{/if}
@@ -404,17 +447,19 @@
 		</div>
 
 		<!--
-			The derivation as a family tree, one colour at a time. Its own group rather than sitting beside
-			the `.chain` list at the top: the list is the arithmetic in six lines, this is the same story with
-			the colours actually moving, and putting both in one viewport made each look like a draft of the
-			other.
+			The derivation as a family tree, one colour at a time: the same six moves as the `.chain` list at
+			the top, with the colours actually moving. Folded, because it is a screen and a half that restates
+			the list, and the figure only plays once it is looked at, so opening it is what starts it.
 		-->
 		<div class="group">
 			<div class="group-head">
 				<h3>One seed, in order</h3>
-				<p>Every colour, and the move that made it. It builds itself once when you reach it.</p>
+				<p>Every colour, and the move that made it, drawn as it happens.</p>
 			</div>
-			<SeedTree theme="dark" />
+			<details class="fold">
+				<summary>Watch it build</summary>
+				<SeedTree theme="dark" />
+			</details>
 		</div>
 	</Section>
 
@@ -423,7 +468,7 @@
 	{#if hero}
 		<Section
 			id="idea"
-			index="02"
+			index={sectionIndex('idea')}
 			accent="tertiary"
 			title="The idea"
 			lede="It is a rabbit nose, not a rabbit head."
@@ -458,7 +503,7 @@
 
 	<Section
 		id="logo"
-		index="03"
+		index={sectionIndex('logo')}
 		accent="primary"
 		title="Logo"
 		lede="Most of the time it is just the mark, one colour, on whatever it sits on."
@@ -597,29 +642,20 @@
 	{#if hero}
 		<Section
 			id="wordmark"
-			index="04"
+			index={sectionIndex('wordmark')}
 			accent="secondary"
 			title="The name"
-			lede="There is no wordmark asset. The name is set in Hack, the same face as every value on this page. So a lockup is a layout decision, not a drawing."
+			lede="No wordmark asset. The name is set in Hack, the face every value on this page is set in, so the lockup is a layout rule, not a drawing."
 		>
-			<p class="undecided">
-				Nothing here is chosen yet. Twelve arrangements of the same two objects, at the same size,
-				on the same shade. The only difference between any two is the thing being compared.
-			</p>
-
-			<div class="marks">
-				{#each wordmarks as lockup (lockup.id)}
-					<figure class="wm">
-						<div class="wm-stage">
-							<Wordmark variant={hero} {lockup} size="3.25rem" />
-						</div>
-						<figcaption>
-							<span class="wm-label">{lockup.label}</span>
-							<span class="wm-note">{lockup.note}</span>
-						</figcaption>
-					</figure>
-				{/each}
+			<div class="wm-hero">
+				<Wordmark variant={hero} {lockup} size="4.5rem" />
 			</div>
+			<p class="decided">
+				<strong>{lockup.label}.</strong> Mark, gap, name, centred on the mark. The name at {Math.round(
+					lockup.scale * 100
+				)}% of the mark's height, Hack {lockup.weight}, tracked {lockup.tracking}. Both parts are
+				the foreground, so it goes on every shade unchanged.
+			</p>
 
 			<!--
 				The same lockup at the sizes it has to survive. Whichever one wins, this is the check that
@@ -636,9 +672,36 @@
 				</div>
 				<div class="wm-sizes">
 					{#each ['1rem', '1.5rem', '2.25rem', '3.25rem'] as size (size)}
-						<Wordmark variant={hero} lockup={wordmarks[0]} {size} />
+						<Wordmark variant={hero} {lockup} {size} />
 					{/each}
 				</div>
+			</div>
+
+			<!-- The record of the choice, folded: same size, same shade, same mark, so only the arrangement differs. -->
+			<div class="group">
+				<div class="group-head">
+					<h3>What it was judged against</h3>
+					<p>
+						{alternates.length} other arrangements of the same two objects. The only difference between
+						any two is the thing being compared.
+					</p>
+				</div>
+				<details class="fold">
+					<summary>Show them</summary>
+					<div class="marks">
+						{#each alternates as other (other.id)}
+							<figure class="wm">
+								<div class="wm-stage">
+									<Wordmark variant={hero} lockup={other} size="3.25rem" />
+								</div>
+								<figcaption>
+									<span class="wm-label">{other.label}</span>
+									<span class="wm-note">{other.note}</span>
+								</figcaption>
+							</figure>
+						{/each}
+					</div>
+				</details>
 			</div>
 		</Section>
 	{/if}
@@ -647,7 +710,7 @@
 
 	<Section
 		id="type"
-		index="05"
+		index={sectionIndex('type')}
 		accent="tertiary"
 		title="Type"
 		lede="Two faces. One for reading, one for values."
@@ -659,6 +722,10 @@
 					<div class="face-body">
 						<h3>{face.name}</h3>
 						<p class="face-role">{face.role}</p>
+						<p class="face-line is-display" style="font-family: var({face.cssVar});">
+							{face.specimen[0]}
+						</p>
+						<p class="face-line" style="font-family: var({face.cssVar});">{face.specimen[1]}</p>
 						<!-- Set in the face itself, so the row is a specimen rather than a list of numbers. -->
 						<ul class="face-weights" style="font-family: var({face.cssVar});">
 							{#each face.weights as weight (weight)}
@@ -681,7 +748,7 @@
 	{#if hero}
 		<Section
 			id="card"
-			index="06"
+			index={sectionIndex('card')}
 			accent="accent"
 			title="Business card"
 			lede="Front and back. Nothing fancy."
@@ -694,7 +761,7 @@
 
 	<Section
 		id="rules"
-		index="07"
+		index={sectionIndex('rules')}
 		accent="tertiary"
 		title="Don't"
 		lede="A short list. Most of it comes down to one thing: the brand colours are all the same brightness, so they disappear against each other."
@@ -788,7 +855,7 @@
 	<div class="measure">
 		<Section
 			id="light"
-			index="08"
+			index={sectionIndex('light')}
 			accent="primary"
 			title="Light mode"
 			lede="It exists because interfaces need it. It is not the brand."
@@ -820,23 +887,27 @@
 		<!-- ─── The twins ──────────────────────────────────────────────────── -->
 
 		<!--
-			The contract lives in the lede rather than in a paragraph of its own. As a paragraph it sat
-			between the lede and the first group heading with no space either side, and it restated what the
-			dark half had already proven — the split is the only new part, so the split is all that is left.
+			The split is the only new part of the contract, so the lede says the split and the header's cells
+			carry the three measured numbers, the same way the dark half does it.
 		-->
 		<Section
 			id="light-colour"
-			index="09"
+			index={sectionIndex('light-colour')}
 			accent="secondary"
 			title="Seventeen twins"
-			lede="Same names, same groups, same order. The guarantee splits on paper: the text clears AA on all seven shades ({lightContract.text.ratio.toFixed(
-				2
-			)}:1 at worst), brand and states clear AA on the page and the surface ({lightContract.legible.ratio.toFixed(
-				2
-			)}:1) and 3:1 on every rung below ({lightContract.floor.ratio.toFixed(2)}:1)."
+			lede="Same names, same groups, same order. Only the guarantee splits on paper: text clears AA on every shade, brand and states clear AA on the page and the surface and 3:1 on the rungs below."
 		>
+			{#snippet actions()}
+				<ul class="contract" aria-label="The light contract, measured">
+					<li><span>text</span><strong>{lightContract.text.ratio.toFixed(2)}:1</strong></li>
+					<li>
+						<span>page + surface</span><strong>{lightContract.legible.ratio.toFixed(2)}:1</strong>
+					</li>
+					<li><span>below</span><strong>{lightContract.floor.ratio.toFixed(2)}:1</strong></li>
+				</ul>
+			{/snippet}
 			{#each groupViews('light') as group (group.id)}
-				<div class="group" id="light-{group.id}">
+				<div class="group" class:is-single={group.swatches.length === 1} id="light-{group.id}">
 					<div class="group-head">
 						<h3>{group.label} <span class="count">{group.swatches.length}</span></h3>
 						{#if group.description}<p>{group.description}</p>{/if}
@@ -849,23 +920,14 @@
 				</div>
 			{/each}
 
-			{@render cottontailPanel('light')}
-
-			<!-- The same figure on the light palette. Same shape, different answers. -->
-			<div class="group">
-				<div class="group-head">
-					<h3>One seed, in order</h3>
-					<p>The light twins, built the same way.</p>
-				</div>
-				<SeedTree theme="light" />
-			</div>
+			{@render cottontailPanel('light', true)}
 		</Section>
 
 		<!-- ─── The hue that moved ─────────────────────────────────────────── -->
 
 		<Section
 			id="light-orange"
-			index="10"
+			index={sectionIndex('light-orange')}
 			accent="accent"
 			title="The orange one"
 			lede="Everything else is a twin. The primary changed hue. That was measured, not chosen."
@@ -920,7 +982,7 @@
 
 		<Section
 			id="light-logo"
-			index="11"
+			index={sectionIndex('light-logo')}
 			accent="tertiary"
 			title="The mark on paper"
 			lede="The same five combinations, in the light palette."
@@ -959,7 +1021,7 @@
 		-->
 		<Section
 			id="live"
-			index="12"
+			index={sectionIndex('live')}
 			accent="primary"
 			title="Live"
 			lede="Every number above is transcribed from a Chromatics scheme. This is that scheme, running."
@@ -975,7 +1037,7 @@
 		-->
 		<Section
 			id="assets"
-			index="13"
+			index={sectionIndex('assets')}
 			accent="secondary"
 			title="Assets"
 			lede="Grab the palette however you need it. Every format carries both modes."
@@ -1074,9 +1136,47 @@
 		border-left: 2px solid var(--brand-warning);
 	}
 
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-5);
+	}
+
 	.hero-mark {
 		display: grid;
 		place-items: center;
+	}
+
+	/*
+		The contract's numbers as cells in the section head rather than clauses in the lede. They are
+		measured, so they belong where a measurement reads: beside the title, in mono, not mid-sentence.
+	*/
+	.contract {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.contract li {
+		display: inline-flex;
+		gap: var(--space-2);
+		align-items: baseline;
+		padding: var(--space-2) var(--space-3);
+		font-size: var(--text-xs);
+		color: var(--fg-muted);
+		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-pill);
+	}
+
+	.contract strong {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		color: var(--brand-foreground);
 	}
 
 	/* ── groups ── */
@@ -1131,6 +1231,21 @@
 		grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
 		gap: var(--space-4);
 		margin-top: var(--space-5);
+	}
+
+	/*
+		A one-colour group is a strip, not a stack: head on the left, the card on the right. Stacked,
+		Content and Identity each spent a full row on one card and the air around it.
+	*/
+	.group.is-single {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+		gap: var(--space-5) clamp(var(--space-5), 4vw, var(--space-8));
+		align-items: start;
+	}
+
+	.group.is-single .swatches {
+		margin-top: 0;
 	}
 
 	.warn {
@@ -1214,23 +1329,18 @@
 	}
 
 	/*
-		The light half's descent. Two changes from the version that read as flat, and the second is the one
-		that mattered.
+		The light half's descent.
 
-		`fixed`, exactly like `body`'s. This was the actual bug: `body`'s ramp is viewport-mapped, so every
-		screenful of the dark half shows the WHOLE descent top to bottom. This one was region-mapped over a
-		region four screens tall, so a viewport only ever saw a quarter of it — which is both why it looked
-		weaker and why it appeared to darken as you scrolled while the dark half held still.
+		`fixed`, exactly like `body`'s. Region-mapped over a region four screens tall, a viewport only ever
+		saw a quarter of the ramp, which is why it read as flat and why it darkened as you scrolled while
+		the dark half held still. Viewport-mapped, every screenful shows the same ramp.
 
-		And the FULL ladder rather than `body`'s stop list: `background_lightest` down to
-		`background_darkest` is 2.05:1 here against dark's 1.80:1, and every stop is still a real token.
-
-		The stops are weighted DOWN the ladder because the ladder is. Light climbs 0.051 in lightness
-		above the page and falls 0.175 below it, so the three rungs above the page sit 1.05:1 apart and
-		the three below 1.2:1 — an even share of the viewport would spend half its height on steps
-		nobody can see. Percentages track lightness instead: the three light rungs take the first
-		quarter between them, the page shade lands at 25%, and the descent gets the remaining three
-		quarters in even thirds.
+		ONE rung either side of the page, not the full ladder. Dark's whole descent, page to
+		`background_darkest`, measures 1.25:1 with the chroma falling as it goes. Light's ladder gets its
+		depth from chroma: one rung down is already 1.20:1, the bottom 1.76:1 at three times the page's
+		chroma. Running the full ladder here spent three quarters of every screen on saturated sand and the
+		region read as orange, not paper. White to the page is 1.16:1 and the page to `background_dark`
+		1.20:1 — dark's depth, in both directions.
 
 		It has to be the REGION's own background, not a child's: the scope paints itself opaque cream, so a
 		child would sit on cream rather than on the page.
@@ -1242,11 +1352,8 @@
 		background-image: linear-gradient(
 			180deg,
 			var(--brand-background-lightest) 0%,
-			var(--brand-background-light) 17%,
 			var(--brand-background) 25%,
-			var(--brand-background-dark) 50%,
-			var(--brand-background-darker) 75%,
-			var(--brand-background-darkest) 100%
+			var(--brand-background-dark) 100%
 		);
 		background-attachment: fixed;
 	}
@@ -1403,6 +1510,13 @@
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 		gap: var(--space-4);
 		margin-top: var(--space-5);
+	}
+
+	/* Five combos. Four across left the fifth alone on a row of its own wherever the measure allowed four. */
+	@media (min-width: 1100px) {
+		.combos {
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+		}
 	}
 
 	/*
@@ -1649,6 +1763,22 @@
 		color: var(--fg-muted);
 	}
 
+	/* A line of the face as the page sets it, not only a glyph pair and a list of numbers. */
+	.face-line {
+		max-width: 34ch;
+		margin: var(--space-2) 0 0;
+		font-size: var(--text-base);
+		line-height: 1.5;
+	}
+
+	.face-line.is-display {
+		margin-top: var(--space-4);
+		font-size: var(--text-xl);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+
 	/* Each number set at its own weight. The list IS the weight ladder. */
 	.face-weights {
 		display: flex;
@@ -1676,11 +1806,25 @@
 
 	/* ── the name beside the mark ── */
 
-	.undecided {
+	.wm-hero {
+		display: grid;
+		place-items: center;
+		padding: clamp(var(--space-6), 7vw, 5rem) var(--space-5);
+		overflow-x: auto;
+		background: var(--surface-well);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+	}
+
+	.decided {
 		max-width: 66ch;
-		margin: 0 0 var(--stack-sm);
+		margin: var(--stack-sm) 0 0;
 		font-size: var(--text-base);
 		color: var(--fg-muted);
+	}
+
+	.decided strong {
+		color: var(--brand-foreground);
 	}
 
 	/*
@@ -1872,20 +2016,21 @@
 
 	.rules {
 		display: grid;
-		gap: var(--space-4);
 		padding: 0;
 		margin: 0;
 		list-style: none;
 	}
 
+	/* Rows on hairlines, not ten cards: a rule is a line in a list, and the card chrome outweighed it. */
 	.rules li {
 		display: grid;
 		grid-template-columns: 1.5rem minmax(0, 1fr);
 		gap: var(--space-3);
-		padding: var(--space-4);
-		background: var(--surface-raised);
-		border: 1px solid var(--hairline);
-		border-radius: var(--radius-md);
+		padding: var(--space-4) 0;
+	}
+
+	.rules li + li {
+		border-top: 1px solid var(--hairline);
 	}
 
 	/* Severity is carried by the glyph as well as by the colour. */
@@ -1978,6 +2123,45 @@
 		color: var(--fg-muted);
 	}
 
+	/*
+		A figure that opens on request: the seed tree, and the lockups the chosen one was judged against.
+		Closed, each is one line; open, it is the whole figure. <details> for the reasons above. The bare
+		`summary` rule is the code dump's, so everything it sets is set again here.
+	*/
+	.fold > summary {
+		display: inline-flex;
+		gap: var(--space-2);
+		align-items: center;
+		justify-content: flex-start;
+		padding: var(--space-2) var(--space-4);
+		margin-top: var(--space-5);
+		font-family: var(--font-sans);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		list-style: none;
+		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-pill);
+	}
+
+	.fold > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.fold > summary::before {
+		font-family: var(--font-mono);
+		color: var(--brand-primary);
+		content: '+';
+	}
+
+	.fold[open] > summary {
+		margin-bottom: var(--space-5);
+	}
+
+	.fold[open] > summary::before {
+		content: '−';
+	}
+
 	pre {
 		padding: 0 var(--space-4) var(--space-4);
 		margin: 0;
@@ -2047,6 +2231,14 @@
 			text-align: left;
 		}
 
+		.hero-actions {
+			justify-content: center;
+		}
+
+		.group.is-single {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
 		.eyebrow {
 			margin-bottom: var(--space-3);
 		}
@@ -2090,8 +2282,7 @@
 			align-items: flex-start;
 		}
 
-		.steps li,
-		.rules li {
+		.steps li {
 			padding: var(--space-3);
 		}
 

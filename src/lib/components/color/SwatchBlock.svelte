@@ -41,7 +41,10 @@
 	The label colour is a binary rule: shades take `foreground`, everything else takes `background`.
 	Nothing else clears AA on both halves of the palette.
 -->
-<article style="background: {swatch.hex}; color: var({swatch.labelVar});">
+<article
+	class:is-shade={swatch.shade}
+	style="background: {swatch.hex}; color: var({swatch.labelVar});"
+>
 	<button
 		type="button"
 		class="face"
@@ -154,6 +157,15 @@
 		flex-direction: column;
 		overflow: hidden;
 		border-radius: var(--radius-lg);
+	}
+
+	/*
+		Shades get a hairline. The page is painted in the same seven colours, so the card that matches the
+		ground under it has no edge at all: the page shade in the top of a dark screen, white at the top of
+		the light region. The rail colours never need it, none of them is ever a ground.
+	*/
+	article.is-shade {
+		box-shadow: inset 0 0 0 1px var(--hairline);
 	}
 
 	.face {

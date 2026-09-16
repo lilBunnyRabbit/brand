@@ -283,6 +283,8 @@ export interface SwatchView {
 	primary: ColorNotation[];
 	/** `foreground` for a shade, `background` for everything else. */
 	labelVar: string;
+	/** A page shade. The card outlines these; on the page they would otherwise have no edge. */
+	shade: boolean;
 	/** Contrast of that label against the plate. */
 	labelRatio: number;
 	/** Outside sRGB by enough to matter. See `perceptiblyOutOfGamut`. */
@@ -330,6 +332,7 @@ function toView(name: SwatchName, theme: ThemeName): SwatchView {
 		notations,
 		primary,
 		labelVar: varName(ink),
+		shade: isShade(name),
 		labelRatio: contrastRatio(palette[ink], color),
 		outOfGamut: perceptiblyOutOfGamut(color)
 	};

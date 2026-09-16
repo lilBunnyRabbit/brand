@@ -19,10 +19,9 @@
 	/*
 		The name, set live rather than exported.
 
-		There is no wordmark file, and until one of these is chosen there should not be: the name is set in
-		`--font-mono`, which is Hack, which is already loaded for every hex and formula on the page. So a
-		lockup costs nothing to add and nothing to change, and what you are judging is the real type at the
-		real weight rather than a picture of it.
+		There is no wordmark file and there does not need to be: the name is set in `--font-mono`, which is
+		Hack, which is already loaded for every hex and formula on the page. So the lockup costs nothing to
+		use anywhere, and what you see is the real type at the real weight rather than a picture of it.
 
 		Both the gap and the type size are fractions of the mark rather than `--space-*` steps, because a
 		lockup has to hold together at 16px and at 400px. A fixed 1rem gap is invisible at one end and a

@@ -14,7 +14,7 @@
 	import Announcer from '$lib/components/Announcer.svelte';
 	import Mark from '$lib/components/logo/Mark.svelte';
 	import { brandStyleSheet } from '$lib/brand/tokens';
-	import { home, sections } from '$lib/brand/nav';
+	import { home, outline, sections } from '$lib/brand/nav';
 	import { logos } from '$lib/brand/discover';
 	import { meta } from '$lib/brand/config/meta';
 	import { dark, light } from '$lib/brand/config/palette';
@@ -34,6 +34,7 @@
 	*/
 	const tokenStyle = `<style id="brand-tokens">${brandStyleSheet()}</style>`;
 	const links = sections();
+	const rail = outline();
 
 	const mark = logos.variants.find((v) => !v.hidden);
 
@@ -65,6 +66,17 @@
 	let onLight = $state(false);
 	let region: Element | null = null;
 
+	/*
+		The rail's own reading of the same two questions: which section is under the reader, and whether
+		the rail itself is over the light region. It sits at mid-height, so it flips at the viewport's
+		middle where the perch flips at the top. The current section is the last one whose top has passed
+		the upper third: a section is "where you are" once its head is out of the way, not the moment it
+		peeks in at the foot of the screen.
+	*/
+	let current = $state('');
+	let railOnLight = $state(false);
+	let targets: { id: string; el: HTMLElement }[] | null = null;
+
 	function onScroll() {
 		const y = window.scrollY;
 		scrolled = y > 8;
@@ -75,8 +87,22 @@
 		region ??= document.getElementById('light-region');
 		if (region) {
 			const box = region.getBoundingClientRect();
+			const mid = window.innerHeight / 2;
 			onLight = box.top < PERCH_BOTTOM && box.bottom > 0;
+			railOnLight = box.top < mid && box.bottom > mid;
 		}
+
+		targets ??= rail.flatMap((entry) => {
+			const el = document.getElementById(entry.id);
+			return el ? [{ id: entry.id, el }] : [];
+		});
+		const reach = window.innerHeight / 3;
+		let active = '';
+		for (const target of targets) {
+			if (target.el.getBoundingClientRect().top > reach) break;
+			active = target.id;
+		}
+		current = active;
 	}
 
 	/*
@@ -138,6 +164,30 @@
 		<Mark variant={mark} size="1.35rem" ink="var(--brand-foreground)" key="perch" />
 	</a>
 {/if}
+
+<!--
+	The rail: the thirteen indices already printed on the section heads, stacked in the right gutter
+	while the bar is away. The bar only comes back at the top of the page, which on a document this long
+	left no way between sections without scrolling back up first. Index only, so it stays quiet; the label
+	shows on hover and focus and is always there for a screen reader.
+-->
+<nav
+	class="rail"
+	class:is-shown={hidden}
+	data-theme={railOnLight ? 'light' : undefined}
+	aria-label="On this page"
+>
+	{#each rail as entry (entry.id)}
+		<a
+			href={entry.href}
+			class:is-current={current === entry.id}
+			aria-current={current === entry.id ? 'location' : undefined}
+		>
+			<span class="rail-index">{entry.index}</span>
+			<span class="rail-label">{entry.label}</span>
+		</a>
+	{/each}
+</nav>
 
 <!--
 	`data-theme` for the same reason the perch carries it: the bar is sticky, so it sits OUTSIDE the
@@ -266,6 +316,89 @@
 		opacity: 1;
 		transform: none;
 		pointer-events: auto;
+	}
+
+	/*
+		Desktop only, and only where the gutter can hold it: at 1280px the column leaves 70px a side, below
+		that the rail would sit on the content. `background: none` for the perch's reason — the light scope
+		wants the ink, not the paper.
+	*/
+	.rail {
+		position: fixed;
+		top: 50%;
+		right: var(--space-4);
+		z-index: 11;
+		display: none;
+		flex-direction: column;
+		gap: 0.1rem;
+		background: none;
+		opacity: 0;
+		transform: translate(0.5rem, -50%);
+		transition:
+			opacity var(--dur) var(--ease),
+			transform var(--dur) var(--ease);
+		pointer-events: none;
+	}
+
+	@media (min-width: 1280px) {
+		.rail {
+			display: flex;
+		}
+	}
+
+	.rail.is-shown {
+		opacity: 1;
+		transform: translate(0, -50%);
+		pointer-events: auto;
+	}
+
+	.rail a {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0.2rem var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--fg-muted);
+		text-decoration: none;
+		border-radius: var(--radius-pill);
+	}
+
+	.rail a:hover,
+	.rail a:focus-visible {
+		color: var(--brand-foreground);
+	}
+
+	.rail a.is-current {
+		color: var(--brand-primary);
+	}
+
+	/* The label, to the left of its index. Faded rather than hidden, so it is still read out. */
+	.rail-label {
+		position: absolute;
+		right: 100%;
+		padding: 0.15rem var(--space-3);
+		margin-right: var(--space-2);
+		font-family: var(--font-sans);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--brand-foreground);
+		white-space: nowrap;
+		background: var(--surface-raised);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-pill);
+		opacity: 0;
+		transition: opacity var(--dur-fast) var(--ease);
+		pointer-events: none;
+	}
+
+	.rail a:hover .rail-label,
+	.rail a:focus-visible .rail-label {
+		opacity: 1;
 	}
 
 	.inner {
@@ -414,7 +547,8 @@
 	*/
 	@media (prefers-reduced-motion: reduce) {
 		.bar,
-		.perch {
+		.perch,
+		.rail {
 			transition: none;
 		}
 	}
