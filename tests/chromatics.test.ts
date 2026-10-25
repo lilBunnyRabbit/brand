@@ -13,7 +13,8 @@
  *
  * The format is Chromatics' `persistence/url-hash.ts`: a `~` sentinel, one version digit, then
  * base64url. `~0`/`~1` carry the DSL source alone, `~2`/`~3` a `{ source, settings }` JSON blob;
- * `~1` and `~2` are the deflated two.
+ * `~1` and `~2` are the deflated two. `~4`/`~5` are `~2`/`~3` for a source in the package DSL
+ * (Chromatics ADR-017); the old digits are old-DSL scripts, which the showcase can no longer run.
  */
 import { describe, expect, it } from 'bun:test';
 import { inflateRawSync } from 'node:zlib';
@@ -27,17 +28,17 @@ const hash = hashOf(link);
 function decode(payload: string): { source: string; settings?: unknown } {
 	const version = payload[1];
 	const bytes = Buffer.from(payload.slice(2), 'base64url');
-	const text =
-		version === '1' || version === '2'
-			? inflateRawSync(bytes).toString('utf8')
-			: bytes.toString('utf8');
-	return version === '2' || version === '3' ? JSON.parse(text) : { source: text };
+	const text = '124'.includes(version)
+		? inflateRawSync(bytes).toString('utf8')
+		: bytes.toString('utf8');
+	return '2345'.includes(version) ? JSON.parse(text) : { source: text };
 }
 
 describe('the link file', () => {
 	it('holds a share payload', () => {
 		expect(hash[0]).toBe('~');
-		expect('0123').toContain(hash[1]);
+		// The package-DSL formats: an old-DSL link would open on errors in today's showcase.
+		expect('45').toContain(hash[1]);
 		expect(hash.length).toBeGreaterThan(3);
 	});
 

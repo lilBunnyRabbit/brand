@@ -3,8 +3,8 @@
  *
  * The palette is authored in Chromatics — `palette.dark.ts` and `palette.light.ts` are transcripts
  * of its export — so the guide can end on the real thing rather than a picture of it. Chromatics'
- * `/showcase` is the read-only view of a scheme, and the whole scheme travels in the URL: the `~2`
- * payload after the `#` is a deflated `{ source, settings }` blob, some 7KB of it.
+ * `/showcase` is the read-only view of a scheme, and the whole scheme travels in the URL: the `~4`
+ * payload after the `#` is a deflated `{ source, settings }` blob, some 9KB of it.
  *
  * TO SWAP THE SCHEME, replace one file — never this one:
  *
@@ -60,7 +60,7 @@ const knobs: Record<string, string> = {
  * and break the deflate stream.
  */
 export function hashOf(raw: string): string {
-	return /~[0-3][A-Za-z0-9_-]+/.exec(raw.replace(/\s+/g, ''))?.[0] ?? '';
+	return /~[0-5][A-Za-z0-9_-]+/.exec(raw.replace(/\s+/g, ''))?.[0] ?? '';
 }
 
 /** `<origin>/chromatics/showcase?<knobs>#<payload>` — hash last, or the query would swallow it. */
